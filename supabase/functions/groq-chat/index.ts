@@ -50,11 +50,11 @@ const PROVIDERS: ProviderDef[] = [
   {
     name: "xai",
     secretKey: "XAI_API_KEY",
-    defaultModel: "grok-beta",
+    defaultModel: "grok-2-latest",
     buildRequest: (apiKey, msgs, maxTokens) => ({
       url: "https://api.x.ai/v1/chat/completions",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: { model: "grok-beta", messages: msgs, max_tokens: maxTokens },
+      body: { model: "grok-2-latest", messages: msgs, max_tokens: maxTokens },
     }),
     extractReply: (data) => data?.choices?.[0]?.message?.content ?? null,
   },
@@ -72,13 +72,16 @@ const PROVIDERS: ProviderDef[] = [
   {
     name: "cerebras",
     secretKey: "CEREBRAS_API_KEY",
-    defaultModel: "llama-3.3-70b",
+    defaultModel: "gpt-oss-120b",
     buildRequest: (apiKey, msgs, maxTokens) => ({
       url: "https://api.cerebras.ai/v1/chat/completions",
       headers: { "Content-Type": "application/json", Authorization: `Bearer ${apiKey}` },
-      body: { model: "llama-3.3-70b", messages: msgs, max_tokens: maxTokens },
+      body: { model: "gpt-oss-120b", messages: msgs, max_tokens: maxTokens },
     }),
-    extractReply: (data) => data?.choices?.[0]?.message?.content ?? null,
+    // Cerebras response bisa di .content ATAU .reasoning (reasoning model)
+    extractReply: (data) => data?.choices?.[0]?.message?.content 
+                       || data?.choices?.[0]?.message?.reasoning 
+                       || null,
   },
   {
     name: "gemini",
