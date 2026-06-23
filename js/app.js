@@ -4,10 +4,11 @@
 //  - Navigasi antar section (sidebar + bottom nav mobile)
 //  - Toggle tema dark/light
 //  - Generate menu dari APP_CONFIG
-//  - Profil: load/save localStorage, update speaker & bubble
+//  - Profil: load/save localStorage + sync Supabase
 //  - AI Settings: system prompt, realtime preview
 //  - API Key: CRUD, tes koneksi, sistem loop fallback
-//  - Chat: teks, voice note, media, history localStorage
+//  - Chat: teks, voice note, media, history localStorage + sync Supabase
+//  - Storage: monitor + sync ke Supabase user_data table
 // ============================================================
 
 (function () {
@@ -33,6 +34,114 @@
   var isRecording = false;       // Status sedang merekam
   var _recordStartTime = 0;     // Waktu mulai rekam (timestamp)
   var hiddenFileInput = null;    // Input file tersembunyi
+
+  /* ----------------------------------------------------------
+      SUPABASE STORAGE — sync localStorage ke Supabase
+      ---------------------------------------------------------- */
+  var _supabase = null;              // Instance Supabase client
+  var _syncDebounceTimer = null;     // Timer debounce sync
+  var _dataLoadedFromSupabase = false;
+  var _lastSyncTime = null;          // Timestamp sync terakhir
+
+  /** Dapatkan Supabase client (lazy init) */
+  function getSupabase() {
+    if (_supabase) return _supabase;
+    if (typeof window.supabase !== 'undefined' && APP_CONFIG.supabaseUrl) {
+      _supabase = window.supabase.createClient(
+        APP_CONFIG.supabaseUrl,
+        APP_CONFIG.supabaseAnonKey
+      );
+    }
+    return _supabase;
+  }
+
+  /** Load semua data user dari Supabase ke localStorage */
+  async function loadFromSupabase() {
+    var sb = getSupabase();
+    if (!sb) return false;
+
+    try {
+      var result = await sb.auth.getSession();
+      var session = result.data && result.data.session;
+      if (!session) return false;
+
+      var resp = await sb
+        .from('user_data')
+        .select('data')
+        .eq('user_id', session.user.id)
+        .single();
+
+      if (resp.error || !resp.data || !resp.data.data) return false;
+
+      var serverData = resp.data.data;
+      // Populate localStorage from Supabase
+      Object.keys(serverData).forEach(function (key) {
+        if (serverData[key]) {
+          try { localStorage.setItem(key, serverData[key]); } catch (e) {}
+        }
+      });
+
+      _dataLoadedFromSupabase = true;
+      _lastSyncTime = Date.now();
+      return true;
+    } catch (e) {
+      console.warn('[KitaAI] Gagal load dari Supabase:', e.message || e);
+      return false;
+    }
+  }
+
+  /** Sync seluruh localStorage ke Supabase */
+  async function syncAllToSupabase() {
+    var sb = getSupabase();
+    if (!sb) return;
+
+    try {
+      var result = await sb.auth.getSession();
+      var session = result.data && result.data.session;
+      if (!session) return;
+
+      var allData = {};
+      [
+        'kita-chat-history','kita-profil','kita-ai',
+        'kita-api-keys','kita-font','kita-theme',
+        'kita-sidebar','kita-limited'
+      ].forEach(function (key) {
+        var val = localStorage.getItem(key);
+        if (val !== null && val !== undefined) allData[key] = val;
+      });
+
+      await sb.from('user_data').upsert({
+        user_id: session.user.id,
+        data: allData,
+        updated_at: new Date().toISOString()
+      });
+
+      _lastSyncTime = Date.now();
+      try { refreshStorageMonitor(); } catch (e) {}
+    } catch (e) {
+      console.warn('[KitaAI] Gagal sync ke Supabase:', e.message || e);
+    }
+  }
+
+  /** Jadwalkan sync (debounce 2 detik setelah perubahan terakhir) */
+  function scheduleSyncToSupabase() {
+    clearTimeout(_syncDebounceTimer);
+    _syncDebounceTimer = setTimeout(syncAllToSupabase, 1500);
+  }
+
+  /** Hapus semua data user dari Supabase */
+  async function deleteFromSupabase() {
+    var sb = getSupabase();
+    if (!sb) return;
+    try {
+      var result = await sb.auth.getSession();
+      var session = result.data && result.data.session;
+      if (!session) return;
+      await sb.from('user_data').delete().eq('user_id', session.user.id);
+    } catch (e) {
+      console.warn('[KitaAI] Gagal hapus data dari Supabase:', e.message || e);
+    }
+  }
 
   /* ----------------------------------------------------------
       Panggil Edge Function dengan built-in fallback
@@ -378,6 +487,7 @@
   function safeSetItem(key, value) {
     try {
       localStorage.setItem(key, value);
+      scheduleSyncToSupabase();
       return true;
     } catch (e) {
       // QuotaExceededError atau localStorage disable
@@ -850,6 +960,32 @@
     if (elWarning) {
       elWarning.style.display = (percent > 80) ? "block" : "none";
     }
+
+    // --- Status Sync Supabase ---
+    var elSync = document.getElementById("storage-sync-status");
+    if (!elSync) {
+      // Buat elemen status sync kalau belum ada
+      var detailList = document.querySelector(".storage-detail-list");
+      if (detailList) {
+        elSync = document.createElement("div");
+        elSync.id = "storage-sync-status";
+        elSync.style.cssText = "margin-top:12px;padding:10px 14px;background:var(--bg-surface);border-radius:var(--radius-sm);border:1px solid var(--border-subtle);display:flex;align-items:center;gap:8px;font-size:0.82rem;";
+        detailList.insertAdjacentElement("afterend", elSync);
+      }
+    }
+
+    if (elSync) {
+      var sb = getSupabase();
+      if (!sb) {
+        elSync.innerHTML = '<span style="color:var(--text-muted)">⚠️ Supabase tidak terhubung</span>';
+      } else if (_lastSyncTime) {
+        var ago = Math.round((Date.now() - _lastSyncTime) / 1000);
+        var agoText = ago < 60 ? ago + " detik lalu" : Math.round(ago / 60) + " menit lalu";
+        elSync.innerHTML = '<span style="color:#22c55e">☁️</span> <span style="color:var(--text-secondary)">Tersinkron ke Supabase</span> <span style="color:var(--text-muted);font-size:0.72rem;margin-left:auto">' + agoText + '</span>';
+      } else {
+        elSync.innerHTML = '<span style="color:var(--text-muted)">🔄 Menyinkronkan...</span>';
+      }
+    }
   }
 
   /** Binding event tombol storage */
@@ -871,6 +1007,7 @@
 
         localStorage.removeItem("kita-chat-history");
         chatHistory = [];
+        syncAllToSupabase();
 
         // Hapus bubble dari area chat
         var area = document.getElementById("chat-bubble-area");
@@ -903,6 +1040,9 @@
         keysToRemove.forEach(function (k) {
           localStorage.removeItem(k);
         });
+
+        // Hapus juga dari Supabase
+        deleteFromSupabase();
 
         showToast("Semua data dihapus. Silakan reload halaman.", "⚠️");
 
@@ -1854,6 +1994,9 @@
 
   /** Logout — signOut dari Supabase & redirect ke login */
   async function doLogout() {
+    // Final sync ke Supabase sebelum logout
+    try { await syncAllToSupabase(); } catch (e) {}
+
     if (typeof window.supabase !== "undefined" && APP_CONFIG.supabaseUrl) {
       var sb = window.supabase.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
       await sb.auth.signOut();
@@ -1987,7 +2130,10 @@
     }
   }
 
-  function initApp() {
+  async function initApp() {
+    // Step 0: Load data dari Supabase (sebelum render UI)
+    try { await loadFromSupabase(); } catch (e) { console.warn("[KitaAI] Gagal load dari Supabase:", e); }
+
     var steps = [
       { name: "generateNavigation", fn: generateNavigation },
       { name: "bindNavigationEvents", fn: bindNavigationEvents },
