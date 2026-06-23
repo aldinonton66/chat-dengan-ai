@@ -40,6 +40,8 @@
      ========================================================== */
 
   function generateNavigation() {
+    if (!sidebarNavList || !bottomNavEl) return;
+    
     var sidebarHtml = "";
 
     APP_CONFIG.navMenu.forEach(function (menu) {
@@ -2351,17 +2353,27 @@
      ========================================================== */
 
   function initApp() {
-    generateNavigation();
-    bindNavigationEvents();
-    initSidebar();
-    showSection(APP_CONFIG.defaultActive);
-    bindThemeToggle();
-    initChat();
-    initProfil();
-    initAI();
-    initAPI();
-    initFont();
-    initStorageMonitor();
+    var steps = [
+      { name: "generateNavigation", fn: generateNavigation },
+      { name: "bindNavigationEvents", fn: bindNavigationEvents },
+      { name: "initSidebar", fn: initSidebar },
+      { name: "showSection", fn: function() { showSection(APP_CONFIG.defaultActive); } },
+      { name: "bindThemeToggle", fn: bindThemeToggle },
+      { name: "initChat", fn: initChat },
+      { name: "initProfil", fn: initProfil },
+      { name: "initAI", fn: initAI },
+      { name: "initAPI", fn: initAPI },
+      { name: "initFont", fn: initFont },
+      { name: "initStorageMonitor", fn: initStorageMonitor }
+    ];
+
+    steps.forEach(function(step) {
+      try {
+        step.fn();
+      } catch (e) {
+        console.error("[KitaAI] Gagal init " + step.name + ":", e);
+      }
+    });
 
     // Muat index API loop dari localStorage
     var savedIdx = localStorage.getItem("kita-api-index");
