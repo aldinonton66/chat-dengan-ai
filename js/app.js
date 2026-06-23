@@ -456,9 +456,6 @@
       saveSidebarState(state);
     });
   }
-      saveSidebarState(state);
-    });
-  }
 
   /* ----------------------------------------------------------
      Inisialisasi sidebar

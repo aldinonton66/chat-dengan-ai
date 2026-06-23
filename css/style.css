@@ -234,6 +234,17 @@ body:not(.dark) #app-header {
   transition: background var(--transition-smooth);
 }
 
+#main-content::-webkit-scrollbar {
+  width: 6px;
+}
+#main-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+#main-content::-webkit-scrollbar-thumb {
+  background: var(--border-default);
+  border-radius: 6px;
+}
+
 /* Toggle button */
 .sidebar-toggle-btn {
   position: absolute;
@@ -389,28 +400,6 @@ body:not(.dark) #app-header {
 #sidebar::-webkit-scrollbar-thumb {
   background: var(--border-default);
   border-radius: 4px;
-}
-
-/* ============================================================
-   MAIN CONTENT AREA
-   ============================================================ */
-#main-content {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  padding: 32px;
-  overflow: hidden;
-  overscroll-behavior: contain;
-  background: var(--bg-body);
-  transition: background var(--transition-smooth);
-}
-
-#main-content::-webkit-scrollbar { width: 6px; }
-#main-content::-webkit-scrollbar-track { background: transparent; }
-#main-content::-webkit-scrollbar-thumb {
-  background: var(--border-default);
-  border-radius: 6px;
 }
 
 /* Section wrapper */
@@ -655,6 +644,7 @@ body:not(.dark) #bottom-nav {
 #chat-bubble-area {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 24px 28px 16px;
   display: flex;
   flex-direction: column;
