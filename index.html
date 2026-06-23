@@ -7,6 +7,49 @@
 
   <!-- Stylesheet utama -->
   <link rel="stylesheet" href="css/style.css">
+
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <!--
+    AUTH GATE: cek session SEBELUM konten dirender.
+    Kalau belum login → redirect ke login.html.
+    Konfigurasi Supabase di bawah — ganti YOUR_SUPABASE_URL
+    dan YOUR_SUPABASE_ANON_KEY dengan nilai asli dari Dashboard.
+  -->
+  <script>
+  (function () {
+    var SUPABASE_URL = "YOUR_SUPABASE_URL";
+    var SUPABASE_ANON_KEY = "YOUR_SUPABASE_ANON_KEY";
+
+    // Tunggu supabase client dari CDN siap
+    function initAuth() {
+      if (typeof window.supabase === "undefined") {
+        return setTimeout(initAuth, 30);
+      }
+
+      var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+      sb.auth.getSession().then(function (result) {
+        var session = result.data && result.data.session;
+        if (!session) {
+          window.location.replace("login.html");
+        }
+      }).catch(function () {
+        // Network error — biarkan user tetap di halaman
+      });
+
+      // Pantau perubahan session (logout di tab lain, expired, dll)
+      sb.auth.onAuthStateChange(function (event, session) {
+        if (event === "SIGNED_OUT" || !session) {
+          window.location.replace("login.html");
+        }
+      });
+    }
+
+    initAuth();
+  })();
+  </script>
 </head>
 <body>
 

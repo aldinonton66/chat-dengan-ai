@@ -5,6 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Masuk — Kita & AI</title>
   <link rel="stylesheet" href="css/style.css">
+
+  <!-- Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </head>
 <body class="dark">
 
@@ -33,27 +36,11 @@
         <p>Chat bersama AI &amp; pasangan</p>
       </div>
 
-      <!-- Cepat pilih user -->
-      <div class="login-user-chips" id="login-user-chips">
-        <button type="button" class="login-user-chip" data-user="aldi">
-          <span class="chip-avatar">🧑</span>
-          <span class="chip-name">aldi</span>
-        </button>
-        <button type="button" class="login-user-chip" data-user="adel">
-          <span class="chip-avatar">👧</span>
-          <span class="chip-name">adel</span>
-        </button>
-      </div>
-
-      <div class="login-divider">
-        <span>atau masuk manual</span>
-      </div>
-
       <form id="login-form" class="login-form" autocomplete="off">
         <div class="login-field">
           <div class="login-input-wrap">
-            <span class="login-input-icon">👤</span>
-            <input type="text" id="login-username" class="login-input" placeholder="Username" required autofocus>
+            <span class="login-input-icon">📧</span>
+            <input type="email" id="login-email" class="login-input" placeholder="Email" required autofocus>
           </div>
         </div>
         <div class="login-field">
@@ -69,53 +56,53 @@
           <span class="btn-login-arrow">→</span>
         </button>
       </form>
+
+      <p style="text-align:center;margin-top:16px;font-size:0.78rem;color:var(--text-muted);">
+        Belum punya akun? Minta admin buatkan.
+      </p>
     </div>
   </div>
 
+  <script src="js/config.js"></script>
   <script>
   (function () {
     "use strict";
 
-    // Data user (sama dengan config.js)
-    var LOGIN_USERS = {
-      "aldi": "db7b0dbb5029b025cf48a6a50ef3156197fe0e706a846166bc2976a5c91bc776",
-      "adel": "44845775d767f86435b81f0c297a15d821e7bafe387942dedd9572324932a651"
-    };
+    // ======================================================
+    // Init Supabase client — URL & Anon Key dari config.js
+    // ======================================================
+    if (!APP_CONFIG.supabaseUrl || APP_CONFIG.supabaseUrl === "YOUR_SUPABASE_URL") {
+      document.getElementById("login-error").textContent =
+        "Konfigurasi Supabase belum diisi. Buka js/config.js dan isi supabaseUrl & supabaseAnonKey.";
+      document.getElementById("login-error").style.display = "block";
+      return;
+    }
+
+    var supabase = window.supabase.createClient(
+      APP_CONFIG.supabaseUrl,
+      APP_CONFIG.supabaseAnonKey
+    );
 
     var form      = document.getElementById("login-form");
-    var username  = document.getElementById("login-username");
+    var email     = document.getElementById("login-email");
     var password  = document.getElementById("login-password");
     var errorEl   = document.getElementById("login-error");
     var btnLogin  = document.getElementById("btn-login");
-    var chips     = document.getElementById("login-user-chips");
     var togglePass = document.getElementById("login-toggle-pass");
 
-    // Kalau sudah login, redirect ke index
-    if (sessionStorage.getItem("kita-login")) {
-      location.replace("index.html");
-    }
+    // ======================================================
+    // Kalau SUDAH login, auto-redirect ke index.html
+    // ======================================================
+    (async function checkSession() {
+      var { data: { session } } = await supabase.auth.getSession();
+      if (session) {
+        location.replace("index.html");
+      }
+    })();
 
-    // User chips
-    if (chips) {
-      chips.addEventListener("click", function (e) {
-        var chip = e.target.closest(".login-user-chip");
-        if (!chip) return;
-        var user = chip.getAttribute("data-user");
-        if (!user) return;
-
-        chips.querySelectorAll(".login-user-chip").forEach(function (c) {
-          c.classList.remove("active");
-        });
-        chip.classList.add("active");
-
-        username.value = user;
-        password.value = "";
-        password.focus();
-        if (errorEl) errorEl.style.display = "none";
-      });
-    }
-
-    // Toggle password
+    // ======================================================
+    // Toggle show/hide password
+    // ======================================================
     if (togglePass && password) {
       togglePass.addEventListener("click", function () {
         var isPass = (password.type === "password");
@@ -124,54 +111,45 @@
       });
     }
 
-    // Hash SHA-256
-    async function hashPassword(pw) {
-      var encoder = new TextEncoder();
-      var data = encoder.encode(pw);
-      var hashBuffer = await crypto.subtle.digest("SHA-256", data);
-      var hashArray = Array.from(new Uint8Array(hashBuffer));
-      return hashArray.map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
-    }
-
-    // Submit login
+    // ======================================================
+    // Submit login via Supabase Auth
+    // ======================================================
     if (form) {
       form.addEventListener("submit", async function (e) {
         e.preventDefault();
 
-        var user = (username.value || "").trim().toLowerCase();
-        var pass = password.value || "";
+        var emailVal = (email.value || "").trim();
+        var passVal  = password.value || "";
 
-        if (!user || !pass) {
-          errorEl.textContent = "Username dan password harus diisi.";
+        if (!emailVal || !passVal) {
+          errorEl.textContent = "Email dan password harus diisi.";
           errorEl.style.display = "block";
-          return;
-        }
-
-        var expectedHash = LOGIN_USERS[user];
-        if (!expectedHash) {
-          errorEl.textContent = "Username tidak ditemukan.";
-          errorEl.style.display = "block";
-          password.value = "";
           return;
         }
 
         btnLogin.disabled = true;
         btnLogin.innerHTML = "<span>Mengecek...</span>";
+        errorEl.style.display = "none";
 
-        try {
-          var inputHash = await hashPassword(pass);
-          if (inputHash === expectedHash) {
-            sessionStorage.setItem("kita-login", user);
-            sessionStorage.setItem("kita-login-time", String(Date.now()));
-            location.replace("index.html");
+        var { data, error } = await supabase.auth.signInWithPassword({
+          email: emailVal,
+          password: passVal,
+        });
+
+        if (error) {
+          // Tampilkan pesan error yang user-friendly
+          if (error.message.includes("Invalid login")) {
+            errorEl.textContent = "Email atau password salah.";
+          } else if (error.message.includes("Email not confirmed")) {
+            errorEl.textContent = "Email belum dikonfirmasi. Cek inbox kamu.";
           } else {
-            errorEl.textContent = "Password salah.";
-            errorEl.style.display = "block";
-            password.value = "";
+            errorEl.textContent = error.message;
           }
-        } catch (err) {
-          errorEl.textContent = "Gagal memproses login. Coba lagi.";
           errorEl.style.display = "block";
+          password.value = "";
+        } else {
+          // Sukses → redirect ke aplikasi utama
+          location.replace("index.html");
         }
 
         btnLogin.disabled = false;

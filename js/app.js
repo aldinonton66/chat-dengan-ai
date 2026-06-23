@@ -35,6 +35,34 @@
   var _recordStartTime = 0;     // Waktu mulai rekam (timestamp)
   var hiddenFileInput = null;    // Input file tersembunyi
 
+  /* ----------------------------------------------------------
+     Supabase client (dari CDN, sudah ada sebelum konten)
+     ---------------------------------------------------------- */
+  var supabaseClient = null;
+  if (typeof window.supabase !== "undefined" && APP_CONFIG.supabaseUrl && APP_CONFIG.supabaseUrl !== "YOUR_SUPABASE_URL") {
+    supabaseClient = window.supabase.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
+  }
+
+  /* ----------------------------------------------------------
+     Helper: panggil Edge Function untuk provider Groq
+     ---------------------------------------------------------- */
+  function callEdgeFunction(messages, model, maxTokens) {
+    var url = APP_CONFIG.supabaseUrl + "/functions/v1/groq-chat";
+    return fetch(url, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer " + APP_CONFIG.supabaseAnonKey,
+        "apikey": APP_CONFIG.supabaseAnonKey,
+      },
+      body: JSON.stringify({
+        messages: messages,
+        model: model || "llama-3.3-70b-versatile",
+        max_tokens: maxTokens || 500,
+      }),
+    });
+  }
+
   /* ==========================================================
      NAVIGASI
      ========================================================== */
@@ -1177,6 +1205,38 @@
       }
 
       var api = activeAPIs[index];
+
+      // === Provider Groq: route via Supabase Edge Function (API key aman di server) ===
+      if (api.provider === "groq" && supabaseClient) {
+        callEdgeFunction(messages, buildRequestBody("groq", messages).model, 500)
+          .then(function (response) {
+            if (!response.ok) {
+              updateAPIStatus(api.id, "error");
+              tryAPI(index + 1);
+              return null;
+            }
+            return response.json();
+          })
+          .then(function (data) {
+            if (!data) return;
+            var replyText = extractReplyFromResponse("groq", data);
+            if (replyText) {
+              currentAPIIndex = index;
+              updateAPIStatus(api.id, "aktif");
+              callback(null, replyText);
+            } else {
+              updateAPIStatus(api.id, "error");
+              tryAPI(index + 1);
+            }
+          })
+          .catch(function () {
+            updateAPIStatus(api.id, "error");
+            tryAPI(index + 1);
+          });
+        return;
+      }
+
+      // === Provider lain: panggil langsung (pakai API key dari localStorage) ===
       var endpoint = getEndpointForProvider(api.provider, api.endpoint);
       var headers = getHeadersForProvider(api.provider, api.key);
       var body = buildRequestBody(api.provider, messages);
@@ -1389,6 +1449,40 @@
     }
     if (!api) { callback(false, "API tidak ditemukan"); return; }
 
+    // === Groq: tes via Edge Function ===
+    if (api.provider === "groq" && supabaseClient) {
+      callEdgeFunction([
+        { role: "system", content: "Reply with 'pong' only." },
+        { role: "user", content: "ping" }
+      ], "llama-3.3-70b-versatile", 50)
+        .then(function (response) {
+          if (!response.ok) {
+            updateAPIStatus(apiId, "error");
+            return response.text().then(function (txt) {
+              callback(false, "Error " + response.status + ": " + txt.substring(0, 80));
+            });
+          }
+          return response.json();
+        })
+        .then(function (respData) {
+          if (!respData) return;
+          var reply = extractReplyFromResponse("groq", respData);
+          if (reply) {
+            updateAPIStatus(apiId, "aktif");
+            callback(true, "Koneksi berhasil! Balasan: \"" + reply.substring(0, 50) + "\"");
+          } else {
+            updateAPIStatus(apiId, "error");
+            callback(false, "Response tidak valid");
+          }
+        })
+        .catch(function (err) {
+          updateAPIStatus(apiId, "error");
+          callback(false, "Network error: " + err.message);
+        });
+      return;
+    }
+
+    // === Provider lain: tes langsung ===
     var endpoint = getEndpointForProvider(api.provider, api.endpoint);
     var headers = getHeadersForProvider(api.provider, api.key);
 
@@ -2391,10 +2485,11 @@
      INISIALISASI APLIKASI
      ========================================================== */
 
-  /** Logout — hapus session & redirect ke login */
-  function doLogout() {
-    sessionStorage.removeItem("kita-login");
-    sessionStorage.removeItem("kita-login-time");
+  /** Logout — signOut dari Supabase & redirect ke login */
+  async function doLogout() {
+    if (supabaseClient) {
+      await supabaseClient.auth.signOut();
+    }
     location.replace("login.html");
   }
 
@@ -2446,13 +2541,6 @@
   window.addEventListener("beforeunload", function () {
     safeSetItem("kita-api-index", String(currentAPIIndex));
   });
-
-  /* ==========================================================
-     AUTH CHECK — Redirect ke login jika belum login
-     ========================================================== */
-  if (!sessionStorage.getItem("kita-login")) {
-    location.replace("login.html");
-  }
 
   // Jalankan saat DOM siap
   if (document.readyState === "loading") {

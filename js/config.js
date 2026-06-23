@@ -1,8 +1,7 @@
 // ============================================================
 //  FILE: config.js
-//  DESKRIPSI: Konfigurasi dasar aplikasi "Kita & AI"
-//  Digunakan untuk menyimpan pengaturan global,
-//  theme default, label, dan konstanta lainnya.
+//  DESKRIPSI: Konfigurasi global aplikasi "Kita & AI"
+//  Semua nilai di sini AMAN diekspos ke publik (bukan secret)
 // ============================================================
 
 var APP_CONFIG = {
@@ -13,10 +12,11 @@ var APP_CONFIG = {
   // Tema default: 'light' atau 'dark'
   defaultTheme: "dark",
 
+  // Supabase — Project URL & Anon Key (public, aman di frontend)
+  supabaseUrl: "YOUR_SUPABASE_URL",
+  supabaseAnonKey: "YOUR_SUPABASE_ANON_KEY",
+
   // Daftar menu navigasi
-  // id       → ID section yang akan ditampilkan
-  // label    → Teks yang tampil di sidebar / bottom nav
-  // icon     → Simbol emoji untuk menu
   navMenu: [
     { id: "section-chat",   label: "Chat Utama",       icon: "💬" },
     { id: "section-profil", label: "Pengaturan Profil", icon: "👤" },
@@ -27,13 +27,4 @@ var APP_CONFIG = {
   // Menu default yang aktif saat halaman pertama dimuat
   defaultActive: "section-chat"
 
-};
-
-// ============================================================
-//  DATA LOGIN — username → SHA-256 hash password
-//  Disimpan di sessionStorage saat login berhasil
-// ============================================================
-var LOGIN_USERS = {
-  "aldi": "db7b0dbb5029b025cf48a6a50ef3156197fe0e706a846166bc2976a5c91bc776",
-  "adel": "44845775d767f86435b81f0c297a15d821e7bafe387942dedd9572324932a651"
 };

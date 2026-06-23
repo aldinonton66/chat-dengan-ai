@@ -1,0 +1,24 @@
+# ============================================================
+#  .gitignore — File & folder yang TIDAK di-commit
+# ============================================================
+
+# Environment variables (mengandung secret)
+.env
+
+# Dependencies (kalau pakai bundler/npm)
+node_modules/
+
+# Build output
+dist/
+build/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Supabase local config
+supabase/.temp/
