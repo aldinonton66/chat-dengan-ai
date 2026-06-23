@@ -110,19 +110,23 @@
   }
 
   function bindNavigationEvents() {
-    sidebarNavList.addEventListener("click", function (e) {
-      var button = e.target.closest(".nav-link");
-      if (!button) return;
-      var sectionId = button.getAttribute("data-section");
-      if (sectionId) showSection(sectionId);
-    });
+    if (sidebarNavList) {
+      sidebarNavList.addEventListener("click", function (e) {
+        var button = e.target.closest(".nav-link");
+        if (!button) return;
+        var sectionId = button.getAttribute("data-section");
+        if (sectionId) showSection(sectionId);
+      });
+    }
 
-    bottomNavEl.addEventListener("click", function (e) {
-      var button = e.target.closest(".bottom-nav-link");
-      if (!button) return;
-      var sectionId = button.getAttribute("data-section");
-      if (sectionId) showSection(sectionId);
-    });
+    if (bottomNavEl) {
+      bottomNavEl.addEventListener("click", function (e) {
+        var button = e.target.closest(".bottom-nav-link");
+        if (!button) return;
+        var sectionId = button.getAttribute("data-section");
+        if (sectionId) showSection(sectionId);
+      });
+    }
   }
 
   /* ==========================================================
@@ -149,7 +153,7 @@
      Simpan state sidebar ke localStorage
      ---------------------------------------------------------- */
   function saveSidebarState(state) {
-    localStorage.setItem("kita-sidebar", JSON.stringify(state));
+    safeSetItem("kita-sidebar", JSON.stringify(state));
   }
 
   /* ----------------------------------------------------------
@@ -287,6 +291,8 @@
      ========================================================== */
 
   function bindThemeToggle() {
+    if (!themeToggleBtn) return;
+
     var savedTheme = localStorage.getItem("kita-theme");
     var isDark = (savedTheme === null)
       ? (APP_CONFIG.defaultTheme === "dark")
@@ -302,7 +308,7 @@
 
     themeToggleBtn.addEventListener("click", function () {
       var isDark = bodyEl.classList.toggle("dark");
-      localStorage.setItem("kita-theme", isDark ? "dark" : "light");
+      safeSetItem("kita-theme", isDark ? "dark" : "light");
       themeToggleBtn.innerHTML = isDark ? "☀️" : "🌙";
     });
   }
@@ -336,6 +342,18 @@
     var div = document.createElement("div");
     div.appendChild(document.createTextNode(str));
     return div.innerHTML;
+  }
+
+  /** Safe localStorage setItem — tangkap QuotaExceededError */
+  function safeSetItem(key, value) {
+    try {
+      localStorage.setItem(key, value);
+      return true;
+    } catch (e) {
+      // QuotaExceededError atau localStorage disable
+      console.warn("[KitaAI] Gagal simpan ke localStorage:", key, e.message || e);
+      return false;
+    }
   }
 
   /** Deteksi warna terang (return true) — untuk teks kontras */
@@ -381,7 +399,7 @@
   }
 
   function saveProfilData(data) {
-    localStorage.setItem("kita-profil", JSON.stringify(data));
+    safeSetItem("kita-profil", JSON.stringify(data));
     try { refreshStorageMonitor(); } catch (e) { /* ignore */ }
   }
 
@@ -532,7 +550,7 @@
 
   /** Simpan data font ke localStorage */
   function saveFontData(data) {
-    localStorage.setItem("kita-font", JSON.stringify(data));
+    safeSetItem("kita-font", JSON.stringify(data));
     try { refreshStorageMonitor(); } catch (e) { /* ignore */ }
   }
 
@@ -886,7 +904,7 @@
   }
 
   function saveAIData(data) {
-    localStorage.setItem("kita-ai", JSON.stringify(data));
+    safeSetItem("kita-ai", JSON.stringify(data));
     try { refreshStorageMonitor(); } catch (e) { /* ignore */ }
   }
 
@@ -1075,7 +1093,7 @@
   }
 
   function saveAPIData(data) {
-    localStorage.setItem("kita-api-keys", JSON.stringify(data));
+    safeSetItem("kita-api-keys", JSON.stringify(data));
     // Update monitor storage tanpa merender ulang (ringan)
     try { refreshStorageMonitor(); } catch (e) { /* ignore */ }
   }
@@ -1337,7 +1355,6 @@
     var headers = getHeadersForProvider(api.provider, api.key);
 
     // Kirim pesan "ping" minimal
-    var testMessages = [{ role: "user", content: "ping" }];
     var body = buildRequestBody(api.provider, [
       { role: "system", content: "Reply with 'pong' only." },
       { role: "user", content: "ping" }
@@ -1706,20 +1723,40 @@
   function buildBubbleHTML(msg) {
     var prof = loadProfilData();
     var font = loadFontData();
-    var isRight = (msg.sender === "person1");
-    var personaClass = isRight ? "bubble-right bubble-person1" : "bubble-left bubble-person2";
-    var senderName = isRight ? ("✨ " + prof.person1.nama) : ("🌸 " + prof.person2.nama);
-    var senderColor = isRight ? prof.person1.warna : prof.person2.warna;
-    // Warna teks dari pengaturan font
-    var textColor = isRight ? font.warnaP1 : font.warnaP2;
-    var bubbleStyle = 'style="background:' + senderColor + ';color:' + textColor + ';font-size:' + font.ukuran + 'px;"';
+    var aiData = loadAIData();
+    var html = "";
+    var personaClass = "";
+    var bubbleStyle = "";
+    var senderName = "";
 
-    // Tambah class sesuai tipe pesan
+    // AI bubble — dibangun terpisah
+    if (msg.role === "assistant") {
+      personaClass = "bubble-left bubble-ai";
+      senderName = "\uD83E\uDD16 " + aiData.nama;
+      html += '<div class="chat-bubble ' + personaClass + '" data-msg-id="' + (msg.id || "") + '">';
+      html += '<div class="bubble-header">';
+      html += '<span class="bubble-avatar">\uD83E\uDD16</span>';
+      html += '<span class="bubble-name">' + escapeHTML(senderName) + '</span>';
+      html += '<span class="bubble-time">' + msg.time + '</span>';
+      html += '</div>';
+      html += '<div class="bubble-body" style="color:' + font.warnaAI + ';font-size:' + font.ukuran + 'px;"><p>' + escapeHTML(msg.text) + '</p></div>';
+      html += '</div>';
+      return html;
+    }
+
+    // Person bubble
+    var isRight = (msg.sender === "person1");
+    personaClass = isRight ? "bubble-right bubble-person1" : "bubble-left bubble-person2";
+    senderName = isRight ? ("\u2728 " + prof.person1.nama) : ("\uD83C\uDF38 " + prof.person2.nama);
+    var senderColor = isRight ? prof.person1.warna : prof.person2.warna;
+    var textColor = isRight ? font.warnaP1 : font.warnaP2;
+    bubbleStyle = 'style="background:' + senderColor + ';color:' + textColor + ';font-size:' + font.ukuran + 'px;"';
+
     if (msg.type === "voice") personaClass += " bubble-voice";
     if (msg.type === "image") personaClass += " bubble-image";
     if (msg.type === "video") personaClass += " bubble-video";
 
-    var html = '<div class="chat-bubble ' + personaClass + '" data-msg-id="' + (msg.id || "") + '">';
+    html += '<div class="chat-bubble ' + personaClass + '" data-msg-id="' + (msg.id || "") + '">';
     html += '<div class="bubble-header">';
 
     if (isRight) {
@@ -1737,7 +1774,7 @@
 
     } else if (msg.type === "voice") {
       html += '<div class="bubble-body bubble-voice-body" ' + bubbleStyle + '>';
-      html += '<button class="voice-play-btn" data-audio="' + escapeHTML(msg.mediaUrl || "") + '" title="Putar pesan suara">▶</button>';
+      html += '<button class="voice-play-btn" data-audio="' + escapeHTML(msg.mediaUrl || "") + '" title="Putar pesan suara">\u25B6</button>';
       html += '<div class="voice-wave">';
       for (var w = 0; w < 7; w++) { html += '<span class="wave-bar"></span>'; }
       html += '</div>';
@@ -1756,26 +1793,11 @@
       html += '<div class="bubble-body" ' + bubbleStyle + '>';
       html += '<div class="video-thumb">';
       html += '<img src="' + escapeHTML(msg.mediaUrl || "") + '" alt="Thumbnail video" loading="lazy">';
-      html += '<div class="video-play-overlay"><span class="video-play-icon">▶</span></div>';
+      html += '<div class="video-play-overlay"><span class="video-play-icon">\u25B6</span></div>';
       html += '<span class="video-duration-badge">' + (msg.duration || "0:00") + '</span>';
       html += '</div>';
       if (msg.text) html += '<p class="image-caption">' + escapeHTML(msg.text) + '</p>';
       html += '</div>';
-    }
-
-    // AI bubble (role === "assistant")
-    if (msg.role === "assistant") {
-      personaClass = "bubble-left bubble-ai";
-      var aiData = loadAIData();
-      var fontAI = loadFontData();
-      senderName = "🤖 " + aiData.nama;
-      html = '<div class="chat-bubble ' + personaClass + '" data-msg-id="' + (msg.id || "") + '">';
-      html += '<div class="bubble-header">';
-      html += '<span class="bubble-avatar">🤖</span>';
-      html += '<span class="bubble-name">' + escapeHTML(senderName) + '</span>';
-      html += '<span class="bubble-time">' + msg.time + '</span>';
-      html += '</div>';
-      html += '<div class="bubble-body" style="color:' + fontAI.warnaAI + ';font-size:' + fontAI.ukuran + 'px;"><p>' + escapeHTML(msg.text) + '</p></div>';
     }
 
     html += '</div>';
@@ -1843,7 +1865,7 @@
     if (chatHistory.length > 500) {
       chatHistory = chatHistory.slice(-500);
     }
-    localStorage.setItem("kita-chat-history", JSON.stringify(chatHistory));
+    safeSetItem("kita-chat-history", JSON.stringify(chatHistory));
     // Update monitor storage (ringan)
     try { refreshStorageMonitor(); } catch (e) { /* ignore */ }
   }
@@ -2135,7 +2157,7 @@
     var els = getChatElements();
     if (!els.lightbox) return;
     els.lightbox.style.display = "none";
-    els.lightboxImg.src = "";
+    if (els.lightboxImg) els.lightboxImg.src = "";
     document.body.style.overflow = "";
   }
 
@@ -2350,7 +2372,7 @@
 
   // Simpan index API loop saat page unload
   window.addEventListener("beforeunload", function () {
-    localStorage.setItem("kita-api-index", String(currentAPIIndex));
+    safeSetItem("kita-api-index", String(currentAPIIndex));
   });
 
   // Jalankan saat DOM siap
