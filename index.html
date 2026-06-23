@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kita & AI</title>
+
+  <!-- Stylesheet utama -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <!-- =========================================================
+       HEADER BAR ATAS
+       Menampilkan nama aplikasi + tombol toggle dark/light
+       ========================================================= -->
+  <header id="app-header">
+    <h1 class="app-title">💬 Kita &amp; AI</h1>
+    <button id="btn-theme-toggle"
+            class="btn-icon"
+            title="Ganti tema gelap/terang"
+            aria-label="Ganti tema gelap/terang">
+      🌙
+    </button>
+  </header>
+
+  <!-- =========================================================
+       WRAPPER UTAMA (sidebar + konten)
+       ========================================================= -->
+  <div id="app-wrapper">
+
+    <!-- SIDEBAR NAVIGASI (tablet & desktop: sidebar kiri) -->
+    <nav id="sidebar">
+      <!-- Tombol toggle collapse/expand -->
+      <button id="sidebar-toggle"
+              class="sidebar-toggle-btn"
+              title="Ciutkan / bentangkan sidebar"
+              aria-label="Toggle sidebar">
+        <span class="sidebar-toggle-icon">◀</span>
+      </button>
+
+      <ul id="nav-list">
+        <!-- Menu akan digenerate oleh app.js -->
+      </ul>
+
+      <!-- Handle resize (drag untuk ubah lebar sidebar) -->
+      <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+    </nav>
+
+    <!-- ======================================================
+         AREA KONTEN UTAMA
+         Berisi 4 section yang ditampilkan/disembunyikan
+         sesuai menu yang dipilih
+         ====================================================== -->
+    <main id="main-content">
+
+      <!-- ======================================================
+           #1: CHAT UTAMA
+           Area chat lengkap dengan bubble, input, dan toolbar
+           ====================================================== -->
+      <section id="section-chat" class="content-section">
+
+        <!-- Area bubble chat (scrollable) -->
+        <div id="chat-bubble-area">
+
+          <!-- DUMMY BUBBLE: Person 2 (kiri, pink) -->
+          <div class="chat-bubble bubble-left bubble-person2">
+            <div class="bubble-header">
+              <span class="bubble-name">🌸 Sari</span>
+              <span class="bubble-time">10.30</span>
+            </div>
+            <div class="bubble-body">
+              <p>Haii, apa kabar hari ini? ☀️</p>
+            </div>
+          </div>
+
+          <!-- DUMMY BUBBLE: Person 1 (kanan, biru) -->
+          <div class="chat-bubble bubble-right bubble-person1">
+            <div class="bubble-header">
+              <span class="bubble-time">10.31</span>
+              <span class="bubble-name">✨ Kamu</span>
+            </div>
+            <div class="bubble-body">
+              <p>Baik banget! Lagi semangat ngerjain project nih 😄</p>
+            </div>
+          </div>
+
+          <!-- DUMMY BUBBLE: Person 2 (kiri, pink) -->
+          <div class="chat-bubble bubble-left bubble-person2">
+            <div class="bubble-header">
+              <span class="bubble-name">🌸 Sari</span>
+              <span class="bubble-time">10.32</span>
+            </div>
+            <div class="bubble-body">
+              <p>Wah semangat ya! Nanti kalau udah selesai kita ngopi yuk ☕</p>
+            </div>
+          </div>
+
+          <!-- DUMMY BUBBLE: AI (kiri, ungu/abu + ikon robot) -->
+          <div class="chat-bubble bubble-left bubble-ai">
+            <div class="bubble-header">
+              <span class="bubble-avatar">🤖</span>
+              <span class="bubble-name">Kita AI</span>
+              <span class="bubble-time">10.32</span>
+            </div>
+            <div class="bubble-body">
+              <p>Halo! Saya siap membantu. Mau ngobrol tentang apa hari ini? ✨</p>
+            </div>
+          </div>
+
+          <!-- DUMMY BUBBLE: Person 1 (kanan, biru) -->
+          <div class="chat-bubble bubble-right bubble-person1">
+            <div class="bubble-header">
+              <span class="bubble-time">10.33</span>
+              <span class="bubble-name">✨ Kamu</span>
+            </div>
+            <div class="bubble-body">
+              <p>Rekomendasiin lagu buat coding dong 🎧</p>
+            </div>
+          </div>
+
+          <!-- DUMMY BUBBLE: Voice Note dari Person 2 (kiri) -->
+          <div class="chat-bubble bubble-left bubble-person2 bubble-voice">
+            <div class="bubble-header">
+              <span class="bubble-name">🌸 Sari</span>
+              <span class="bubble-time">10.34</span>
+            </div>
+            <div class="bubble-body bubble-voice-body">
+              <button class="voice-play-btn" title="Putar pesan suara">▶</button>
+              <div class="voice-wave">
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+                <span class="wave-bar"></span>
+              </div>
+              <span class="voice-duration">0:12</span>
+            </div>
+          </div>
+
+          <!-- DUMMY BUBBLE: Foto/Gambar dari Person 1 (kanan) -->
+          <div class="chat-bubble bubble-right bubble-person1 bubble-image">
+            <div class="bubble-header">
+              <span class="bubble-time">10.35</span>
+              <span class="bubble-name">✨ Kamu</span>
+            </div>
+            <div class="bubble-body">
+              <div class="image-thumb" data-full="https://picsum.photos/800/600?random=1">
+                <img src="https://picsum.photos/400/300?random=1"
+                     alt="Foto dikirim"
+                     loading="lazy">
+              </div>
+              <p class="image-caption">Lihat hasil screenshot kodenya! 📸</p>
+            </div>
+          </div>
+
+          <!-- DUMMY BUBBLE: Person 2 (kiri) -->
+          <div class="chat-bubble bubble-left bubble-person2">
+            <div class="bubble-header">
+              <span class="bubble-name">🌸 Sari</span>
+              <span class="bubble-time">10.36</span>
+            </div>
+            <div class="bubble-body">
+              <p>Wahh keren banget!!! 🔥🔥 Bisa ajarin aku juga dong</p>
+            </div>
+          </div>
+
+          <!-- DUMMY BUBBLE: Video dari Person 1 (kanan) -->
+          <div class="chat-bubble bubble-right bubble-person1 bubble-video">
+            <div class="bubble-header">
+              <span class="bubble-time">10.37</span>
+              <span class="bubble-name">✨ Kamu</span>
+            </div>
+            <div class="bubble-body">
+              <div class="video-thumb">
+                <img src="https://picsum.photos/400/300?random=2"
+                     alt="Thumbnail video"
+                     loading="lazy">
+                <div class="video-play-overlay">
+                  <span class="video-play-icon">▶</span>
+                </div>
+                <span class="video-duration-badge">2:45</span>
+              </div>
+              <p class="image-caption">Demo singkat aplikasinya 🎬</p>
+            </div>
+          </div>
+
+          <!-- DUMMY BUBBLE: AI (kiri) -->
+          <div class="chat-bubble bubble-left bubble-ai">
+            <div class="bubble-header">
+              <span class="bubble-avatar">🤖</span>
+              <span class="bubble-name">Kita AI</span>
+              <span class="bubble-time">10.38</span>
+            </div>
+            <div class="bubble-body">
+              <p>Keren! Beberapa rekomendasi playlist coding: lo-fi hip hop, instrumental jazz, atau elektronik chill. Mau saya carikan link-nya? 🎵</p>
+            </div>
+          </div>
+
+          <!-- Typing indicator (default hidden, muncul saat AI "membalas") -->
+          <div id="typing-indicator" class="chat-bubble bubble-left bubble-ai" style="display: none;" data-msg-id="typing">
+            <div class="bubble-header">
+              <span class="bubble-avatar">🤖</span>
+              <span class="bubble-name">Kita AI</span>
+            </div>
+            <div class="bubble-body typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+          </div>
+
+          <!-- Placeholder chat kosong (muncul saat tidak ada pesan) -->
+          <div id="chat-empty-placeholder" class="chat-empty-placeholder">
+            <div class="chat-empty-icon">💬</div>
+            <h3 class="chat-empty-title">Mulai ngobrol bertiga!</h3>
+            <p class="chat-empty-desc">
+              Tulis pesan di bawah, kirim voice note, atau bagikan foto & video.
+            </p>
+            <div class="chat-empty-hints">
+              <span>🎤 Voice Note</span>
+              <span>📸 Foto</span>
+              <span>🎬 Video</span>
+            </div>
+          </div>
+
+        </div><!-- /#chat-bubble-area -->
+
+        <!-- Tombol scroll ke bawah (muncul saat scroll ke atas) -->
+        <button id="btn-scroll-bottom"
+                class="btn-scroll-bottom"
+                title="Scroll ke pesan terbaru"
+                aria-label="Scroll ke bawah">
+          ↓
+        </button>
+
+        <!-- Bar bawah fixed: input + toolbar -->
+        <div id="chat-input-bar">
+          <div class="chat-input-row">
+
+            <!-- Dropdown pilih speaker -->
+            <select id="select-speaker"
+                    class="chat-select"
+                    title="Pilih siapa yang berbicara">
+              <option value="person1">✨ Kamu</option>
+              <option value="person2">🌸 Sari</option>
+            </select>
+
+            <!-- Tombol aksi -->
+            <button id="btn-mic"
+                    class="chat-action-btn"
+                    title="Rekam pesan suara"
+                    aria-label="Rekam suara">
+              🎤
+            </button>
+
+            <button id="btn-gallery"
+                    class="chat-action-btn"
+                    title="Kirim foto / gambar / video"
+                    aria-label="Kirim media">
+              🖼️
+            </button>
+
+            <!-- Input teks pesan (auto-expand) -->
+            <textarea id="chat-input"
+                      class="chat-textarea"
+                      placeholder="Tulis pesan..."
+                      rows="1"
+                      maxlength="2000"
+                      aria-label="Tulis pesan"></textarea>
+
+            <!-- Tombol kirim -->
+            <button id="btn-send"
+                    class="chat-send-btn"
+                    title="Kirim pesan"
+                    aria-label="Kirim pesan">
+              ➤
+            </button>
+
+          </div>
+        </div><!-- /#chat-input-bar -->
+
+      </section><!-- /#section-chat -->
+
+      <!-- ======================================================
+           #2: PENGATURAN PROFIL
+           Form untuk Person 1 & Person 2 dengan preview bubble
+           ====================================================== -->
+      <section id="section-profil" class="content-section">
+
+        <div class="section-header">
+          <h2>👤 Pengaturan Profil</h2>
+          <p class="section-desc">Atur nama dan warna bubble untuk masing-masing persona.</p>
+        </div>
+
+        <!-- Card Person 1 -->
+        <div class="form-card">
+          <h3 class="form-card-title">
+            <span class="card-icon">✨</span> Person 1 — Kamu
+          </h3>
+
+          <div class="form-group">
+            <label for="profil-p1-nama" class="form-label">Nama</label>
+            <input type="text"
+                   id="profil-p1-nama"
+                   class="form-input"
+                   placeholder="Nama kamu"
+                   value="Kamu"
+                   maxlength="30">
+          </div>
+
+          <div class="form-group">
+            <label for="profil-p1-warna" class="form-label">Warna Bubble</label>
+            <div class="color-picker-row">
+              <input type="color"
+                     id="profil-p1-warna"
+                     class="form-color"
+                     value="#3b82f6">
+              <span class="color-hex" id="profil-p1-hex">#3b82f6</span>
+            </div>
+          </div>
+
+          <!-- Preview bubble Person 1 -->
+          <div class="bubble-preview-wrapper">
+            <span class="preview-label">Preview:</span>
+            <div class="chat-bubble bubble-right bubble-preview"
+                 id="preview-p1">
+              <div class="bubble-header">
+                <span class="bubble-time">12.00</span>
+                <span class="bubble-name" id="preview-p1-nama">Kamu</span>
+              </div>
+              <div class="bubble-body" id="preview-p1-body">
+                <p>Halo! Ini preview bubble kamu ✨</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card Person 2 -->
+        <div class="form-card">
+          <h3 class="form-card-title">
+            <span class="card-icon">🌸</span> Person 2 — Pacar
+          </h3>
+
+          <div class="form-group">
+            <label for="profil-p2-nama" class="form-label">Nama</label>
+            <input type="text"
+                   id="profil-p2-nama"
+                   class="form-input"
+                   placeholder="Nama pacar"
+                   value="Sari"
+                   maxlength="30">
+          </div>
+
+          <div class="form-group">
+            <label for="profil-p2-warna" class="form-label">Warna Bubble</label>
+            <div class="color-picker-row">
+              <input type="color"
+                     id="profil-p2-warna"
+                     class="form-color"
+                     value="#ec4899">
+              <span class="color-hex" id="profil-p2-hex">#ec4899</span>
+            </div>
+          </div>
+
+          <!-- Preview bubble Person 2 -->
+          <div class="bubble-preview-wrapper">
+            <span class="preview-label">Preview:</span>
+            <div class="chat-bubble bubble-left bubble-preview"
+                 id="preview-p2">
+              <div class="bubble-header">
+                <span class="bubble-name" id="preview-p2-nama">Sari</span>
+                <span class="bubble-time">12.01</span>
+              </div>
+              <div class="bubble-body" id="preview-p2-body">
+                <p>Hai! Ini preview bubble aku 🌸</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Card: Pengaturan Font -->
+        <div class="form-card">
+          <h3 class="form-card-title">
+            <span class="card-icon">🔤</span> Pengaturan Font Chat
+          </h3>
+
+          <!-- Ukuran font -->
+          <div class="form-group">
+            <label for="font-ukuran" class="form-label">
+              Ukuran Font Chat: <strong id="font-ukuran-label">15px</strong>
+            </label>
+            <div class="range-row">
+              <span class="range-min">12px</span>
+              <input type="range"
+                     id="font-ukuran"
+                     class="form-range"
+                     min="12"
+                     max="24"
+                     value="15"
+                     step="1">
+              <span class="range-max">24px</span>
+            </div>
+          </div>
+
+          <!-- Preview teks ukuran font -->
+          <div class="form-group">
+            <span class="form-label">Preview Ukuran:</span>
+            <div id="font-preview-text"
+                 class="font-preview-box"
+                 style="font-size: 15px;">
+              Aa Bb Cc — Halo! Ini preview ukuran font chat kamu.
+            </div>
+          </div>
+
+          <!-- Warna teks Person 1 -->
+          <div class="form-group">
+            <label for="font-warna-p1" class="form-label">Warna Teks Person 1</label>
+            <div class="color-picker-row">
+              <input type="color"
+                     id="font-warna-p1"
+                     class="form-color"
+                     value="#ffffff">
+              <span class="color-hex" id="font-warna-p1-hex">#ffffff</span>
+              <span id="font-warna-p1-preview"
+                    class="font-color-swatch"
+                    style="background: #ffffff; color: #1a1a1a;">✨ Kamu</span>
+            </div>
+          </div>
+
+          <!-- Warna teks Person 2 -->
+          <div class="form-group">
+            <label for="font-warna-p2" class="form-label">Warna Teks Person 2</label>
+            <div class="color-picker-row">
+              <input type="color"
+                     id="font-warna-p2"
+                     class="form-color"
+                     value="#ffffff">
+              <span class="color-hex" id="font-warna-p2-hex">#ffffff</span>
+              <span id="font-warna-p2-preview"
+                    class="font-color-swatch"
+                    style="background: #ffffff; color: #1a1a1a;">🌸 Sari</span>
+            </div>
+          </div>
+
+          <!-- Warna teks AI -->
+          <div class="form-group">
+            <label for="font-warna-ai" class="form-label">Warna Teks AI</label>
+            <div class="color-picker-row">
+              <input type="color"
+                     id="font-warna-ai"
+                     class="form-color"
+                     value="#e0e0e0">
+              <span class="color-hex" id="font-warna-ai-hex">#e0e0e0</span>
+              <span id="font-warna-ai-preview"
+                    class="font-color-swatch"
+                    style="background: #e0e0e0; color: #1a1a1a;">🤖 AI</span>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Tombol simpan -->
+        <button id="btn-simpan-profil"
+                class="btn-save"
+                type="button">
+          💾 Simpan Profil
+        </button>
+
+        <!-- Card: Penyimpanan Lokal -->
+        <div class="form-card">
+          <h3 class="form-card-title">
+            <span class="card-icon">💿</span> Penyimpanan Lokal
+          </h3>
+
+          <!-- Progress bar -->
+          <div class="storage-info-row">
+            <span class="storage-label">Terpakai:</span>
+            <span class="storage-value" id="storage-used-text">0 KB</span>
+            <span class="storage-divider">/</span>
+            <span class="storage-total">5 MB</span>
+            <span class="storage-percent" id="storage-percent-text">(0%)</span>
+          </div>
+
+          <div class="progress-bar-wrap">
+            <div class="progress-bar-fill" id="storage-progress-bar"></div>
+          </div>
+
+          <!-- Peringatan storage hampir penuh -->
+          <div id="storage-warning" class="storage-warning" style="display: none;">
+            <span>⚠️ Storage hampir penuh! Pertimbangkan hapus history chat lama.</span>
+          </div>
+
+          <!-- Rincian per data -->
+          <div class="storage-detail-list">
+            <div class="storage-detail-item">
+              <span>💬 History Chat</span>
+              <span id="storage-chat">0 KB</span>
+            </div>
+            <div class="storage-detail-item">
+              <span>👤 Profil</span>
+              <span id="storage-profil">0 KB</span>
+            </div>
+            <div class="storage-detail-item">
+              <span>🤖 Pengaturan AI</span>
+              <span id="storage-ai">0 KB</span>
+            </div>
+            <div class="storage-detail-item">
+              <span>🔑 API Keys</span>
+              <span id="storage-api">0 KB</span>
+            </div>
+            <div class="storage-detail-item">
+              <span>🎨 Font</span>
+              <span id="storage-font">0 KB</span>
+            </div>
+          </div>
+
+          <!-- Tombol aksi -->
+          <div class="storage-actions">
+            <button id="btn-refresh-storage"
+                    class="btn-storage btn-storage-refresh"
+                    type="button">
+              🔄 Refresh
+            </button>
+            <button id="btn-hapus-history"
+                    class="btn-storage btn-storage-danger"
+                    type="button">
+              🗑️ Hapus History Chat
+            </button>
+            <button id="btn-hapus-semua"
+                    class="btn-storage btn-storage-danger"
+                    type="button">
+              ⚠️ Hapus Semua Data
+            </button>
+          </div>
+
+        </div>
+
+      </section><!-- /#section-profil -->
+
+      <!-- ======================================================
+           #3: PENGATURAN AI
+           Form pengaturan nama, kepribadian, toggle, system prompt
+           ====================================================== -->
+      <section id="section-ai" class="content-section">
+
+        <div class="section-header">
+          <h2>🤖 Pengaturan AI</h2>
+          <p class="section-desc">Atur kepribadian dan perilaku AI sesuai keinginan.</p>
+        </div>
+
+        <!-- Card: Identitas AI -->
+        <div class="form-card">
+          <h3 class="form-card-title">
+            <span class="card-icon">🪪</span> Identitas AI
+          </h3>
+
+          <div class="form-group">
+            <label for="ai-nama" class="form-label">Nama Panggilan AI</label>
+            <input type="text"
+                   id="ai-nama"
+                   class="form-input"
+                   placeholder="Nama panggilan AI"
+                   value="Kita AI"
+                   maxlength="30">
+          </div>
+
+          <div class="form-group">
+            <label for="ai-kepribadian" class="form-label">Kepribadian</label>
+            <select id="ai-kepribadian" class="form-select">
+              <option value="hangat">🌸 Hangat &amp; Ramah</option>
+              <option value="bijak">🧘 Bijak &amp; Netral</option>
+              <option value="seru">🎉 Seru &amp; Santai</option>
+              <option value="custom">✏️ Custom...</option>
+            </select>
+          </div>
+
+          <!-- Input custom kepribadian (muncul jika pilih "Custom") -->
+          <div class="form-group" id="group-ai-custom" style="display: none;">
+            <label for="ai-kepribadian-custom" class="form-label">Deskripsikan Kepribadian Custom</label>
+            <input type="text"
+                   id="ai-kepribadian-custom"
+                   class="form-input"
+                   placeholder="Ceria, suka pantun, sabar, ..."
+                   maxlength="200">
+          </div>
+        </div>
+
+        <!-- Card: Peraturan AI -->
+        <div class="form-card">
+          <h3 class="form-card-title">
+            <span class="card-icon">📋</span> Peraturan Khusus AI
+          </h3>
+
+          <div class="form-group">
+            <label for="ai-peraturan" class="form-label">Instruksi / Peraturan</label>
+            <textarea id="ai-peraturan"
+                      class="form-textarea"
+                      placeholder="Contoh:&#10;- Jangan gunakan kata kasar&#10;- Selalu jawab dengan sopan&#10;- Jika tidak tahu, jujur saja&#10;- Gunakan Bahasa Indonesia santai"
+                      rows="5"
+                      maxlength="1000"></textarea>
+            <span class="form-hint" id="ai-peraturan-count">0 / 1000 karakter</span>
+          </div>
+        </div>
+
+        <!-- Card: Toggle AI -->
+        <div class="form-card">
+          <h3 class="form-card-title">
+            <span class="card-icon">⚙️</span> Perilaku AI
+          </h3>
+
+          <!-- Toggle: AI Aktif -->
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <span class="toggle-label">AI Aktif</span>
+              <span class="toggle-desc">AI akan otomatis membalas pesan</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="ai-aktif" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+
+          <!-- Toggle: AI Boleh Beri Saran -->
+          <div class="toggle-row">
+            <div class="toggle-info">
+              <span class="toggle-label">AI Boleh Beri Saran</span>
+              <span class="toggle-desc">AI dapat memberikan rekomendasi & ide</span>
+            </div>
+            <label class="toggle-switch">
+              <input type="checkbox" id="ai-boleh-saran" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+
+        <!-- Card: Preview System Prompt -->
+        <div class="form-card">
+          <h3 class="form-card-title">
+            <span class="card-icon">👁️</span> Preview System Prompt
+          </h3>
+
+          <div class="form-group">
+            <p class="form-hint">
+              Berikut system prompt yang akan dikirim ke AI berdasarkan pengaturan di atas:
+            </p>
+            <pre id="ai-preview-prompt"
+                 class="prompt-preview">(System prompt akan muncul di sini...)</pre>
+          </div>
+        </div>
+
+        <!-- Tombol simpan -->
+        <button id="btn-simpan-ai"
+                class="btn-save"
+                type="button">
+          💾 Simpan Pengaturan AI
+        </button>
+
+      </section><!-- /#section-ai -->
+
+      <!-- ======================================================
+           #4: PENGATURAN API
+           Form tambah API key + list item + info sistem loop
+           ====================================================== -->
+      <section id="section-api" class="content-section">
+
+        <div class="section-header">
+          <h2>🔑 Pengaturan API</h2>
+          <p class="section-desc">Kelola API key untuk AI provider. Gunakan urutan prioritas sebagai fallback.</p>
+        </div>
+
+        <!-- Card: Form Tambah API Key (default collapsed) -->
+        <div class="form-card" id="card-tambah-api">
+          <h3 class="form-card-title form-card-collapse" id="toggle-form-api">
+            <span class="card-icon">➕</span> Tambah API Key
+            <span class="collapse-arrow" id="arrow-form-api">▲</span>
+          </h3>
+
+          <div id="body-form-api">
+            <!-- Pilih provider -->
+            <div class="form-group">
+              <label for="api-provider" class="form-label">Provider</label>
+              <select id="api-provider" class="form-select">
+                <option value="claude">🧠 Claude (Anthropic)</option>
+                <option value="openai">⚡ OpenAI</option>
+                <option value="gemini">🌐 Gemini (Google)</option>
+                <option value="groq">⚡ Groq</option>
+                <option value="custom">🔧 Custom</option>
+              </select>
+            </div>
+
+            <!-- Nama label -->
+            <div class="form-group">
+              <label for="api-label" class="form-label">Nama Label</label>
+              <input type="text"
+                     id="api-label"
+                     class="form-input"
+                     placeholder="Contoh: Claude utama"
+                     maxlength="50">
+            </div>
+
+            <!-- API Key -->
+            <div class="form-group">
+              <label for="api-key" class="form-label">API Key</label>
+              <div class="input-password-row">
+                <input type="password"
+                       id="api-key"
+                       class="form-input"
+                       placeholder="sk-... atau AIza..."
+                       maxlength="200">
+                <button id="btn-toggle-key"
+                        class="toggle-vis-btn"
+                        type="button"
+                        title="Tampilkan / sembunyikan API key">
+                  👁️
+                </button>
+              </div>
+            </div>
+
+            <!-- Endpoint URL (hanya muncul jika Custom) -->
+            <div class="form-group" id="group-api-endpoint" style="display: none;">
+              <label for="api-endpoint" class="form-label">Endpoint URL</label>
+              <input type="text"
+                     id="api-endpoint"
+                     class="form-input"
+                     placeholder="https://api.contoh.com/v1/chat"
+                     maxlength="300">
+            </div>
+
+            <!-- Tombol tambah -->
+            <button id="btn-tambah-api"
+                    class="btn-save"
+                    type="button"
+                    style="margin-top: 4px;">
+              ➕ Tambah API Key
+            </button>
+          </div>
+        </div>
+
+        <!-- Info sistem loop -->
+        <div class="api-info-box">
+          <span class="api-info-icon">🔁</span>
+          <span class="api-info-text">
+            API digunakan satu per satu sesuai urutan prioritas. Jika gagal / limit tercapai, otomatis pindah ke API berikutnya.
+          </span>
+        </div>
+
+        <!-- List API Key -->
+        <div class="form-card">
+          <h3 class="form-card-title">
+            <span class="card-icon">📋</span> Daftar API Key
+          </h3>
+
+          <div id="api-list-container">
+            <!-- List akan digenerate oleh app.js -->
+          </div>
+
+          <!-- Placeholder saat kosong -->
+          <div id="api-kosong" class="api-kosong" style="display: none;">
+            <span class="api-kosong-icon">📭</span>
+            <p>Belum ada API key terdaftar.<br>Klik <strong>Tambah API Key</strong> di atas.</p>
+          </div>
+        </div>
+
+      </section><!-- /#section-api -->
+
+    </main>
+
+  </div><!-- /#app-wrapper -->
+
+  <!-- BOTTOM NAVIGATION (khusus mobile) -->
+  <nav id="bottom-nav">
+    <!-- Menu akan digenerate oleh app.js -->
+  </nav>
+
+  <!-- =========================================================
+       TOAST NOTIFIKASI — Muncul sementara setelah simpan
+       ========================================================= -->
+  <div id="toast" class="toast" style="display: none;">
+    <span id="toast-icon" class="toast-icon">✅</span>
+    <span id="toast-text" class="toast-text"></span>
+  </div>
+
+  <!-- =========================================================
+       LIGHTBOX — Untuk tampil foto/gambar fullscreen
+       ========================================================= -->
+  <div id="lightbox-overlay" class="lightbox-overlay" style="display: none;">
+    <button id="lightbox-close" class="lightbox-close" title="Tutup">✕</button>
+    <img id="lightbox-img" src="" alt="Gambar fullscreen">
+  </div>
+
+  <!-- =========================================================
+       SCRIPTS (bukan module, urutan penting)
+       ========================================================= -->
+  <script src="js/config.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
