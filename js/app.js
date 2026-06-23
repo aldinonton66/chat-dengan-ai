@@ -110,6 +110,24 @@
         if (val !== null && val !== undefined) allData[key] = val;
       });
 
+      // Safety: Supabase REST API limit ~1 MB per request.
+      // Jika data terlalu besar, trim chat history.
+      var totalSize = new Blob([JSON.stringify(allData)]).size;
+      var MAX_SYNC_SIZE = 900 * 1024; // 900 KB — sisakan margin untuk overhead
+      if (totalSize > MAX_SYNC_SIZE && allData['kita-chat-history']) {
+        console.warn('[KitaAI] Data terlalu besar (' + Math.round(totalSize/1024) + ' KB), trimming chat history...');
+        try {
+          var historyArr = JSON.parse(allData['kita-chat-history']);
+          while (new Blob([JSON.stringify(allData)]).size > MAX_SYNC_SIZE && historyArr.length > 50) {
+            historyArr = historyArr.slice(-Math.floor(historyArr.length * 0.8));
+            allData['kita-chat-history'] = JSON.stringify(historyArr);
+          }
+          // Update localStorage dengan history yang sudah di-trim
+          localStorage.setItem('kita-chat-history', allData['kita-chat-history']);
+          chatHistory = historyArr;
+        } catch (e) {}
+      }
+
       await sb.from('user_data').upsert({
         user_id: session.user.id,
         data: allData,
@@ -882,7 +900,7 @@
      ========================================================== */
 
   /** Konstanta batas storage (5 MB = 5 * 1024 * 1024 bytes) */
-  var STORAGE_MAX_BYTES = 5 * 1024 * 1024; // 5 MB
+  var STORAGE_MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
   /** Daftar key localStorage yang dipantau + label */
   var STORAGE_KEYS = [
@@ -1523,9 +1541,9 @@
   }
 
   function saveChatHistory() {
-    // Batasi maks 500 pesan
-    if (chatHistory.length > 500) {
-      chatHistory = chatHistory.slice(-500);
+    // Batasi maks 2000 pesan (cukup untuk ribuan jam percakapan)
+    if (chatHistory.length > 2000) {
+      chatHistory = chatHistory.slice(-2000);
     }
     safeSetItem("kita-chat-history", JSON.stringify(chatHistory));
     // Update monitor storage (ringan)
