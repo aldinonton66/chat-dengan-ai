@@ -44,9 +44,9 @@
   }
 
   /* ----------------------------------------------------------
-     Helper: panggil Edge Function untuk provider Groq
-     ---------------------------------------------------------- */
-  function callEdgeFunction(messages, model, maxTokens) {
+      Helper: panggil Edge Function (multi-provider)
+      ---------------------------------------------------------- */
+  function callEdgeFunction(provider, messages, model, maxTokens) {
     var url = APP_CONFIG.supabaseUrl + "/functions/v1/groq-chat";
     return fetch(url, {
       method: "POST",
@@ -56,11 +56,28 @@
         "apikey": APP_CONFIG.supabaseAnonKey,
       },
       body: JSON.stringify({
+        provider: provider,
         messages: messages,
-        model: model || "llama-3.3-70b-versatile",
+        model: model || getDefaultModelForProvider(provider),
         max_tokens: maxTokens || 500,
       }),
     });
+  }
+
+  /** Daftar provider yang dirouting via Edge Function (server-side API key) */
+  function isEdgeProvider(provider) {
+    return ["groq", "xai", "openrouter", "cerebras", "gemini"].indexOf(provider) !== -1;
+  }
+
+  function getDefaultModelForProvider(provider) {
+    var models = {
+      groq: "llama-3.3-70b-versatile",
+      xai: "grok-2-1212",
+      openrouter: "google/gemini-2.0-flash-001",
+      cerebras: "llama3.1-8b",
+      gemini: "gemini-2.0-flash"
+    };
+    return models[provider] || "gpt-3.5-turbo";
   }
 
   /* ==========================================================
@@ -1206,9 +1223,10 @@
 
       var api = activeAPIs[index];
 
-      // === Provider Groq: route via Supabase Edge Function (API key aman di server) ===
-      if (api.provider === "groq" && supabaseClient) {
-        callEdgeFunction(messages, buildRequestBody("groq", messages).model, 500)
+      // === Provider via Edge Function (API key aman di server) ===
+      if (isEdgeProvider(api.provider) && supabaseClient) {
+        var edgeModel = getDefaultModelForProvider(api.provider);
+        callEdgeFunction(api.provider, messages, edgeModel, 500)
           .then(function (response) {
             if (!response.ok) {
               updateAPIStatus(api.id, "error");
@@ -1219,7 +1237,7 @@
           })
           .then(function (data) {
             if (!data) return;
-            var replyText = extractReplyFromResponse("groq", data);
+            var replyText = extractReplyFromResponse(api.provider, data);
             if (replyText) {
               currentAPIIndex = index;
               updateAPIStatus(api.id, "aktif");
@@ -1449,12 +1467,12 @@
     }
     if (!api) { callback(false, "API tidak ditemukan"); return; }
 
-    // === Groq: tes via Edge Function ===
-    if (api.provider === "groq" && supabaseClient) {
-      callEdgeFunction([
+    // === Provider via Edge Function ===
+    if (isEdgeProvider(api.provider) && supabaseClient) {
+      callEdgeFunction(api.provider, [
         { role: "system", content: "Reply with 'pong' only." },
         { role: "user", content: "ping" }
-      ], "llama-3.3-70b-versatile", 50)
+      ], getDefaultModelForProvider(api.provider), 50)
         .then(function (response) {
           if (!response.ok) {
             updateAPIStatus(apiId, "error");
@@ -1466,7 +1484,7 @@
         })
         .then(function (respData) {
           if (!respData) return;
-          var reply = extractReplyFromResponse("groq", respData);
+          var reply = extractReplyFromResponse(api.provider, respData);
           if (reply) {
             updateAPIStatus(apiId, "aktif");
             callback(true, "Koneksi berhasil! Balasan: \"" + reply.substring(0, 50) + "\"");
