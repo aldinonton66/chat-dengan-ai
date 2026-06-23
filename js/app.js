@@ -242,6 +242,14 @@
       } catch (e) { console.error("[KitaAI] Gagal init profil on show:", e); }
     }
 
+    // Saat buka AI, refresh form dari localStorage
+    if (sectionId === "section-ai") {
+      try {
+        populateAIForm();
+        refreshStorageMonitor();
+      } catch (e) { console.error("[KitaAI] Gagal init AI on show:", e); }
+    }
+
     // Saat buka status, render cards
     if (sectionId === "section-status") {
       try { renderStatusCards(); } catch (e) { console.error("[KitaAI] Gagal render status:", e); }
@@ -604,6 +612,7 @@
   /** Update nama & warna bubble yang sudah ada di area chat */
   function updateExistingBubbles() {
     var data = loadProfilData();
+    var aiData = loadAIData();
 
     document.querySelectorAll(".bubble-person1 .bubble-name").forEach(function (el) {
       el.textContent = "✨ " + data.person1.nama;
@@ -618,6 +627,11 @@
     document.querySelectorAll(".bubble-person2 .bubble-body").forEach(function (el) {
       el.style.background = data.person2.warna;
       el.style.color = isLightColor(data.person2.warna) ? "#1a1a1a" : "#ffffff";
+    });
+
+    // Update nama AI di bubble yang sudah ada
+    document.querySelectorAll(".bubble-ai .bubble-name").forEach(function (el) {
+      el.textContent = "🤖 " + aiData.nama;
     });
   }
 
@@ -1236,6 +1250,7 @@
           bolehSaran: document.getElementById("ai-boleh-saran").checked
         };
         saveAIData(data);
+        updateExistingBubbles();
         refreshStorageMonitor();
         showToast("Pengaturan AI disimpan!", "✅");
       });
@@ -1260,8 +1275,13 @@
     var recentHistory = chatHistory.slice(-20);
     recentHistory.forEach(function (msg) {
       if (msg.type === "text" && msg.role) {
-        var senderName = (msg.sender === "person1") ? prof.person1.nama : prof.person2.nama;
-        messages.push({ role: msg.role, content: "[" + senderName + "]: " + msg.text });
+        if (msg.role === "assistant") {
+          // Pesan AI — tetap sebagai assistant tanpa prefiks nama
+          messages.push({ role: "assistant", content: msg.text });
+        } else {
+          var senderName = (msg.sender === "person1") ? prof.person1.nama : prof.person2.nama;
+          messages.push({ role: msg.role, content: "[" + senderName + "]: " + msg.text });
+        }
       }
     });
 
