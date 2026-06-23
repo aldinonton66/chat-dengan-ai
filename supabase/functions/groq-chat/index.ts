@@ -1,19 +1,17 @@
 /**
- * Supabase Edge Function: api-proxy
+ * Supabase Edge Function: groq-chat
  * ====================================
- * Proxy aman untuk SEMUA AI provider.
- * Semua API key disimpan sebagai secret di Supabase,
- * TIDAK PERNAH dikirim ke frontend.
+ * Proxy aman multi-provider dengan FALLBACK otomatis.
+ * Semua API key disimpan sebagai secret di Supabase.
+ * Frontend cukup kirim 1 request — function ini yang
+ * mencoba provider satu per satu sampai berhasil.
+ *
+ * Prioritas fallback: groq → xai → openrouter → cerebras → gemini
  *
  * Cara pakai:
  *   POST https://<project>.supabase.co/functions/v1/groq-chat
  *   Header: Authorization: Bearer <SUPABASE_ANON_KEY>
- *   Body: {
- *     provider: "groq" | "xai" | "openrouter" | "cerebras" | "gemini",
- *     messages: [{role:"user", content:"..."}, ...],
- *     model?: "...",
- *     max_tokens?: 500
- *   }
+ *   Body:   { messages: [{role:"user", content:"..."}], model?:"...", max_tokens?:500 }
  */
 
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
@@ -25,61 +23,81 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "Authorization, Content-Type, apikey",
 };
 
-// ── Provider Config ─────────────────────────────────────────
-const PROVIDER_CONFIG: Record<string, {
+// ── PROVIDER CONFIG (urutan = prioritas fallback) ────────────
+interface ProviderConfig {
+  name: string;
+  secretKey: string;
   url: string;
-  authHeader: (key: string) => Record<string, string>;
-  buildBody: (messages: Record<string, unknown>[], model: string, maxTokens: number) => unknown;
+  buildRequest: (messages: Record<string, unknown>[], model: string, maxTokens: number) => { url: string; headers: Record<string, string>; body: unknown };
   extractReply: (data: Record<string, unknown>) => string | null;
-}> = {
-  groq: {
+}
+
+const PROVIDERS: ProviderConfig[] = [
+  {
+    name: "groq",
+    secretKey: "GROQ_API_KEY",
     url: "https://api.groq.com/openai/v1/chat/completions",
-    authHeader: (key) => ({ Authorization: `Bearer ${key}` }),
-    buildBody: (msgs, model, maxTokens) => ({ model, messages: msgs, max_tokens: maxTokens }),
+    buildRequest: (msgs, model, maxTokens) => ({
+      url: "https://api.groq.com/openai/v1/chat/completions",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("GROQ_API_KEY")}` },
+      body: { model: model || "llama-3.3-70b-versatile", messages: msgs, max_tokens: maxTokens },
+    }),
     extractReply: (data) => data?.choices?.[0]?.message?.content ?? null,
   },
-  xai: {
+  {
+    name: "xai",
+    secretKey: "XAI_API_KEY",
     url: "https://api.x.ai/v1/chat/completions",
-    authHeader: (key) => ({ Authorization: `Bearer ${key}` }),
-    buildBody: (msgs, model, maxTokens) => ({ model, messages: msgs, max_tokens: maxTokens }),
+    buildRequest: (msgs, model, maxTokens) => ({
+      url: "https://api.x.ai/v1/chat/completions",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("XAI_API_KEY")}` },
+      body: { model: model || "grok-2-1212", messages: msgs, max_tokens: maxTokens },
+    }),
     extractReply: (data) => data?.choices?.[0]?.message?.content ?? null,
   },
-  openrouter: {
+  {
+    name: "openrouter",
+    secretKey: "OPENROUTER_API_KEY",
     url: "https://openrouter.ai/api/v1/chat/completions",
-    authHeader: (key) => ({ Authorization: `Bearer ${key}` }),
-    buildBody: (msgs, model, maxTokens) => ({ model, messages: msgs, max_tokens: maxTokens }),
+    buildRequest: (msgs, model, maxTokens) => ({
+      url: "https://openrouter.ai/api/v1/chat/completions",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("OPENROUTER_API_KEY")}` },
+      body: { model: model || "google/gemini-2.0-flash-001", messages: msgs, max_tokens: maxTokens },
+    }),
     extractReply: (data) => data?.choices?.[0]?.message?.content ?? null,
   },
-  cerebras: {
+  {
+    name: "cerebras",
+    secretKey: "CEREBRAS_API_KEY",
     url: "https://api.cerebras.ai/v1/chat/completions",
-    authHeader: (key) => ({ Authorization: `Bearer ${key}` }),
-    buildBody: (msgs, model, maxTokens) => ({ model, messages: msgs, max_tokens: maxTokens }),
+    buildRequest: (msgs, model, maxTokens) => ({
+      url: "https://api.cerebras.ai/v1/chat/completions",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${Deno.env.get("CEREBRAS_API_KEY")}` },
+      body: { model: model || "llama3.1-8b", messages: msgs, max_tokens: maxTokens },
+    }),
     extractReply: (data) => data?.choices?.[0]?.message?.content ?? null,
   },
-  gemini: {
-    url: "", // dibangun dinamis dengan API key
-    authHeader: (_key) => ({}), // Gemini pakai query param, bukan header
-    buildBody: (msgs, _model, _maxTokens) => {
+  {
+    name: "gemini",
+    secretKey: "GEMINI_API_KEY",
+    url: "", // dibangun dinamis
+    buildRequest: (msgs, _model, _maxTokens) => {
+      const apiKey = Deno.env.get("GEMINI_API_KEY");
       const contents = msgs.map((m) => ({
         role: (m.role === "system" || m.role === "user") ? "user" : "model",
         parts: [{ text: m.content }],
       }));
-      return { contents };
+      return {
+        url: `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey || "")}`,
+        headers: { "Content-Type": "application/json" },
+        body: { contents },
+      };
     },
     extractReply: (data) => data?.candidates?.[0]?.content?.parts?.[0]?.text ?? null,
   },
-};
+];
 
-// ── API Key Mapping ke Environment Variable ──────────────────
-const KEY_ENV_MAP: Record<string, string> = {
-  groq:       "GROQ_API_KEY",
-  xai:        "XAI_API_KEY",
-  openrouter: "OPENROUTER_API_KEY",
-  cerebras:   "CEREBRAS_API_KEY",
-  gemini:     "GEMINI_API_KEY",
-};
-
-// ── Serve ────────────────────────────────────────────────────
+// ── SERVE ────────────────────────────────────────────────────
 serve(async (req: Request): Promise<Response> => {
   // ── OPTIONS preflight ──────────────────────────────────
   if (req.method === "OPTIONS") {
@@ -95,19 +113,11 @@ serve(async (req: Request): Promise<Response> => {
 
   try {
     const body = await req.json();
-    const provider: string = body.provider || "";
     const messages: Record<string, unknown>[] = body.messages;
-    const model: string = body.model || getDefaultModel(provider);
+    const model: string = body.model || "";
     const maxTokens: number = body.max_tokens || 500;
 
-    // ── Validasi ─────────────────────────────────────────
-    if (!provider || !PROVIDER_CONFIG[provider]) {
-      return new Response(
-        JSON.stringify({ error: `Provider '${provider}' tidak didukung. Pilih: ${Object.keys(PROVIDER_CONFIG).join(", ")}` }),
-        { status: 400, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
-      );
-    }
-
+    // ── Validasi messages ─────────────────────────────────
     if (!messages || !Array.isArray(messages) || messages.length === 0) {
       return new Response(
         JSON.stringify({ error: "Field 'messages' harus berupa array dan tidak boleh kosong" }),
@@ -115,87 +125,79 @@ serve(async (req: Request): Promise<Response> => {
       );
     }
 
-    // ── Ambil API key dari secret ────────────────────────
-    const envKey = KEY_ENV_MAP[provider];
-    const apiKey = Deno.env.get(envKey);
-    if (!apiKey) {
-      console.error(`Secret ${envKey} tidak ditemukan.`);
-      return new Response(
-        JSON.stringify({ error: `Server misconfiguration: '${envKey}' secret tidak ditemukan` }),
-        { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
-      );
+    // ── FALLBACK LOOP: coba provider satu per satu ────────
+    const errors: string[] = [];
+
+    for (const provider of PROVIDERS) {
+      const apiKey = Deno.env.get(provider.secretKey);
+      if (!apiKey) {
+        console.log(`[fallback] Skip ${provider.name}: secret ${provider.secretKey} tidak ditemukan`);
+        errors.push(`${provider.name}: secret not set`);
+        continue;
+      }
+
+      console.log(`[fallback] Mencoba ${provider.name}...`);
+
+      try {
+        const req = provider.buildRequest(messages, model, maxTokens);
+        const upstream = await fetch(req.url, {
+          method: "POST",
+          headers: req.headers,
+          body: JSON.stringify(req.body),
+        });
+
+        const upstreamData = await upstream.json();
+
+        if (!upstream.ok) {
+          const errMsg = upstreamData?.error?.message || JSON.stringify(upstreamData).substring(0, 120);
+          console.log(`[fallback] ${provider.name} GAGAL (HTTP ${upstream.status}): ${errMsg}`);
+          errors.push(`${provider.name}: HTTP ${upstream.status} — ${errMsg}`);
+          continue; // → coba provider berikutnya
+        }
+
+        const replyText = provider.extractReply(upstreamData);
+        if (!replyText) {
+          console.log(`[fallback] ${provider.name} GAGAL: response tidak mengandung teks`);
+          errors.push(`${provider.name}: empty reply`);
+          continue;
+        }
+
+        // SUKSES!
+        console.log(`[fallback] ${provider.name} SUKSES ✅ — ${replyText.length} karakter`);
+        return new Response(
+          JSON.stringify({
+            success: true,
+            provider: provider.name,
+            id: upstreamData.id || "",
+            object: "chat.completion",
+            choices: [{ index: 0, message: { role: "assistant", content: replyText }, finish_reason: "stop" }],
+          }),
+          { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+        );
+
+      } catch (fetchErr) {
+        console.log(`[fallback] ${provider.name} GAGAL (network): ${fetchErr instanceof Error ? fetchErr.message : String(fetchErr)}`);
+        errors.push(`${provider.name}: network error`);
+        // Lanjut ke provider berikutnya
+      }
     }
 
-    // ── Build provider-specific request ──────────────────
-    const cfg = PROVIDER_CONFIG[provider];
-    const requestHeaders: Record<string, string> = {
-      "Content-Type": "application/json",
-      ...cfg.authHeader(apiKey),
-    };
-
-    const requestBody = cfg.buildBody(messages, model, maxTokens);
-
-    // Gemini: API key sebagai query param di URL
-    let url = cfg.url;
-    if (provider === "gemini") {
-      url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${encodeURIComponent(apiKey)}`;
-    }
-
-    // ── Forward ke provider ──────────────────────────────
-    console.log(`[api-proxy] ${provider} | ${messages.length} msg | model: ${model}`);
-
-    const upstream = await fetch(url, {
-      method: "POST",
-      headers: requestHeaders,
-      body: JSON.stringify(requestBody),
-    });
-
-    const upstreamData = await upstream.json();
-
-    if (!upstream.ok) {
-      console.error(`[api-proxy] ${provider} error (${upstream.status}):`, upstreamData);
-      return new Response(
-        JSON.stringify({ error: `${provider} API error`, status: upstream.status, detail: upstreamData }),
-        { status: upstream.status, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
-      );
-    }
-
-    // ── Ekstrak balasan ──────────────────────────────────
-    const replyText = cfg.extractReply(upstreamData);
-    if (!replyText) {
-      return new Response(
-        JSON.stringify({ error: `${provider} response tidak mengandung teks`, detail: upstreamData }),
-        { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
-      );
-    }
-
-    // ── Kembalikan dalam format OpenAI-compatible ────────
+    // ── Semua provider gagal ──────────────────────────────
+    console.error(`[fallback] SEMUA PROVIDER GAGAL:`, errors);
     return new Response(
       JSON.stringify({
-        id: upstreamData.id || "",
-        object: "chat.completion",
-        choices: [{ index: 0, message: { role: "assistant", content: replyText }, finish_reason: "stop" }],
+        success: false,
+        error: "Semua provider AI gagal — coba lagi nanti.",
+        details: errors,
       }),
-      { status: 200, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
+      { status: 502, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
 
   } catch (err) {
-    console.error("[api-proxy] Unexpected error:", err);
+    console.error("[groq-chat] Unexpected error:", err);
     return new Response(
       JSON.stringify({ error: "Internal server error", message: err instanceof Error ? err.message : String(err) }),
       { status: 500, headers: { ...CORS_HEADERS, "Content-Type": "application/json" } }
     );
   }
 });
-
-/** Default model per provider */
-function getDefaultModel(provider: string): string {
-  const defaults: Record<string, string> = {
-    groq:       "llama-3.3-70b-versatile",
-    xai:        "grok-2-1212",
-    openrouter: "google/gemini-2.0-flash-001",
-    cerebras:   "llama3.1-8b",
-    gemini:     "gemini-2.0-flash",
-  };
-  return defaults[provider] || "gpt-3.5-turbo";
-}

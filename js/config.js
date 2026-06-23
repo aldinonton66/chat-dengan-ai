@@ -20,8 +20,7 @@ var APP_CONFIG = {
   navMenu: [
     { id: "section-chat",   label: "Chat Utama",       icon: "💬" },
     { id: "section-profil", label: "Pengaturan Profil", icon: "👤" },
-    { id: "section-ai",     label: "Pengaturan AI",     icon: "🤖" },
-    { id: "section-api",    label: "Pengaturan API",    icon: "🔑" }
+    { id: "section-ai",     label: "Pengaturan AI",     icon: "🤖" }
   ],
 
   // Menu default yang aktif saat halaman pertama dimuat

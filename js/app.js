@@ -28,7 +28,6 @@
 
   // State chat
   var chatHistory = [];           // Array {role, sender, text, time, type, mediaUrl, duration}
-  var currentAPIIndex = 0;       // Index API yang sedang dipakai
   var mediaRecorder = null;      // Instance MediaRecorder
   var audioChunks = [];          // Chunk rekaman suara
   var isRecording = false;       // Status sedang merekam
@@ -36,17 +35,9 @@
   var hiddenFileInput = null;    // Input file tersembunyi
 
   /* ----------------------------------------------------------
-     Supabase client (dari CDN, sudah ada sebelum konten)
-     ---------------------------------------------------------- */
-  var supabaseClient = null;
-  if (typeof window.supabase !== "undefined" && APP_CONFIG.supabaseUrl && APP_CONFIG.supabaseUrl !== "YOUR_SUPABASE_URL") {
-    supabaseClient = window.supabase.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
-  }
-
-  /* ----------------------------------------------------------
-      Helper: panggil Edge Function (multi-provider)
+      Panggil Edge Function dengan built-in fallback
       ---------------------------------------------------------- */
-  function callEdgeFunction(provider, messages, model, maxTokens) {
+  function callAI(messages, model, maxTokens) {
     var url = APP_CONFIG.supabaseUrl + "/functions/v1/groq-chat";
     return fetch(url, {
       method: "POST",
@@ -56,23 +47,11 @@
         "apikey": APP_CONFIG.supabaseAnonKey,
       },
       body: JSON.stringify({
-        provider: provider,
         messages: messages,
-        model: model || getDefaultModelForProvider(provider),
+        model: model || "llama-3.3-70b-versatile",
         max_tokens: maxTokens || 500,
       }),
     });
-  }
-
-  function getDefaultModelForProvider(provider) {
-    var models = {
-      groq: "llama-3.3-70b-versatile",
-      xai: "grok-2-1212",
-      openrouter: "google/gemini-2.0-flash-001",
-      cerebras: "llama3.1-8b",
-      gemini: "gemini-2.0-flash"
-    };
-    return models[provider] || "gpt-3.5-turbo";
   }
 
   /* ==========================================================
@@ -811,7 +790,7 @@
     });
 
     // Tambah key lain yang tidak terdaftar (tema, api-index)
-    var otherKeys = ["kita-theme", "kita-api-index"];
+    var otherKeys = ["kita-theme"];
     otherKeys.forEach(function (k) {
       var val = localStorage.getItem(k) || "";
       total += getByteSize(val);
@@ -914,7 +893,7 @@
         // Hapus semua key localStorage milik aplikasi
         var keysToRemove = [
           "kita-chat-history", "kita-profil", "kita-ai",
-          "kita-api-keys", "kita-font", "kita-theme", "kita-api-index"
+          "kita-api-keys", "kita-font", "kita-theme"
         ];
         keysToRemove.forEach(function (k) {
           localStorage.removeItem(k);
@@ -1124,679 +1103,48 @@
   }
 
   /* ==========================================================
-     BAGIAN API — CRUD + Tes Koneksi + API Loop
-     ========================================================== */
-
-  function getDefaultAPIData() {
-    return [];
-  }
-
-  /** Provider yang API key-nya dikelola server (Edge Function), bukan localStorage */
-  function isEdgeProvider(provider) {
-    return ["groq", "xai", "openrouter", "cerebras", "gemini"].indexOf(provider) !== -1;
-  }
-
-  function loadAPIData() {
-    var saved = localStorage.getItem("kita-api-keys");
-    var data = [];
-    if (saved) {
-      try {
-        data = JSON.parse(saved);
-        if (!Array.isArray(data)) data = [];
-      } catch (e) { /* fallback */ }
-    }
-
-    // Inject provider Edge Function otomatis (gak perlu user tambah manual)
-    var edgeProviders = ["groq", "xai", "openrouter", "cerebras", "gemini"];
-    var disabledEdges = loadDisabledEdges();
-
-    // Hapus duplikat Edge Function yang sudah ada di data user
-    var edgeIds = {};
-    edgeProviders.forEach(function (prov) {
-      edgeIds["edge_" + prov] = prov;
-    });
-    data = data.filter(function (item) {
-      return !edgeIds[item.id];
-    });
-
-    // Tambah entry Edge Function di urutan pertama (prioritas)
-    edgeProviders.forEach(function (prov) {
-      data.unshift({
-        id: "edge_" + prov,
-        provider: prov,
-        label: getProviderLabel(prov) + " (Server)",
-        key: "",
-        endpoint: "",
-        aktif: !disabledEdges[prov],
-        status: disabledEdges[prov] ? "nonaktif" : "aktif",
-        isEdge: true
-      });
-    });
-
-    return data;
-  }
-
-  function loadDisabledEdges() {
-    try {
-      return JSON.parse(localStorage.getItem("kita-disabled-edges") || "{}");
-    } catch (e) { return {}; }
-  }
-
-  function saveDisabledEdges(data) {
-    var disabled = {};
-    data.forEach(function (item) {
-      if (item.isEdge && !item.aktif) disabled[item.provider] = true;
-    });
-    localStorage.setItem("kita-disabled-edges", JSON.stringify(disabled));
-  }
-
-  function getProviderLabel(provider) {
-    var labels = {
-      groq: "Groq", xai: "xAI", openrouter: "OpenRouter",
-      cerebras: "Cerebras", gemini: "Gemini",
-      openai: "OpenAI", claude: "Claude"
-    };
-    return labels[provider] || provider;
-  }
-
-  function saveAPIData(data) {
-    // Pisah: simpan disabled edge & user API keys
-    saveDisabledEdges(data);
-    var userData = data.filter(function (item) { return !item.isEdge; });
-    safeSetItem("kita-api-keys", JSON.stringify(userData));
-    try { refreshStorageMonitor(); } catch (e) { /* ignore */ }
-  }
-
-  /** Dapatkan hanya API yang aktif, urut sesuai prioritas */
-  function getActiveAPIs() {
-    return loadAPIData().filter(function (item) {
-      return item.aktif && item.status !== "error";
-    });
-  }
-
-  /** Update status satu API via ID */
-  function updateAPIStatus(id, statusBaru) {
-    var data = loadAPIData();
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].id === id) {
-        data[i].status = statusBaru;
-        break;
-      }
-    }
-    saveAPIData(data);
-    renderAPIList();
-  }
-
-  /* ----------------------------------------------------------
-     API LOOP: Kirim pesan ke AI secara berurutan (fallback)
-     - Mulai dari currentAPIIndex
-     - Jika gagal/error → index++ → coba API berikutnya
-     - Jika semua gagal → tampilkan error
-     - Jika berhasil → simpan index, return response
-     ---------------------------------------------------------- */
+      KIRIM PESAN KE AI — via Edge Function dengan fallback
+      ========================================================== */
   function kirimPesanKeAI(userMessage, callback) {
-    var activeAPIs = getActiveAPIs();
-
-    // Jika tidak ada API aktif, return error
-    if (activeAPIs.length === 0) {
-      callback("\u26A0\uFE0F Tidak ada API key aktif. Tambah API key di Pengaturan API lalu aktifkan.", null);
-      return;
-    }
-
-    // Pastikan index tidak melebihi jumlah API
-    if (currentAPIIndex >= activeAPIs.length) {
-      currentAPIIndex = 0;
-    }
-
-    // Bangun request body
     var systemPrompt = generateSystemPrompt();
     var prof = loadProfilData();
 
-    // Format history untuk API (role user/assistant)
     var messages = [];
     messages.push({ role: "system", content: systemPrompt });
 
-    // Tambahkan chat history (maks 20 pesan terakhir)
     var recentHistory = chatHistory.slice(-20);
     recentHistory.forEach(function (msg) {
       if (msg.type === "text" && msg.role) {
         var senderName = (msg.sender === "person1") ? prof.person1.nama : prof.person2.nama;
-        messages.push({
-          role: msg.role,
-          content: "[" + senderName + "]: " + msg.text
-        });
+        messages.push({ role: msg.role, content: "[" + senderName + "]: " + msg.text });
       }
     });
 
-    // Tambahkan pesan user terbaru
     var senderName = (userMessage.sender === "person1") ? prof.person1.nama : prof.person2.nama;
-    messages.push({
-      role: "user",
-      content: "[" + senderName + "]: " + userMessage.text
-    });
+    messages.push({ role: "user", content: "[" + senderName + "]: " + userMessage.text });
 
-    // Fungsi rekursif untuk mencoba API
-    function tryAPI(index) {
-      if (index >= activeAPIs.length) {
-        // Semua API gagal
-        callback("\u26A0\uFE0F Semua API gagal. Coba cek:\n1. API key valid?\n2. Ada kuota?\n3. Jika CORS error, butuh backend proxy untuk Claude/Gemini.", null);
-        return;
-      }
-
-      var api = activeAPIs[index];
-
-      // === Provider via Edge Function (API key aman di server) ===
-      if (isEdgeProvider(api.provider) && supabaseClient) {
-        var edgeModel = getDefaultModelForProvider(api.provider);
-        callEdgeFunction(api.provider, messages, edgeModel, 500)
-          .then(function (response) {
-            if (!response.ok) {
-              updateAPIStatus(api.id, "error");
-              tryAPI(index + 1);
-              return null;
-            }
-            return response.json();
-          })
-          .then(function (data) {
-            if (!data) return;
-            var replyText = extractReplyFromResponse(api.provider, data);
-            if (replyText) {
-              currentAPIIndex = index;
-              updateAPIStatus(api.id, "aktif");
-              callback(null, replyText);
-            } else {
-              updateAPIStatus(api.id, "error");
-              tryAPI(index + 1);
-            }
-          })
-          .catch(function () {
-            updateAPIStatus(api.id, "error");
-            tryAPI(index + 1);
-          });
-        return;
-      }
-
-      // === Provider lain: panggil langsung (pakai API key dari localStorage) ===
-      var endpoint = getEndpointForProvider(api.provider, api.endpoint);
-      var headers = getHeadersForProvider(api.provider, api.key);
-      var body = buildRequestBody(api.provider, messages);
-
-      // Gemini: tambahkan API key sebagai query parameter
-      if (api.provider === "gemini") {
-        endpoint = endpoint + "?key=" + encodeURIComponent(api.key);
-      }
-
-      // Kirim fetch request
-      fetch(endpoint, {
-        method: "POST",
-        headers: headers,
-        body: JSON.stringify(body)
-      })
+    // 1 request -> Edge Function handle fallback otomatis
+    callAI(messages, null, 500)
       .then(function (response) {
         if (!response.ok) {
-          // Tandai sebagai error/limit lalu coba berikutnya
-          if (response.status === 429 || response.status === 403) {
-            updateAPIStatus(api.id, "limit");
-          } else {
-            updateAPIStatus(api.id, "error");
-          }
-          tryAPI(index + 1);
-          return null;
+          return response.json().then(function (err) {
+            callback("\u26A0\uFE0F AI gagal merespon: " + (err.error || "HTTP " + response.status), null);
+          });
         }
         return response.json();
       })
       .then(function (data) {
-        if (!data) return; // Sudah di-handle di atas
-
-        // Ekstrak teks balasan sesuai provider
-        var replyText = extractReplyFromResponse(api.provider, data);
+        if (!data) return;
+        var replyText = (data.choices && data.choices[0]) ? data.choices[0].message.content : null;
         if (replyText) {
-          // Sukses: simpan index & update status
-          currentAPIIndex = index;
-          updateAPIStatus(api.id, "aktif");
           callback(null, replyText);
         } else {
-          updateAPIStatus(api.id, "error");
-          tryAPI(index + 1);
+          callback("\u26A0\uFE0F AI memberikan response kosong.", null);
         }
       })
-      .catch(function (err) {
-        // Network / CORS error -> coba berikutnya
-        updateAPIStatus(api.id, "error");
-        tryAPI(index + 1);
+      .catch(function () {
+        callback("\u26A0\uFE0F Gagal terhubung ke server AI.", null);
       });
-    }
-
-    // Mulai dari currentAPIIndex
-    tryAPI(currentAPIIndex);
-  }
-
-  /** Dapatkan endpoint URL sesuai provider */
-  function getEndpointForProvider(provider, customEndpoint) {
-    var endpoints = {
-      claude:     "https://api.anthropic.com/v1/messages",
-      openai:     "https://api.openai.com/v1/chat/completions",
-      gemini:     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-      groq:       "https://api.groq.com/openai/v1/chat/completions",
-      xai:        "https://api.x.ai/v1/chat/completions",
-      openrouter: "https://openrouter.ai/api/v1/chat/completions",
-      cerebras:   "https://api.cerebras.ai/v1/chat/completions"
-    };
-    return (provider === "custom" && customEndpoint) ? customEndpoint : (endpoints[provider] || "");
-  }
-
-  /** Dapatkan headers sesuai provider */
-  function getHeadersForProvider(provider, apiKey) {
-    var base = { "Content-Type": "application/json" };
-
-    switch (provider) {
-      case "claude":
-        base["x-api-key"] = apiKey;
-        base["anthropic-version"] = "2023-06-01";
-        break;
-      case "openai":
-      case "groq":
-      case "xai":
-      case "cerebras":
-        base["Authorization"] = "Bearer " + apiKey;
-        break;
-      case "openrouter":
-        base["Authorization"] = "Bearer " + apiKey;
-        base["HTTP-Referer"] = "https://aldinonton66.github.io";
-        base["X-Title"] = "Kita & AI";
-        break;
-      case "gemini":
-        // Gemini pakai query param key, bukan header
-        break;
-      default:
-        base["Authorization"] = "Bearer " + apiKey;
-        break;
-    }
-    return base;
-  }
-
-  /** Bangun request body sesuai provider */
-  function buildRequestBody(provider, messages) {
-    switch (provider) {
-      case "claude":
-        var systemMsg = "";
-        var claudeMsgs = [];
-        messages.forEach(function (m) {
-          if (m.role === "system") {
-            systemMsg = m.content;
-          } else {
-            claudeMsgs.push({ role: m.role, content: m.content });
-          }
-        });
-        return {
-          model: "claude-3-haiku-20240307",
-          max_tokens: 500,
-          system: systemMsg,
-          messages: claudeMsgs
-        };
-
-      case "openai":
-        return {
-          model: "gpt-3.5-turbo",
-          max_tokens: 500,
-          messages: messages
-        };
-
-      case "groq":
-        return {
-          model: "llama-3.3-70b-versatile",
-          max_tokens: 500,
-          messages: messages
-        };
-
-      case "xai":
-        return {
-          model: "grok-2-1212",
-          max_tokens: 500,
-          messages: messages
-        };
-
-      case "openrouter":
-        return {
-          model: "google/gemini-2.0-flash-001",
-          max_tokens: 500,
-          messages: messages
-        };
-
-      case "cerebras":
-        return {
-          model: "llama3.1-8b",
-          max_tokens: 500,
-          messages: messages
-        };
-
-      case "gemini":
-        var geminiContents = [];
-        messages.forEach(function (m) {
-          var role = (m.role === "system" || m.role === "user") ? "user" : "model";
-          geminiContents.push({
-            role: role,
-            parts: [{ text: m.content }]
-          });
-        });
-        return {
-          contents: geminiContents
-        };
-
-      default:
-        return {
-          model: "gpt-3.5-turbo",
-          max_tokens: 500,
-          messages: messages
-        };
-    }
-  }
-
-  /** Ekstrak teks balasan dari response JSON */
-  function extractReplyFromResponse(provider, data) {
-    try {
-      switch (provider) {
-        case "claude":
-          return data.content && data.content[0] ? data.content[0].text : null;
-        case "openai":
-        case "groq":
-        case "xai":
-        case "cerebras":
-          return data.choices && data.choices[0] ? data.choices[0].message.content : null;
-        case "openrouter":
-          return data.choices && data.choices[0] ? data.choices[0].message.content : null;
-        case "gemini":
-          return data.candidates && data.candidates[0]
-            ? data.candidates[0].content.parts[0].text : null;
-        default:
-          if (data.choices && data.choices[0]) return data.choices[0].message.content;
-          if (data.content && data.content[0]) return data.content[0].text;
-          return null;
-      }
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /* ----------------------------------------------------------
-     Tes koneksi: kirim request "ping" sederhana ke API
-     ---------------------------------------------------------- */
-  function testAPIConnection(apiId, callback) {
-    var data = loadAPIData();
-    var api = null;
-    for (var i = 0; i < data.length; i++) {
-      if (data[i].id === apiId) { api = data[i]; break; }
-    }
-    if (!api) { callback(false, "API tidak ditemukan"); return; }
-
-    // === Provider via Edge Function ===
-    if (isEdgeProvider(api.provider) && supabaseClient) {
-      callEdgeFunction(api.provider, [
-        { role: "system", content: "Reply with 'pong' only." },
-        { role: "user", content: "ping" }
-      ], getDefaultModelForProvider(api.provider), 50)
-        .then(function (response) {
-          if (!response.ok) {
-            updateAPIStatus(apiId, "error");
-            return response.text().then(function (txt) {
-              callback(false, "Error " + response.status + ": " + txt.substring(0, 80));
-            });
-          }
-          return response.json();
-        })
-        .then(function (respData) {
-          if (!respData) return;
-          var reply = extractReplyFromResponse(api.provider, respData);
-          if (reply) {
-            updateAPIStatus(apiId, "aktif");
-            callback(true, "Koneksi berhasil! Balasan: \"" + reply.substring(0, 50) + "\"");
-          } else {
-            updateAPIStatus(apiId, "error");
-            callback(false, "Response tidak valid");
-          }
-        })
-        .catch(function (err) {
-          updateAPIStatus(apiId, "error");
-          callback(false, "Network error: " + err.message);
-        });
-      return;
-    }
-
-    // === Provider lain: tes langsung ===
-    var endpoint = getEndpointForProvider(api.provider, api.endpoint);
-    var headers = getHeadersForProvider(api.provider, api.key);
-
-    // Kirim pesan "ping" minimal
-    var body = buildRequestBody(api.provider, [
-      { role: "system", content: "Reply with 'pong' only." },
-      { role: "user", content: "ping" }
-    ]);
-
-    // Untuk Gemini, tambahkan key di URL
-    var finalEndpoint = endpoint;
-    if (api.provider === "gemini") {
-      finalEndpoint = endpoint + "?key=" + encodeURIComponent(api.key);
-    }
-
-    fetch(finalEndpoint, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(body)
-    })
-    .then(function (response) {
-      if (!response.ok) {
-        // Coba baca body error
-        return response.text().then(function (errText) {
-          var shortErr = errText.substring(0, 80);
-          if (response.status === 429 || response.status === 403) {
-            updateAPIStatus(apiId, "limit");
-            callback(false, "Limit / forbidden (HTTP " + response.status + ") " + shortErr);
-          } else {
-            updateAPIStatus(apiId, "error");
-            callback(false, "Error HTTP " + response.status + " — " + shortErr);
-          }
-        });
-      }
-      return response.json();
-    })
-    .then(function (respData) {
-      if (!respData) return;
-      var reply = extractReplyFromResponse(api.provider, respData);
-      if (reply) {
-        updateAPIStatus(apiId, "aktif");
-        callback(true, "Koneksi berhasil! Balasan: \"" + reply.substring(0, 50) + "\"");
-      } else {
-        updateAPIStatus(apiId, "error");
-        callback(false, "Response tidak valid");
-      }
-    })
-    .catch(function (err) {
-      updateAPIStatus(apiId, "error");
-      callback(false, "Network error: " + err.message);
-    });
-  }
-
-  /* ----------------------------------------------------------
-     Render & binding event list API (Step 5 logic, enhanced)
-     ---------------------------------------------------------- */
-
-  function renderAPIList() {
-    var container  = document.getElementById("api-list-container");
-    var elKosong   = document.getElementById("api-kosong");
-    if (!container) return;
-
-    var data = loadAPIData();
-    if (elKosong) {
-      elKosong.style.display = (data.length === 0) ? "block" : "none";
-    }
-    if (data.length === 0) { container.innerHTML = ""; return; }
-
-    var providerMap = {
-      claude:     { lbl: "Claude",     cls: "api-badge-claude" },
-      openai:     { lbl: "OpenAI",     cls: "api-badge-openai" },
-      gemini:     { lbl: "Gemini",     cls: "api-badge-gemini" },
-      groq:       { lbl: "Groq",       cls: "api-badge-groq" },
-      xai:        { lbl: "xAI",        cls: "api-badge-xai" },
-      openrouter: { lbl: "OpenRouter", cls: "api-badge-openrouter" },
-      cerebras:   { lbl: "Cerebras",   cls: "api-badge-cerebras" },
-      custom:     { lbl: "Custom",     cls: "api-badge-custom" }
-    };
-    var statusMap = {
-      aktif:    { lbl: "Aktif",    cls: "api-status-aktif" },
-      limit:    { lbl: "Limit",    cls: "api-status-limit" },
-      error:    { lbl: "Error",    cls: "api-status-error" },
-      nonaktif: { lbl: "Nonaktif", cls: "api-status-nonaktif" }
-    };
-
-    var html = "";
-    data.forEach(function (item, index) {
-      var prov = providerMap[item.provider] || providerMap.custom;
-      var stat = statusMap[item.status] || statusMap.nonaktif;
-      var maskedKey = item.isEdge ? "🔐 Dikelola server" : (item.key ? (item.key.substring(0, 8) + "••••••••") : "(kosong)");
-      var isFirst = (index === 0);
-      var isLast  = (index === data.length - 1);
-
-      html +=
-        '<div class="api-item' + (item.isEdge ? ' api-item-edge' : '') + '" data-api-id="' + item.id + '">' +
-          '<span class="api-priority-num">' + (index + 1) + '</span>' +
-          '<div class="api-priority-btns">' +
-            '<button class="api-arrow-btn api-arrow-up" title="Naikkan prioritas" ' + (isFirst ? 'disabled' : '') + '>▲</button>' +
-            '<button class="api-arrow-btn api-arrow-down" title="Turunkan prioritas" ' + (isLast ? 'disabled' : '') + '>▼</button>' +
-          '</div>' +
-          '<div class="api-item-info">' +
-            '<div class="api-item-label">' + escapeHTML(item.label) + '</div>' +
-            '<span class="api-badge ' + prov.cls + '">' + prov.lbl + '</span>' +
-            (item.isEdge ? '<span class="api-badge-edge">Server</span>' : '') +
-            '<span class="api-status ' + stat.cls + '">' + stat.lbl + '</span>' +
-            '<span style="font-size:0.7rem;color:var(--text-muted);margin-left:8px;">' + maskedKey + '</span>' +
-          '</div>' +
-          '<div class="api-item-right">' +
-            '<label class="api-toggle-mini" title="Aktif / Nonaktif">' +
-              '<input type="checkbox" class="api-cb-aktif" ' + (item.aktif ? 'checked' : '') + '>' +
-              '<span class="toggle-slider"></span>' +
-            '</label>' +
-            '<button class="api-btn-mini api-btn-test" title="Tes koneksi">Tes</button>' +
-            (item.isEdge ? '' : '<button class="api-btn-mini api-btn-hapus" title="Hapus API key">Hapus</button>') +
-          '</div>' +
-        '</div>';
-    });
-
-    container.innerHTML = html;
-    bindAPIItemEvents();
-  }
-
-  function bindAPIItemEvents() {
-    var container = document.getElementById("api-list-container");
-    if (!container) return;
-
-    // Toggle aktif
-    container.querySelectorAll(".api-cb-aktif").forEach(function (cb) {
-      var newCb = cb.cloneNode(true);
-      cb.parentNode.replaceChild(newCb, cb);
-      newCb.addEventListener("change", function () {
-        var itemEl = newCb.closest(".api-item");
-        if (!itemEl) return;
-        var id = itemEl.getAttribute("data-api-id");
-        var data = loadAPIData();
-        for (var i = 0; i < data.length; i++) {
-          if (data[i].id === id) {
-            data[i].aktif = newCb.checked;
-            data[i].status = newCb.checked ? "aktif" : "nonaktif";
-            break;
-          }
-        }
-        saveAPIData(data);
-        // Reset index loop jika daftar berubah
-        currentAPIIndex = 0;
-        renderAPIList();
-      });
-    });
-
-    // Tes koneksi
-    container.querySelectorAll(".api-btn-test").forEach(function (btn) {
-      var newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-      newBtn.addEventListener("click", function () {
-        if (newBtn.classList.contains("loading")) return;
-        var itemEl = newBtn.closest(".api-item");
-        if (!itemEl) return;
-        var id = itemEl.getAttribute("data-api-id");
-
-        newBtn.classList.add("loading");
-        newBtn.textContent = "";
-
-        testAPIConnection(id, function (sukses, pesan) {
-          newBtn.classList.remove("loading");
-          newBtn.textContent = "Tes";
-          renderAPIList();
-          showToast(pesan, sukses ? "✅" : "❌");
-        });
-      });
-    });
-
-    // Hapus
-    container.querySelectorAll(".api-btn-hapus").forEach(function (btn) {
-      var newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-      newBtn.addEventListener("click", function () {
-        var itemEl = newBtn.closest(".api-item");
-        if (!itemEl) return;
-        var id = itemEl.getAttribute("data-api-id");
-        if (!confirm("Hapus API key ini?")) return;
-        var data = loadAPIData();
-        data = data.filter(function (item) { return item.id !== id; });
-        saveAPIData(data);
-        currentAPIIndex = 0;
-        renderAPIList();
-        showToast("API key dihapus.", "🗑️");
-      });
-    });
-
-    // Panah atas
-    container.querySelectorAll(".api-arrow-up").forEach(function (btn) {
-      var newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-      newBtn.addEventListener("click", function () {
-        var itemEl = newBtn.closest(".api-item");
-        if (!itemEl) return;
-        var id = itemEl.getAttribute("data-api-id");
-        var data = loadAPIData();
-        for (var i = 1; i < data.length; i++) {
-          if (data[i].id === id) {
-            var temp = data[i - 1]; data[i - 1] = data[i]; data[i] = temp;
-            break;
-          }
-        }
-        saveAPIData(data);
-        currentAPIIndex = 0;
-        renderAPIList();
-      });
-    });
-
-    // Panah bawah
-    container.querySelectorAll(".api-arrow-down").forEach(function (btn) {
-      var newBtn = btn.cloneNode(true);
-      btn.parentNode.replaceChild(newBtn, btn);
-      newBtn.addEventListener("click", function () {
-        var itemEl = newBtn.closest(".api-item");
-        if (!itemEl) return;
-        var id = itemEl.getAttribute("data-api-id");
-        var data = loadAPIData();
-        for (var i = 0; i < data.length - 1; i++) {
-          if (data[i].id === id) {
-            var temp = data[i + 1]; data[i + 1] = data[i]; data[i] = temp;
-            break;
-          }
-        }
-        saveAPIData(data);
-        currentAPIIndex = 0;
-        renderAPIList();
-      });
-    });
-  }
-
-  function initAPI() {
-    renderAPIList();
   }
 
   /* ==========================================================
@@ -2498,8 +1846,9 @@
 
   /** Logout — signOut dari Supabase & redirect ke login */
   async function doLogout() {
-    if (supabaseClient) {
-      await supabaseClient.auth.signOut();
+    if (typeof window.supabase !== "undefined" && APP_CONFIG.supabaseUrl) {
+      var sb = window.supabase.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
+      await sb.auth.signOut();
     }
     location.replace("login.html");
   }
@@ -2525,7 +1874,6 @@
       { name: "initChat", fn: initChat },
       { name: "initProfil", fn: initProfil },
       { name: "initAI", fn: initAI },
-      { name: "initAPI", fn: initAPI },
       { name: "initFont", fn: initFont },
       { name: "initStorageMonitor", fn: initStorageMonitor }
     ];
@@ -2540,18 +1888,7 @@
 
     // Binding logout
     try { bindLogoutButtons(); } catch (e) { console.error("[KitaAI] Gagal bind logout:", e); }
-
-    // Muat index API loop dari localStorage
-    var savedIdx = localStorage.getItem("kita-api-index");
-    if (savedIdx !== null) {
-      currentAPIIndex = parseInt(savedIdx, 10) || 0;
-    }
   }
-
-  // Simpan index API loop saat page unload
-  window.addEventListener("beforeunload", function () {
-    safeSetItem("kita-api-index", String(currentAPIIndex));
-  });
 
   // Jalankan saat DOM siap
   if (document.readyState === "loading") {
