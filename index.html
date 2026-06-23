@@ -14,27 +14,36 @@
   <!-- Stylesheet utama -->
   <link rel="stylesheet" href="css/style.css">
 
+  <!-- Config (load early agar auth gate bisa pakai APP_CONFIG) -->
+  <script src="js/config.js"></script>
+
   <!-- Supabase JS Client -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!--
     AUTH GATE: cek session SEBELUM konten dirender.
     Kalau belum login → redirect ke login.html.
-    Konfigurasi Supabase di bawah — ganti YOUR_SUPABASE_URL
-    dan YOUR_SUPABASE_ANON_KEY dengan nilai asli dari Dashboard.
+    Gunakan APP_CONFIG dari config.js (sudah load di atas).
   -->
   <script>
   (function () {
-    var SUPABASE_URL = "https://qqnrfadcgipsrjwofdzx.supabase.co";
-    var SUPABASE_ANON_KEY = "sb_publishable_GCB9lxgWhPIozqh0ioIW9w_QJ0eYVN1";
+    var RETRY_MAX = 40; // ~2 detik (40 × 50ms)
+    var retryCount = 0;
 
-    // Tunggu supabase client dari CDN siap
     function initAuth() {
-      if (typeof window.supabase === "undefined") {
-        return setTimeout(initAuth, 30);
+      retryCount++;
+      if (typeof window.supabase === "undefined" || typeof APP_CONFIG === "undefined") {
+        if (retryCount > RETRY_MAX) {
+          console.error("[AuthGate] Gagal load Supabase/config setelah " + RETRY_MAX + " retry");
+          return;
+        }
+        return setTimeout(initAuth, 50);
       }
 
-      var sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+      var sb = window.supabase.createClient(
+        APP_CONFIG.supabaseUrl,
+        APP_CONFIG.supabaseAnonKey
+      );
 
       sb.auth.getSession().then(function (result) {
         var session = result.data && result.data.session;
@@ -843,9 +852,8 @@
   </div>
 
   <!-- =========================================================
-       SCRIPTS (bukan module, urutan penting)
-       ========================================================= -->
-  <script src="js/config.js"></script>
+        SCRIPTS (bukan module, urutan penting)
+        ========================================================= -->
   <script src="js/app.js"></script>
 
 </body>

@@ -216,16 +216,6 @@ body:not(.dark) #app-header {
   transition: all var(--transition-base);
 }
 
-/* Sticky sidebar — jaminan sidebar tidak ikut scroll konten */
-@supports (position: sticky) {
-  #sidebar {
-    position: sticky;
-    top: 0;
-    align-self: flex-start;
-    max-height: 100vh;
-  }
-}
-
 /* Toggle button */
 .sidebar-toggle-btn {
   position: absolute;

@@ -77,7 +77,9 @@
       // Populate localStorage from Supabase
       Object.keys(serverData).forEach(function (key) {
         if (serverData[key]) {
-          try { localStorage.setItem(key, serverData[key]); } catch (e) {}
+          try { localStorage.setItem(key, serverData[key]); } catch (e) {
+            console.warn('[KitaAI] Gagal set ' + key + ' dari Supabase:', e.message || e);
+          }
         }
       });
 
@@ -1021,16 +1023,9 @@
         if (!input) return;
         input.value = color;
 
-        // Trigger input event
+        // Trigger input event (cukup — handler color picker akan update semua)
         input.dispatchEvent(new Event("input", { bubbles: true }));
-
-        // Update preview
-        if (targetId === "font-warna-p1") updateFontWarnaPreview("p1");
-        else if (targetId === "font-warna-p2") updateFontWarnaPreview("p2");
-        else updateFontWarnaPreview("ai");
-
         markActivePreset(targetId, color);
-        applyFontToAllBubbles(getFormOverrides());
       });
     });
 
@@ -1083,10 +1078,8 @@
   function initFont() {
     populateFontForm();
     bindFontEvents();
-    // Terapkan ke bubble existing
-    setTimeout(function () {
-      applyFontToAllBubbles();
-    }, 300);
+    // Terapkan ke bubble existing (bubble sudah dirender oleh initChat sebelumnya)
+    applyFontToAllBubbles();
   }
 
   /* ==========================================================
@@ -1390,6 +1383,7 @@
     var peratur = (document.getElementById("ai-peraturan").value || "").trim();
     var aktif   = document.getElementById("ai-aktif").checked;
     var saran   = document.getElementById("ai-boleh-saran").checked;
+    var prof    = loadProfilData();
 
     var keprMap = {
       hangat: "Hangat & Ramah — selalu menyapa dengan hangat, empati tinggi, dan bersahabat.",
@@ -1404,7 +1398,13 @@
     var lines = [];
     lines.push("=== SYSTEM PROMPT ===");
     lines.push("Kamu adalah " + nama + ".");
+    lines.push("Kamu sedang dalam percakapan antara " + prof.person1.nama + " (Person 1) dan " + prof.person2.nama + " (Person 2).");
     lines.push("Kepribadian: " + keprDesc);
+    lines.push("");
+    lines.push("Nama Person 1: " + prof.person1.nama);
+    lines.push("Nama Person 2: " + prof.person2.nama);
+    lines.push("Gunakan Bahasa Indonesia yang santai dan natural.");
+    lines.push("Jawab dengan singkat, padat, dan relevan.");
 
     if (!aktif) lines.push("STATUS: AI sedang NONAKTIF.");
     if (!saran) {
@@ -1486,13 +1486,18 @@
 
     var recentHistory = chatHistory.slice(-20);
     recentHistory.forEach(function (msg) {
-      if (msg.type === "text" && msg.role) {
+      if (msg.role && msg.text) {
         if (msg.role === "assistant") {
           // Pesan AI — tetap sebagai assistant tanpa prefiks nama
           messages.push({ role: "assistant", content: msg.text });
         } else {
           var senderName = (msg.sender === "person1") ? prof.person1.nama : prof.person2.nama;
-          messages.push({ role: msg.role, content: "[" + senderName + "]: " + msg.text });
+          // Sertakan tipe media dalam konteks
+          var prefix = "[" + senderName + "]";
+          if (msg.type === "voice") prefix += " 🎤";
+          else if (msg.type === "image") prefix += " 📸";
+          else if (msg.type === "video") prefix += " 🎬";
+          messages.push({ role: msg.role, content: prefix + ": " + msg.text });
         }
       }
     });
@@ -2260,6 +2265,7 @@
         if (map[prov] > now) {
           active.push(prov);
         } else {
+          delete map[prov];
           cleaned = true;
         }
       });
@@ -2291,6 +2297,8 @@
       { name: "gemini",     label: "Gemini",      model: "gemini-2.0-flash", emoji: "🌐" }
     ];
 
+    // Gunakan loadLimitedProviders() untuk data bersih (auto-clean expired)
+    var activeLimited = loadLimitedProviders();
     var limitedMap = {};
     try { limitedMap = JSON.parse(localStorage.getItem("kita-limited") || "{}"); } catch (e) {}
     var now = Date.now();
