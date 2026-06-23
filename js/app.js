@@ -1058,12 +1058,7 @@
      ========================================================== */
 
   function getDefaultAPIData() {
-    return [
-      { id: "api_001", provider: "claude", label: "Claude utama",   key: "sk-ant-dummy-xxxxx", endpoint: "", aktif: true,  status: "aktif" },
-      { id: "api_002", provider: "openai", label: "OpenAI cadangan", key: "sk-dummy-yyyyyy",     endpoint: "", aktif: true,  status: "limit" },
-      { id: "api_003", provider: "gemini", label: "Gemini gratis",   key: "AIza-dummy-zzzzz",    endpoint: "", aktif: false, status: "nonaktif" },
-      { id: "api_004", provider: "groq",   label: "Groq",             key: "gsk-dummy-wwwww",     endpoint: "", aktif: false, status: "nonaktif" }
-    ];
+    return [];
   }
 
   function loadAPIData() {
@@ -1117,7 +1112,7 @@
 
     // Jika tidak ada API aktif, return error
     if (activeAPIs.length === 0) {
-      callback("⚠️ Tidak ada API key yang aktif. Silakan tambah API key di Pengaturan API.", null);
+      callback("\u26A0\uFE0F Tidak ada API key aktif. Tambah API key di Pengaturan API lalu aktifkan.", null);
       return;
     }
 
@@ -1157,7 +1152,7 @@
     function tryAPI(index) {
       if (index >= activeAPIs.length) {
         // Semua API gagal
-        callback("⚠️ Semua API key gagal / limit / error. Cek Pengaturan API.", null);
+        callback("\u26A0\uFE0F Semua API gagal. Coba cek:\n1. API key valid?\n2. Ada kuota?\n3. Jika CORS error, butuh backend proxy untuk Claude/Gemini.", null);
         return;
       }
 
@@ -1205,8 +1200,8 @@
           tryAPI(index + 1);
         }
       })
-      .catch(function () {
-        // Network error → coba berikutnya
+      .catch(function (err) {
+        // Network / CORS error -> coba berikutnya
         updateAPIStatus(api.id, "error");
         tryAPI(index + 1);
       });
@@ -1896,7 +1891,6 @@
 
     var text = ta.value.trim();
     if (!text) {
-      // Error state: getar merah
       ta.classList.add("input-error");
       setTimeout(function () { ta.classList.remove("input-error"); }, 500);
       return;
@@ -1904,7 +1898,6 @@
 
     var speaker = spk.value;
 
-    // Buat objek pesan
     var msg = {
       id: generateUID(),
       role: "user",
@@ -1914,23 +1907,33 @@
       type: "text"
     };
 
-    // Tambah bubble ke area chat
     addBubbleToChat(msg);
 
-    // Reset input
     ta.value = "";
     ta.style.height = "auto";
+    ta.focus();
 
-    // Kirim ke AI
     var aiData = loadAIData();
     if (aiData.aktif) {
       showTyping();
+      
+      // Disable send button & show thinking state
+      if (els.btnSend) {
+        els.btnSend.disabled = true;
+        els.btnSend.style.opacity = "0.5";
+        els.btnSend.style.pointerEvents = "none";
+      }
 
       kirimPesanKeAI(msg, function (err, replyText) {
         hideTyping();
 
+        if (els.btnSend) {
+          els.btnSend.disabled = false;
+          els.btnSend.style.opacity = "";
+          els.btnSend.style.pointerEvents = "";
+        }
+
         if (err) {
-          // Tampilkan pesan error sebagai bubble AI
           var errorMsg = {
             id: generateUID(),
             role: "assistant",
@@ -1941,9 +1944,8 @@
             persist: true
           };
           addBubbleToChat(errorMsg);
-          showToast("Gagal menghubungi AI", "⚠️");
+          showToast("Gagal menghubungi AI", "\u26A0\uFE0F");
         } else {
-          // Tampilkan balasan AI
           var replyMsg = {
             id: generateUID(),
             role: "assistant",
@@ -1957,8 +1959,7 @@
         }
       });
     } else {
-      // AI nonaktif — tampilkan info
-      showToast("AI sedang nonaktif. Aktifkan di Pengaturan AI.", "ℹ️");
+      showToast("AI nonaktif. Aktifkan di Pengaturan AI.", "ℹ️");
     }
   }
 
@@ -2296,21 +2297,19 @@
     // Muat history
     loadChatHistory();
 
-    // Render history atau biarkan dummy
+    // Render history atau hapus dummy & tampilkan placeholder
     if (chatHistory.length > 0) {
       renderChatFromHistory();
     } else {
-      // History kosong — dummy bubble tetap ada di HTML
-      // Assign ID ke dummy bubble
+      // History kosong -> hapus dummy bubble HTML, tampilkan placeholder
       var area = getChatElements().bubbleArea;
       if (area) {
-        var dummyBubbles = area.querySelectorAll(".chat-bubble:not([data-msg-id]):not(#typing-indicator)");
-        dummyBubbles.forEach(function (b) {
-          b.setAttribute("data-msg-id", generateUID());
-        });
+        var typingInd = getChatElements().typingInd;
+        var placeholder = document.getElementById("chat-empty-placeholder");
+        var allBubbles = area.querySelectorAll(".chat-bubble:not(#typing-indicator)");
+        allBubbles.forEach(function (b) { b.remove(); });
+        if (placeholder) placeholder.style.display = "flex";
       }
-      // Sembunyikan placeholder karena ada dummy
-      updateEmptyPlaceholder();
     }
 
     bindChatEvents();
