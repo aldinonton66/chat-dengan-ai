@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pengaturan AI - Kita &amp; AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#0d0096",
+                    "surface-container-highest": "#343342",
+                    "error": "#ffb4ab",
+                    "secondary": "#ddb7ff",
+                    "secondary-fixed": "#f0dbff",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary": "#490080",
+                    "on-secondary-fixed": "#2c0051",
+                    "secondary-container": "#6f00be",
+                    "on-primary-fixed": "#07006c",
+                    "on-secondary-fixed-variant": "#6900b3",
+                    "on-tertiary-fixed": "#301400",
+                    "surface-tint": "#c0c1ff",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "inverse-on-surface": "#2f2f3d",
+                    "on-tertiary": "#4f2500",
+                    "primary-container": "#8083ff",
+                    "surface-container-lowest": "#0d0d1a",
+                    "outline-variant": "#464554",
+                    "on-error": "#690005",
+                    "outline": "#908fa0",
+                    "on-tertiary-container": "#452000",
+                    "surface-container": "#1e1e2c",
+                    "tertiary-fixed": "#ffdcc5",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "surface-bright": "#383846",
+                    "surface-variant": "#343342",
+                    "surface-container-high": "#292937",
+                    "secondary-fixed-dim": "#ddb7ff",
+                    "on-background": "#e3e0f3",
+                    "on-secondary-container": "#d6a9ff",
+                    "on-surface": "#e3e0f3",
+                    "inverse-surface": "#e3e0f3",
+                    "inverse-primary": "#494bd6",
+                    "on-primary": "#1000a9",
+                    "primary": "#c0c1ff",
+                    "on-surface-variant": "#c7c4d7",
+                    "tertiary-container": "#d97721",
+                    "primary-fixed": "#e1e0ff",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "surface-dim": "#12121f",
+                    "surface": "#12121f",
+                    "surface-container-low": "#1a1a28",
+                    "error-container": "#93000a",
+                    "tertiary": "#ffb783",
+                    "background": "#12121f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-md": "1rem",
+                    "stack-sm": "0.5rem",
+                    "sidebar-width": "220px",
+                    "stack-lg": "2rem",
+                    "container-max": "1440px",
+                    "gutter": "1.5rem"
+            },
+            "fontFamily": {
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "display-lg": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Inter"
+                    ],
+                    "title-md": [
+                            "Inter"
+                    ],
+                    "headline-lg": [
+                            "Inter"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "label-caps": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "title-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        
+        /* Custom Scrollbar for inner content */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: transparent; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: theme('colors.outline-variant'); 
+            border-radius: 10px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: theme('colors.outline'); 
+        }
+
+        /* Glassmorphism utility */
+        .glass-panel {
+            background: rgba(18, 18, 31, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        /* Custom Slider Styling */
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px;
+            width: 16px;
+            border-radius: 50%;
+            background: theme('colors.primary');
+            cursor: pointer;
+            margin-top: -6px; /* You need to specify a margin in Chrome, but in Firefox and IE it is automatic */
+            box-shadow: 0 0 10px theme('colors.primary');
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%;
+            height: 4px;
+            cursor: pointer;
+            background: theme('colors.surface-container-highest');
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar (Shared Component) -->
+<nav class="fixed left-0 top-0 h-full w-[220px] hidden md:flex flex-col border-r border-outline-variant/10 dark:border-outline-variant/10 bg-surface-container-low dark:bg-surface-container-low z-50">
+<div class="flex flex-col justify-between py-6 h-full px-4">
+<div>
+<!-- Brand Anchor -->
+<div class="flex items-center gap-3 px-2 mb-8">
+<img alt="User profile" class="w-8 h-8 object-cover rounded-md" data-alt="A sophisticated abstract minimalist logo for an AI application. The logo features a stylized, elegant geometric shape resembling a nexus or node, glowing with a soft, iridescent light against a deep space background. The color palette incorporates deep purples, luminescent blues, and pristine whites, conveying a sense of futuristic intelligence and premium quality." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBygmbZ9Ztyz4QfoQGTo1Y0Gi2IDjFc1lSoy5YHfhba-RUVXJSWMrCOj6g8PztulvwxAEjOW6IHJuxhSvACsXvwQZuXDou4x3kJvfbCn1IVIOOTgStPhh5aWLtR61NoEjp7bXcOp62Mo235sHzmYQoTHd8OvyPoUvq4Pc-JdQBbnDuWAsY4QaJ78OMV_bXsVckjSxzoLjUEp0rYtZDLZWLTXUaoXOlbHKhsAUz5AtWjwBnXyKqeN9p814rtRDsvphl-Ohm4dJMGt9M"/>
+<div>
+<h1 class="font-display-lg text-title-md font-bold text-primary dark:text-primary leading-none">Kita &amp; AI</h1>
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-70">Premium AI Nexus</span>
+</div>
+</div>
+<!-- Main Nav Tabs -->
+<ul class="space-y-1">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined" data-icon="chat">chat</span>
+                            Conversations
+                        </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+                            AI Agents
+                        </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+                            Knowledge Base
+                        </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+                            Analytics
+                        </a>
+</li>
+<li>
+<!-- ACTIVE TAB -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold font-body-sm text-body-sm scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined" data-icon="settings" data-weight="fill" style="font-variation-settings: 'FILL' 1;">settings</span>
+                            Settings
+                        </a>
+</li>
+</ul>
+<!-- CTA Button -->
+<button class="mt-8 w-full bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-3 rounded-lg font-body-sm text-body-sm font-semibold hover:brightness-110 active:scale-98 transition-all flex justify-center items-center gap-2 shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+<span class="material-symbols-outlined text-sm">add</span>
+                    New Chat
+                </button>
+</div>
+<!-- Footer Tab -->
+<ul>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg font-body-sm text-body-sm" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+                        Help Center
+                    </a>
+</li>
+</ul>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<main class="flex-1 ml-0 md:ml-[220px] relative min-h-screen">
+<!-- TopNavBar (Shared Component) -->
+<header class="fixed top-0 right-0 w-full md:w-[calc(100%-220px)] z-40 bg-surface/80 dark:bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 flex justify-between items-center px-6 h-16">
+<div class="flex items-center gap-4">
+<!-- Mobile Menu Trigger -->
+<button class="md:hidden text-on-surface-variant hover:text-primary transition-colors">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<h2 class="font-title-md text-title-md font-bold text-primary dark:text-primary md:hidden">Kita &amp; AI</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors hover:brightness-110 w-10 h-10 rounded-full flex items-center justify-center bg-surface-container-high/50 border border-outline-variant/20">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<div class="w-10 h-10 rounded-full border border-outline-variant/30 overflow-hidden cursor-pointer hover:ring-2 ring-primary transition-all">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A cinematic, high-resolution portrait photograph of a confident professional user avatar. The subject is softly lit with futuristic neon rim lighting in subtle cyan and magenta, set against a dark, minimalist abstract background. The image exudes sophistication, modern technology, and a premium aesthetic suitable for a cutting-edge AI application." src="https://lh3.googleusercontent.com/aida-public/AB6AXuD-7iUAOvpSxNlm7_vmVrcE6xhMh27TpmwH4S4EfA3YtQ4SsrBCmhJulzPJizIlIFkhgxU7g5ZgUmlUdG47qy48eqdWPJZF3K0bC2knb57Z1VRVEeq2tfLAeB2WXzkY4rKSbLH6EQzxp9zsp5x6ydgXeq8-dkaKiAi-K2qx78S6oAKMfY-TOIJOc4TxPLw4jbeP0W8A1E5D2NpUFQBVK48UFh34WngK1bSFKOOCSgSPP7KY5q282JA7ziFPyNmmBvV8j9nLRjVAJc8"/>
+</div>
+</div>
+</header>
+<!-- Canvas Area -->
+<div class="pt-24 px-4 md:px-8 pb-12 max-w-[1000px] mx-auto w-full h-full flex flex-col">
+<!-- Page Header -->
+<div class="mb-8">
+<h2 class="font-headline-lg text-headline-lg-mobile md:text-headline-lg text-on-surface mb-2">Model Configuration</h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl">Fine-tune the cognitive parameters and behavioral context of your AI nexus to suit your exact conversational needs.</p>
+</div>
+<!-- Settings Grid (Bento Style) -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+<!-- Main Configuration Column -->
+<div class="lg:col-span-8 flex flex-col gap-6">
+<!-- AI Model Selector Card -->
+<div class="bg-surface rounded-xl border border-outline-variant/20 p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">memory</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Base Intelligence Engine</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Select the foundational model driving responses.</p>
+</div>
+</div>
+<div class="relative">
+<select class="w-full appearance-none bg-surface-container-low border border-outline-variant/30 text-on-surface rounded-lg px-4 py-3 pr-10 font-body-lg text-body-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary focus:shadow-[0_0_15px_rgba(99,102,241,0.2)] transition-all cursor-pointer">
+<option value="gpt-4-turbo">Nexus Pro (Highest Reasoning)</option>
+<option value="gpt-3.5-turbo">Nexus Lite (Fastest Response)</option>
+<option value="claude-3-opus">Anthropic Opus (Creative/Coding)</option>
+<option value="gemini-1.5-pro">Gemini Core (Multimodal Base)</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-on-surface-variant">
+<span class="material-symbols-outlined">expand_more</span>
+</div>
+</div>
+<div class="mt-4 p-4 rounded-lg bg-primary-container/10 border border-primary/20 flex gap-3">
+<span class="material-symbols-outlined text-primary text-sm mt-0.5">info</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Nexus Pro offers the highest capability for complex reasoning tasks but may have slightly higher latency.</p>
+</div>
+</div>
+<!-- System Prompt Card -->
+<div class="bg-surface rounded-xl border border-outline-variant/20 p-6 shadow-sm flex-1 flex flex-col">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">psychology</span>
+</div>
+<div class="flex-1">
+<h3 class="font-title-md text-title-md text-on-surface">System Prompt Directive</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Define the overarching persona and behavioral constraints.</p>
+</div>
+<button class="text-primary hover:text-secondary transition-colors font-body-sm text-body-sm font-semibold">
+                                Use Template
+                            </button>
+</div>
+<div class="flex-1 flex flex-col relative group">
+<div class="absolute -inset-0.5 bg-gradient-to-b from-primary/20 to-transparent rounded-lg opacity-0 group-focus-within:opacity-100 transition duration-500 blur-sm pointer-events-none"></div>
+<textarea class="flex-1 w-full relative bg-surface-container-low border border-outline-variant/30 text-on-surface rounded-lg p-4 font-body-lg text-body-lg focus:outline-none focus:ring-1 focus:ring-primary focus:border-primary resize-none min-h-[200px] font-mono text-sm leading-relaxed" placeholder="Enter the absolute directives here. e.g., 'You are an elite coding assistant. Always provide concise, optimized code snippets without unnecessary pleasantries...'">You are Kita, a premium AI nexus designed for sophisticated, precise, and contextually aware assistance. You communicate with clarity, avoiding unnecessary verbosity, while maintaining a polite, professional, and slightly futuristic tone. You prioritize accuracy above all else.</textarea>
+</div>
+<div class="mt-3 flex justify-end">
+<span class="font-label-caps text-label-caps text-on-surface-variant opacity-60">248 / 4000 TOKENS</span>
+</div>
+</div>
+</div>
+<!-- Secondary Configuration Column -->
+<div class="lg:col-span-4 flex flex-col gap-6">
+<!-- Temperature/Creativity Card -->
+<div class="bg-surface rounded-xl border border-outline-variant/20 p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">thermostat</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Creativity Index</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Controls randomness (Temperature).</p>
+</div>
+</div>
+<div class="mb-4 flex justify-between items-center">
+<span class="font-label-caps text-label-caps text-on-surface-variant">PRECISE</span>
+<span class="font-title-md text-title-md font-bold text-primary" id="tempValue">0.7</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant">CREATIVE</span>
+</div>
+<div class="relative py-2">
+<input class="w-full appearance-none bg-transparent focus:outline-none" id="tempSlider" max="2" min="0" step="0.1" type="range" value="0.7"/>
+</div>
+<div class="mt-6 pt-6 border-t border-outline-variant/10">
+<h4 class="font-body-sm text-body-sm font-semibold text-on-surface mb-3">Top P Sampling</h4>
+<div class="flex items-center gap-4">
+<input class="w-full appearance-none bg-transparent focus:outline-none opacity-70" id="topPSlider" max="1" min="0" step="0.05" type="range" value="0.9"/>
+<span class="font-body-sm text-body-sm font-mono text-on-surface-variant w-8" id="topPValue">0.9</span>
+</div>
+</div>
+</div>
+<!-- Context Limits Card -->
+<div class="bg-surface rounded-xl border border-outline-variant/20 p-6 shadow-sm">
+<div class="flex items-center gap-3 mb-6">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">history</span>
+</div>
+<div>
+<h3 class="font-title-md text-title-md text-on-surface">Memory Window</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Chat history inclusion limit.</p>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center bg-surface-container-low p-3 rounded-lg border border-outline-variant/10">
+<span class="font-body-sm text-body-sm text-on-surface">Max Messages</span>
+<input class="w-20 bg-surface border border-outline-variant/30 text-center rounded text-on-surface font-body-sm text-body-sm focus:ring-1 focus:ring-primary focus:border-primary px-2 py-1" type="number" value="20"/>
+</div>
+<label class="flex items-center gap-3 p-3 rounded-lg border border-outline-variant/10 cursor-pointer hover:bg-surface-container-low transition-colors">
+<div class="relative flex items-center">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest rounded-full peer peer-checked:after:translate-x-full peer-checked:bg-primary after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all shadow-inner"></div>
+</div>
+<span class="font-body-sm text-body-sm text-on-surface select-none">Auto-summarize old context</span>
+</label>
+</div>
+</div>
+<!-- Action Area -->
+<div class="mt-auto pt-6 flex gap-4">
+<button class="flex-1 bg-transparent border border-primary text-primary py-3 rounded-lg font-body-sm text-body-sm font-semibold hover:bg-primary/10 transition-colors">
+                            Reset Defaults
+                        </button>
+<button class="flex-1 bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white py-3 rounded-lg font-body-sm text-body-sm font-semibold hover:brightness-110 active:scale-98 transition-all shadow-[0_0_15px_rgba(99,102,241,0.2)]">
+                            Save Profile
+                        </button>
+</div>
+</div>
+</div>
+</div>
+</main>
+<script>
+        // Simple interactions for sliders
+        document.addEventListener('DOMContentLoaded', () => {
+            const tempSlider = document.getElementById('tempSlider');
+            const tempValue = document.getElementById('tempValue');
+            
+            tempSlider.addEventListener('input', (e) => {
+                tempValue.textContent = parseFloat(e.target.value).toFixed(1);
+            });
+
+            const topPSlider = document.getElementById('topPSlider');
+            const topPValue = document.getElementById('topPValue');
+            
+            topPSlider.addEventListener('input', (e) => {
+                topPValue.textContent = parseFloat(e.target.value).toFixed(2);
+            });
+        });
+    </script>
+</body></html>

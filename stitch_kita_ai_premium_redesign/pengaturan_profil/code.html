@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Pengaturan Profil - Kita &amp; AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#0d0096",
+                        "surface-container-highest": "#343342",
+                        "error": "#ffb4ab",
+                        "secondary": "#ddb7ff",
+                        "secondary-fixed": "#f0dbff",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary": "#490080",
+                        "on-secondary-fixed": "#2c0051",
+                        "secondary-container": "#6f00be",
+                        "on-primary-fixed": "#07006c",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "on-tertiary-fixed": "#301400",
+                        "surface-tint": "#c0c1ff",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "inverse-on-surface": "#2f2f3d",
+                        "on-tertiary": "#4f2500",
+                        "primary-container": "#8083ff",
+                        "surface-container-lowest": "#0d0d1a",
+                        "outline-variant": "#464554",
+                        "on-error": "#690005",
+                        "outline": "#908fa0",
+                        "on-tertiary-container": "#452000",
+                        "surface-container": "#1e1e2c",
+                        "tertiary-fixed": "#ffdcc5",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "surface-bright": "#383846",
+                        "surface-variant": "#343342",
+                        "surface-container-high": "#292937",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "on-background": "#e3e0f3",
+                        "on-secondary-container": "#d6a9ff",
+                        "on-surface": "#e3e0f3",
+                        "inverse-surface": "#e3e0f3",
+                        "inverse-primary": "#494bd6",
+                        "on-primary": "#1000a9",
+                        "primary": "#c0c1ff",
+                        "on-surface-variant": "#c7c4d7",
+                        "tertiary-container": "#d97721",
+                        "primary-fixed": "#e1e0ff",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "surface-dim": "#12121f",
+                        "surface": "#12121f",
+                        "surface-container-low": "#1a1a28",
+                        "error-container": "#93000a",
+                        "tertiary": "#ffb783",
+                        "background": "#12121f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "1rem",
+                        "stack-sm": "0.5rem",
+                        "sidebar-width": "220px",
+                        "stack-lg": "2rem",
+                        "container-max": "1440px",
+                        "gutter": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "title-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: theme('colors.background'); color: theme('colors.on-background'); }
+        .glass-panel {
+            background: rgba(30, 30, 44, 0.6);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .ai-glow {
+            box-shadow: 0 0 15px rgba(192, 193, 255, 0.05) inset;
+        }
+        .gradient-button {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            transition: all 0.2s ease;
+        }
+        .gradient-button:hover {
+            filter: brightness(1.1);
+        }
+        .gradient-button:active {
+            transform: scale(0.98);
+        }
+        .input-focus:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex font-body-sm text-body-sm overflow-x-hidden selection:bg-primary/30">
+<!-- Notification Toast -->
+<div class="fixed top-24 left-1/2 -translate-x-1/2 z-50 transform -translate-y-8 opacity-0 transition-all duration-300 pointer-events-none flex items-center gap-3 px-6 py-4 rounded-xl bg-surface-container-high border border-outline-variant/30 shadow-2xl" id="toast">
+<div class="w-8 h-8 rounded-full bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-title-md">check_circle</span>
+</div>
+<p class="font-title-md text-title-md text-on-surface m-0">Profil berhasil diperbarui</p>
+</div>
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[220px] hidden md:flex flex-col bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant/10 dark:border-outline-variant/10 z-30">
+<div class="flex flex-col justify-between py-6 h-full">
+<div>
+<div class="px-6 mb-8">
+<h1 class="font-display-lg text-display-lg font-bold text-primary dark:text-primary leading-none">Kita &amp; AI</h1>
+<p class="text-on-surface-variant text-label-caps mt-2 uppercase tracking-widest">Premium AI Nexus</p>
+</div>
+<div class="px-4 mb-6">
+<button class="w-full gradient-button text-white rounded-lg py-3 px-4 flex items-center justify-center gap-2 font-title-md text-title-md">
+<span class="material-symbols-outlined">add</span>
+                        New Chat
+                    </button>
+</div>
+<div class="flex flex-col gap-1 px-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">chat</span>
+                        Conversations
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+                        AI Agents
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">database</span>
+                        Knowledge Base
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">insights</span>
+                        Analytics
+                    </a>
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold Active: scale-98 transition-transform" href="#">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">settings</span>
+                        Settings
+                    </a>
+</div>
+</div>
+<div class="px-2 mt-auto">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">help</span>
+                    Help Center
+                </a>
+</div>
+</div>
+</nav>
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-full md:w-[calc(100%-220px)] z-40 bg-surface/80 dark:bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 flex justify-between items-center px-6 h-16">
+<div class="md:hidden">
+<h1 class="font-title-md text-title-md font-bold text-primary dark:text-primary">Kita &amp; AI</h1>
+</div>
+<div class="hidden md:block">
+<!-- Space for breadcrumbs or context title if needed -->
+<h2 class="font-title-md text-title-md text-on-surface">Settings / Profile</h2>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors hover:brightness-110 p-2 rounded-full hover:bg-surface-container-high flex items-center justify-center">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/30 cursor-pointer">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A highly detailed close-up portrait of a futuristic AI user avatar. The face is subtly illuminated by glowing neon accents in deep purples and electric blues, reflecting the modern corporate glassmorphism aesthetic. The background is a dark, sleek cyber-environment. Lighting is dramatic yet professional, conveying a sense of advanced technology and premium exclusivity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBpKhUAHs7kQCl9a1H3SlCjvzk-EH9FixgPymcJisvNL01jqkAs2CuhuwG7XSTyIylS7XEg9_n2Mm8rQvI3kVcF_Cx6M_YHjUy13vlBQnP9qHOcGPU2K2VVQUjVrFMFy26IOkEJ6L6yUf1h8LFEFdP0MRDo5l7Isef_9NO7nIUL1EvR5d-MYu9l0cAC0jnMtleXw4KQwrRC-C4hNg5nQWRY8-sv4AWZcmrs0UgjmU5ES2ulaYEMg9gPRolWJIchYTpOrn3ckGxDa7o"/>
+</div>
+</div>
+</header>
+<!-- Main Content Canvas -->
+<main class="w-full md:ml-[220px] pt-24 pb-12 px-4 md:px-8 lg:px-12 flex justify-center">
+<div class="w-full max-w-[800px]">
+<div class="mb-8">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-2">Profile Settings</h2>
+<p class="text-on-surface-variant text-body-lg">Manage your personal information and application preferences.</p>
+</div>
+<div class="glass-panel rounded-xl p-6 md:p-8 flex flex-col gap-8 ai-glow">
+<!-- Avatar Section -->
+<div class="flex flex-col sm:flex-row items-center gap-6 pb-8 border-b border-outline-variant/20">
+<div class="relative group">
+<div class="w-24 h-24 rounded-full overflow-hidden border-2 border-primary/30 group-hover:border-primary transition-colors">
+<img alt="Current Avatar" class="w-full h-full object-cover" data-alt="A highly detailed close-up portrait of a futuristic AI user avatar. The face is subtly illuminated by glowing neon accents in deep purples and electric blues, reflecting the modern corporate glassmorphism aesthetic. The background is a dark, sleek cyber-environment. Lighting is dramatic yet professional, conveying a sense of advanced technology and premium exclusivity." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAlQknqZ6djaVtRBwBG_-qNaNxso9xtKHx_7E54mIyTKlx8WP9NYnZezK9fAUyxmnKJAhaAtD4cOqO9qVmQpoNR4GvcIkmp6AE7B1k-8blUsvlpyGzyDKKhkYl6a5ntoR5G7zCP3F54QTPnl-1siDMkVgwHBurT2TPW4DtISaMf_3FBfX8eSh-nRRmHbPYMbXkMvwxjtbstWzFR6N9TeHEJFRRtfdy6_Y2Ta5PBk7rJSBQunS52otWiJjDJr-_hu5ZIlPp0cGof6Mo"/>
+</div>
+<button class="absolute bottom-0 right-0 w-8 h-8 rounded-full bg-surface-container-highest border border-outline-variant/30 flex items-center justify-center text-on-surface hover:text-primary hover:bg-surface-container transition-colors shadow-lg">
+<span class="material-symbols-outlined text-[16px]">edit</span>
+</button>
+</div>
+<div class="text-center sm:text-left">
+<h3 class="font-title-md text-title-md text-on-surface mb-1">Profile Picture</h3>
+<p class="text-on-surface-variant text-body-sm mb-3">Upload a new avatar. Recommended size: 256x256px.</p>
+<div class="flex gap-3 justify-center sm:justify-start">
+<button class="px-4 py-2 rounded-lg bg-surface-container-high border border-outline-variant/30 text-on-surface hover:bg-surface-container-highest transition-colors font-title-md text-title-md text-[14px]">Upload New</button>
+<button class="px-4 py-2 rounded-lg border border-error/50 text-error hover:bg-error/10 transition-colors font-title-md text-title-md text-[14px]">Remove</button>
+</div>
+</div>
+</div>
+<!-- Form Section -->
+<form class="flex flex-col gap-6" id="profileForm" onsubmit="event.preventDefault(); showToast();">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="text-on-surface-variant font-title-md text-title-md text-[14px]" for="fullName">Full Name</label>
+<input class="bg-surface-container w-full border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface input-focus transition-all" id="fullName" type="text" value="Alex Mercer"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-on-surface-variant font-title-md text-title-md text-[14px]" for="username">Username</label>
+<input class="bg-surface-container w-full border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface input-focus transition-all" id="username" type="text" value="@alexm_ai"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-on-surface-variant font-title-md text-title-md text-[14px]" for="email">Email Address</label>
+<input class="bg-surface-container w-full border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface opacity-70 cursor-not-allowed" disabled="" id="email" type="email" value="alex.mercer@nexus.io"/>
+<p class="text-label-caps text-on-surface-variant mt-1">Email cannot be changed directly. Contact support.</p>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-on-surface-variant font-title-md text-title-md text-[14px]" for="bio">Bio</label>
+<textarea class="bg-surface-container w-full border border-outline-variant/30 rounded-lg px-4 py-3 text-on-surface input-focus transition-all resize-none" id="bio" rows="3">AI Enthusiast &amp; Neural Network Architect.</textarea>
+</div>
+<!-- Personalization -->
+<div class="pt-6 border-t border-outline-variant/20">
+<h3 class="font-title-md text-title-md text-on-surface mb-4">Personalization</h3>
+<div class="flex flex-col gap-4">
+<div>
+<label class="text-on-surface-variant font-title-md text-title-md text-[14px] block mb-3">Accent Theme</label>
+<div class="flex gap-4">
+<label class="cursor-pointer group relative">
+<input checked="" class="peer sr-only" name="theme" type="radio"/>
+<div class="w-10 h-10 rounded-full bg-primary flex items-center justify-center border-2 border-transparent peer-checked:border-white transition-all ring-offset-2 ring-offset-surface ring-0 peer-checked:ring-2 ring-primary">
+<span class="material-symbols-outlined text-on-primary text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</label>
+<label class="cursor-pointer group relative">
+<input class="peer sr-only" name="theme" type="radio"/>
+<div class="w-10 h-10 rounded-full bg-[#10b981] flex items-center justify-center border-2 border-transparent peer-checked:border-white transition-all ring-offset-2 ring-offset-surface ring-0 peer-checked:ring-2 ring-[#10b981]">
+<span class="material-symbols-outlined text-white text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</label>
+<label class="cursor-pointer group relative">
+<input class="peer sr-only" name="theme" type="radio"/>
+<div class="w-10 h-10 rounded-full bg-[#f43f5e] flex items-center justify-center border-2 border-transparent peer-checked:border-white transition-all ring-offset-2 ring-offset-surface ring-0 peer-checked:ring-2 ring-[#f43f5e]">
+<span class="material-symbols-outlined text-white text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</label>
+<label class="cursor-pointer group relative">
+<input class="peer sr-only" name="theme" type="radio"/>
+<div class="w-10 h-10 rounded-full bg-[#eab308] flex items-center justify-center border-2 border-transparent peer-checked:border-white transition-all ring-offset-2 ring-offset-surface ring-0 peer-checked:ring-2 ring-[#eab308]">
+<span class="material-symbols-outlined text-white text-[16px] opacity-0 peer-checked:opacity-100">check</span>
+</div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Actions -->
+<div class="pt-8 flex justify-end gap-4 mt-4">
+<button class="px-6 py-2.5 rounded-lg border border-outline-variant/30 text-on-surface hover:bg-surface-container-highest transition-colors font-title-md text-title-md" type="button">Cancel</button>
+<button class="gradient-button px-8 py-2.5 rounded-lg text-white font-title-md text-title-md flex items-center gap-2 shadow-lg shadow-primary/20" type="submit">
+                            Save Changes
+                            <span class="material-symbols-outlined text-[18px]">save</span>
+</button>
+</div>
+</form>
+</div>
+<!-- Danger Zone -->
+<div class="mt-8 border border-error/20 rounded-xl p-6 bg-error/5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+<div>
+<h3 class="font-title-md text-title-md text-error mb-1">Delete Account</h3>
+<p class="text-error/70 text-body-sm">Once you delete your account, there is no going back. Please be certain.</p>
+</div>
+<button class="px-6 py-2 rounded-lg border border-error/50 text-error hover:bg-error/10 transition-colors font-title-md text-title-md whitespace-nowrap">Delete Account</button>
+</div>
+</div>
+</main>
+<script>
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.remove('opacity-0', '-translate-y-8');
+            toast.classList.add('opacity-100', 'translate-y-0');
+            
+            setTimeout(() => {
+                toast.classList.remove('opacity-100', 'translate-y-0');
+                toast.classList.add('opacity-0', '-translate-y-8');
+            }, 3000);
+        }
+    </script>
+</body></html>

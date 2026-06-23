@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Status API - Kita &amp; AI</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "on-primary-container": "#0d0096",
+                      "surface-container-highest": "#343342",
+                      "error": "#ffb4ab",
+                      "secondary": "#ddb7ff",
+                      "secondary-fixed": "#f0dbff",
+                      "on-error-container": "#ffdad6",
+                      "on-secondary": "#490080",
+                      "on-secondary-fixed": "#2c0051",
+                      "secondary-container": "#6f00be",
+                      "on-primary-fixed": "#07006c",
+                      "on-secondary-fixed-variant": "#6900b3",
+                      "on-tertiary-fixed": "#301400",
+                      "surface-tint": "#c0c1ff",
+                      "primary-fixed-dim": "#c0c1ff",
+                      "on-primary-fixed-variant": "#2f2ebe",
+                      "inverse-on-surface": "#2f2f3d",
+                      "on-tertiary": "#4f2500",
+                      "primary-container": "#8083ff",
+                      "surface-container-lowest": "#0d0d1a",
+                      "outline-variant": "#464554",
+                      "on-error": "#690005",
+                      "outline": "#908fa0",
+                      "on-tertiary-container": "#452000",
+                      "surface-container": "#1e1e2c",
+                      "tertiary-fixed": "#ffdcc5",
+                      "tertiary-fixed-dim": "#ffb783",
+                      "surface-bright": "#383846",
+                      "surface-variant": "#343342",
+                      "surface-container-high": "#292937",
+                      "secondary-fixed-dim": "#ddb7ff",
+                      "on-background": "#e3e0f3",
+                      "on-secondary-container": "#d6a9ff",
+                      "on-surface": "#e3e0f3",
+                      "inverse-surface": "#e3e0f3",
+                      "inverse-primary": "#494bd6",
+                      "on-primary": "#1000a9",
+                      "primary": "#c0c1ff",
+                      "on-surface-variant": "#c7c4d7",
+                      "tertiary-container": "#d97721",
+                      "primary-fixed": "#e1e0ff",
+                      "on-tertiary-fixed-variant": "#703700",
+                      "surface-dim": "#12121f",
+                      "surface": "#12121f",
+                      "surface-container-low": "#1a1a28",
+                      "error-container": "#93000a",
+                      "tertiary": "#ffb783",
+                      "background": "#12121f"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {
+                      "stack-md": "1rem",
+                      "stack-sm": "0.5rem",
+                      "sidebar-width": "220px",
+                      "stack-lg": "2rem",
+                      "container-max": "1440px",
+                      "gutter": "1.5rem"
+              },
+              "fontFamily": {
+                      "body-sm": [
+                              "Inter"
+                      ],
+                      "display-lg": [
+                              "Inter"
+                      ],
+                      "headline-lg-mobile": [
+                              "Inter"
+                      ],
+                      "title-md": [
+                              "Inter"
+                      ],
+                      "headline-lg": [
+                              "Inter"
+                      ],
+                      "body-lg": [
+                              "Inter"
+                      ],
+                      "label-caps": [
+                              "Inter"
+                      ]
+              },
+              "fontSize": {
+                      "body-sm": [
+                              "14px",
+                              {
+                                      "lineHeight": "20px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "display-lg": [
+                              "48px",
+                              {
+                                      "lineHeight": "56px",
+                                      "letterSpacing": "-0.02em",
+                                      "fontWeight": "700"
+                              }
+                      ],
+                      "headline-lg-mobile": [
+                              "24px",
+                              {
+                                      "lineHeight": "32px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "title-md": [
+                              "18px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "headline-lg": [
+                              "32px",
+                              {
+                                      "lineHeight": "40px",
+                                      "letterSpacing": "-0.01em",
+                                      "fontWeight": "600"
+                              }
+                      ],
+                      "body-lg": [
+                              "16px",
+                              {
+                                      "lineHeight": "24px",
+                                      "fontWeight": "400"
+                              }
+                      ],
+                      "label-caps": [
+                              "12px",
+                              {
+                                      "lineHeight": "16px",
+                                      "letterSpacing": "0.05em",
+                                      "fontWeight": "600"
+                              }
+                      ]
+              }
+            },
+          },
+        }
+    </script>
+<style>
+        body {
+            background-color: theme('colors.background');
+            color: theme('colors.on-background');
+        }
+        
+        .glass-card {
+            background-color: rgba(26, 26, 40, 0.6);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(70, 69, 84, 0.2);
+        }
+        
+        .status-dot-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 6px rgba(34, 197, 94, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+            }
+        }
+        
+        .chart-bar {
+            transition: height 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="antialiased min-h-screen flex selection:bg-primary-container selection:text-on-primary-container">
+<!-- SideNavBar -->
+<nav class="bg-surface-container-low dark:bg-surface-container-low text-primary dark:text-primary font-body-sm text-body-sm fixed left-0 top-0 h-full w-[220px] hidden md:flex flex-col border-r border-outline-variant/10 dark:border-outline-variant/10 flat no shadows flex flex-col justify-between py-6 z-50">
+<div>
+<div class="px-6 mb-8">
+<h1 class="font-display-lg text-display-lg font-bold text-primary dark:text-primary">Kita &amp; AI</h1>
+<p class="text-on-surface-variant font-body-sm text-body-sm mt-1">Premium AI Nexus</p>
+</div>
+<div class="px-4 mb-6">
+<button class="w-full py-2.5 px-4 rounded-lg bg-gradient-to-r from-indigo-500 to-purple-500 text-white font-title-md text-title-md flex items-center justify-center gap-2 hover:brightness-110 active:scale-98 transition-all duration-200">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+                    New Chat
+                </button>
+</div>
+<div class="flex flex-col gap-1 px-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">chat</span>
+                    Conversations
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">smart_toy</span>
+                    AI Agents
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">database</span>
+                    Knowledge Base
+                </a>
+<!-- Active Tab: Analytics / Status logically fits here best -->
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold Active: scale-98 transition-transform hover:bg-surface-container-high transition-colors duration-200" href="#">
+<span class="material-symbols-outlined">insights</span>
+                    Analytics
+                </a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">settings</span>
+                    Settings
+                </a>
+</div>
+</div>
+<div class="px-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined">help</span>
+                Help Center
+            </a>
+<div class="mt-4 px-4 flex items-center gap-3">
+<img alt="User profile" class="w-8 h-8 rounded-full border border-outline-variant/30 object-cover" data-alt="A small circular user profile avatar showing a stylized, futuristic portrait in cool blue and purple tones, minimalist and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBT5Vn4l-MasXkZ1RmnsrrCZIjtVkpk3yaqdnHH2gITsuL95VZNDefB-v5pLf1BwjSEfmZ23asvvq8WC1_38eCjdxa-KYJpNjuVewQ84qIKSfx_jlPPOBmVRp7__IzoUBcGoCk2ZRmkqK44bmx4_ysESH4H68AgmpuVLXuDJ7aVsXuM56Ue7HCpR3Ku1zfNE9nwtvOAcubuJYknVc2-g0rGRDJzdwRjt1jyWnTnQUe9SdPB4vRvn3uTFZBn25bvbbZIR3aUS0XDyxQ"/>
+<div class="flex flex-col">
+<span class="font-title-md text-title-md text-on-surface text-sm">User</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant text-xs">Pro Plan</span>
+</div>
+</div>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 ml-0 md:ml-[220px] flex flex-col min-h-screen">
+<!-- TopNavBar -->
+<header class="bg-surface/80 dark:bg-surface/80 backdrop-blur-md text-primary dark:text-primary font-title-md text-title-md fixed top-0 right-0 w-full md:w-[calc(100%-220px)] z-40 border-b border-outline-variant/10 flat no shadows flex justify-between items-center px-6 h-16">
+<div class="flex items-center gap-4">
+<span class="md:hidden font-title-md text-title-md font-bold text-primary dark:text-primary">Kita &amp; AI</span>
+<span class="hidden md:inline-block font-headline-lg text-headline-lg font-bold text-on-surface">System Status</span>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors hover:brightness-110 p-2 rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined">dark_mode</span>
+</button>
+<img alt="User Profile Avatar" class="w-8 h-8 rounded-full border border-outline-variant/30 object-cover md:hidden" data-alt="A small circular user profile avatar showing a stylized, futuristic portrait in cool blue and purple tones, minimalist and professional." src="https://lh3.googleusercontent.com/aida-public/AB6AXuDFDvQbRrxb6-JQXHZsrfFqN6PbUx8bYIj5xQWr_fcH3kQTG83N8OJdsdviZ0S87LWuIf2snZYWKyQgu8Sh1yMrEINBH3e7c8jPpk9wYDOKQQWiUjbVeJuBHIngktZIxuZa-rLmO0cnnCerucaUn9j3vLklm5ns9r-phPy5jepLeDWBtFMVQ60iyokP7J0bQmebalD1P5oirtuRYiO3iOgY8Mzv2R1qeOMK4V08usg5_hEaLyCKSNEL0Qz_yX9IFcV9505k98sEsgU"/>
+</div>
+</header>
+<!-- Canvas -->
+<div class="flex-1 mt-16 p-6 md:p-8 max-w-container-max mx-auto w-full">
+<!-- Overall Status Banner -->
+<div class="glass-card rounded-xl p-6 mb-8 flex items-center justify-between border-l-4 border-l-green-500">
+<div class="flex items-center gap-4">
+<div class="w-4 h-4 rounded-full bg-green-500 status-dot-pulse ring-2 ring-white/20"></div>
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-1">All Systems Operational</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Last updated: Just now</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-display-lg text-display-lg text-green-400 font-bold block">99.99%</span>
+<span class="font-label-caps text-label-caps text-on-surface-variant uppercase tracking-wider">30-Day Uptime</span>
+</div>
+</div>
+<!-- Dashboard Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+<!-- API Latency Card -->
+<div class="glass-card rounded-xl p-6 flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-title-md text-title-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-primary">speed</span>
+                            Global Latency
+                        </h3>
+<span class="font-label-caps text-label-caps bg-surface-container-highest px-2 py-1 rounded text-on-surface-variant">Avg</span>
+</div>
+<div class="flex-1 flex items-end">
+<span class="font-display-lg text-display-lg text-on-surface">42<span class="font-title-md text-title-md text-on-surface-variant ml-1">ms</span></span>
+</div>
+<div class="mt-4 h-16 flex items-end gap-1 opacity-70">
+<div class="w-1/6 bg-primary/40 rounded-t-sm h-[40%]"></div>
+<div class="w-1/6 bg-primary/50 rounded-t-sm h-[45%]"></div>
+<div class="w-1/6 bg-primary/40 rounded-t-sm h-[38%]"></div>
+<div class="w-1/6 bg-primary/60 rounded-t-sm h-[50%]"></div>
+<div class="w-1/6 bg-primary/70 rounded-t-sm h-[42%]"></div>
+<div class="w-1/6 bg-primary rounded-t-sm h-[48%]"></div>
+</div>
+</div>
+<!-- Active Requests Card -->
+<div class="glass-card rounded-xl p-6 flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-title-md text-title-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">data_usage</span>
+                            Request Rate
+                        </h3>
+<span class="font-label-caps text-label-caps bg-surface-container-highest px-2 py-1 rounded text-on-surface-variant">Live</span>
+</div>
+<div class="flex-1 flex items-end">
+<span class="font-display-lg text-display-lg text-on-surface">1.2<span class="font-title-md text-title-md text-on-surface-variant ml-1">k/s</span></span>
+</div>
+<div class="mt-4 h-16 flex items-end gap-1 opacity-70">
+<div class="w-1/6 bg-secondary/30 rounded-t-sm h-[60%]"></div>
+<div class="w-1/6 bg-secondary/40 rounded-t-sm h-[65%]"></div>
+<div class="w-1/6 bg-secondary/60 rounded-t-sm h-[80%]"></div>
+<div class="w-1/6 bg-secondary/50 rounded-t-sm h-[70%]"></div>
+<div class="w-1/6 bg-secondary/80 rounded-t-sm h-[85%]"></div>
+<div class="w-1/6 bg-secondary rounded-t-sm h-[75%]"></div>
+</div>
+</div>
+<!-- Error Rate Card -->
+<div class="glass-card rounded-xl p-6 flex flex-col">
+<div class="flex items-center justify-between mb-4">
+<h3 class="font-title-md text-title-md text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-error">warning</span>
+                            Error Rate
+                        </h3>
+<span class="font-label-caps text-label-caps bg-surface-container-highest px-2 py-1 rounded text-on-surface-variant">24h</span>
+</div>
+<div class="flex-1 flex items-end">
+<span class="font-display-lg text-display-lg text-on-surface">0.01<span class="font-title-md text-title-md text-on-surface-variant ml-1">%</span></span>
+</div>
+<div class="mt-4 h-16 flex items-end gap-1 opacity-70">
+<div class="w-1/6 bg-error/20 rounded-t-sm h-[5%]"></div>
+<div class="w-1/6 bg-error/20 rounded-t-sm h-[10%]"></div>
+<div class="w-1/6 bg-error/30 rounded-t-sm h-[15%]"></div>
+<div class="w-1/6 bg-error/20 rounded-t-sm h-[8%]"></div>
+<div class="w-1/6 bg-error/40 rounded-t-sm h-[20%]"></div>
+<div class="w-1/6 bg-error/20 rounded-t-sm h-[5%]"></div>
+</div>
+</div>
+</div>
+<!-- Detailed Endpoints -->
+<div class="glass-card rounded-xl p-1 overflow-hidden">
+<div class="p-6 border-b border-outline-variant/10">
+<h3 class="font-headline-lg text-headline-lg text-on-surface">API Endpoints</h3>
+</div>
+<div class="flex flex-col">
+<!-- Endpoint Item: Inference -->
+<div class="flex items-center justify-between p-4 px-6 hover:bg-surface-container-high/50 transition-colors border-b border-outline-variant/10 last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-3 h-3 rounded-full bg-green-500 ring-2 ring-white/10"></div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Inference Engine API</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">api.kita.ai/v1/chat/completions</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex flex-col items-end">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Uptime</span>
+<span class="font-body-sm text-body-sm text-on-surface">100%</span>
+</div>
+<div class="flex flex-col items-end w-24">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Latency</span>
+<span class="font-body-sm text-body-sm text-on-surface">85ms</span>
+</div>
+</div>
+</div>
+<!-- Endpoint Item: Embeddings -->
+<div class="flex items-center justify-between p-4 px-6 hover:bg-surface-container-high/50 transition-colors border-b border-outline-variant/10 last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-3 h-3 rounded-full bg-green-500 ring-2 ring-white/10"></div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Embeddings API</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">api.kita.ai/v1/embeddings</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex flex-col items-end">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Uptime</span>
+<span class="font-body-sm text-body-sm text-on-surface">99.98%</span>
+</div>
+<div class="flex flex-col items-end w-24">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Latency</span>
+<span class="font-body-sm text-body-sm text-on-surface">32ms</span>
+</div>
+</div>
+</div>
+<!-- Endpoint Item: Webhook (Warning State) -->
+<div class="flex items-center justify-between p-4 px-6 hover:bg-surface-container-high/50 transition-colors border-b border-outline-variant/10 last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-3 h-3 rounded-full bg-yellow-500 ring-2 ring-white/10"></div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Webhook Delivery</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">events.kita.ai/webhooks</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex flex-col items-end">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Status</span>
+<span class="font-body-sm text-body-sm text-yellow-400">Degraded</span>
+</div>
+<div class="flex flex-col items-end w-24">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Latency</span>
+<span class="font-body-sm text-body-sm text-yellow-400">450ms</span>
+</div>
+</div>
+</div>
+<!-- Endpoint Item: Authentication -->
+<div class="flex items-center justify-between p-4 px-6 hover:bg-surface-container-high/50 transition-colors border-b border-outline-variant/10 last:border-0">
+<div class="flex items-center gap-4">
+<div class="w-3 h-3 rounded-full bg-green-500 ring-2 ring-white/10"></div>
+<div>
+<h4 class="font-title-md text-title-md text-on-surface">Authentication API</h4>
+<p class="font-body-sm text-body-sm text-on-surface-variant">auth.kita.ai/v1/token</p>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<div class="hidden md:flex flex-col items-end">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Uptime</span>
+<span class="font-body-sm text-body-sm text-on-surface">100%</span>
+</div>
+<div class="flex flex-col items-end w-24">
+<span class="font-label-caps text-label-caps text-on-surface-variant">Latency</span>
+<span class="font-body-sm text-body-sm text-on-surface">15ms</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</body></html>

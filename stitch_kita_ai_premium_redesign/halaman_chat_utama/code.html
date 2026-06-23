@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Kita &amp; AI - Premium AI Nexus</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-primary-container": "#0d0096",
+                        "surface-container-highest": "#343342",
+                        "error": "#ffb4ab",
+                        "secondary": "#ddb7ff",
+                        "secondary-fixed": "#f0dbff",
+                        "on-error-container": "#ffdad6",
+                        "on-secondary": "#490080",
+                        "on-secondary-fixed": "#2c0051",
+                        "secondary-container": "#6f00be",
+                        "on-primary-fixed": "#07006c",
+                        "on-secondary-fixed-variant": "#6900b3",
+                        "on-tertiary-fixed": "#301400",
+                        "surface-tint": "#c0c1ff",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "inverse-on-surface": "#2f2f3d",
+                        "on-tertiary": "#4f2500",
+                        "primary-container": "#8083ff",
+                        "surface-container-lowest": "#0d0d1a",
+                        "outline-variant": "#464554",
+                        "on-error": "#690005",
+                        "outline": "#908fa0",
+                        "on-tertiary-container": "#452000",
+                        "surface-container": "#1e1e2c",
+                        "tertiary-fixed": "#ffdcc5",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "surface-bright": "#383846",
+                        "surface-variant": "#343342",
+                        "surface-container-high": "#292937",
+                        "secondary-fixed-dim": "#ddb7ff",
+                        "on-background": "#e3e0f3",
+                        "on-secondary-container": "#d6a9ff",
+                        "on-surface": "#e3e0f3",
+                        "inverse-surface": "#e3e0f3",
+                        "inverse-primary": "#494bd6",
+                        "on-primary": "#1000a9",
+                        "primary": "#c0c1ff",
+                        "on-surface-variant": "#c7c4d7",
+                        "tertiary-container": "#d97721",
+                        "primary-fixed": "#e1e0ff",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "surface-dim": "#12121f",
+                        "surface": "#12121f",
+                        "surface-container-low": "#1a1a28",
+                        "error-container": "#93000a",
+                        "tertiary": "#ffb783",
+                        "background": "#12121f"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "stack-md": "1rem",
+                        "stack-sm": "0.5rem",
+                        "sidebar-width": "220px",
+                        "stack-lg": "2rem",
+                        "container-max": "1440px",
+                        "gutter": "1.5rem"
+                    },
+                    "fontFamily": {
+                        "body-sm": ["Inter"],
+                        "display-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "title-md": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "label-caps": ["Inter"]
+                    },
+                    "fontSize": {
+                        "body-sm": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "display-lg": ["48px", { "lineHeight": "56px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "headline-lg-mobile": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+                        "title-md": ["18px", { "lineHeight": "24px", "fontWeight": "600" }],
+                        "headline-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "body-lg": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+                        "label-caps": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        /* Custom Scrollbar */
+        .chat-scroll::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb {
+            background: #a855f7; /* secondary-container ish */
+            border-radius: 9999px;
+            opacity: 0.5;
+        }
+        .chat-scroll::-webkit-scrollbar-thumb:hover {
+            background: #6f00be;
+        }
+        
+        /* Animations */
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-slide-up {
+            animation: slideUp 0.3s ease-out forwards;
+        }
+
+        @keyframes shimmer {
+            0% { border-color: rgba(168, 85, 247, 0.1); }
+            50% { border-color: rgba(168, 85, 247, 0.5); }
+            100% { border-color: rgba(168, 85, 247, 0.1); }
+        }
+        .ai-bubble-shimmer {
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes typingBounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+        .typing-dot {
+            animation: typingBounce 1.4s infinite ease-in-out;
+        }
+        .typing-dot:nth-child(1) { animation-delay: -0.32s; }
+        .typing-dot:nth-child(2) { animation-delay: -0.16s; }
+        
+        /* Button Primary Gradient */
+        .btn-primary {
+            background: linear-gradient(135deg, #6366f1, #a855f7);
+            color: white;
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            filter: brightness(1.1);
+        }
+        .btn-primary:active {
+            transform: scale(0.98);
+        }
+
+        /* Glassmorphism Surface */
+        .glass-surface {
+            background: rgba(18, 18, 31, 0.8);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+        }
+        
+        /* AI Glow */
+        .ai-glow {
+            box-shadow: inset 0 0 15px rgba(168, 85, 247, 0.05);
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface h-screen overflow-hidden flex font-body-sm">
+<!-- SideNavBar -->
+<nav class="fixed left-0 top-0 h-full w-[220px] hidden md:flex flex-col bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant/10 dark:border-outline-variant/10 z-50">
+<div class="flex flex-col justify-between py-6 h-full">
+<div>
+<div class="px-6 mb-8 flex items-center gap-3">
+<img alt="User profile" class="w-10 h-10 rounded-full border border-outline-variant/20 object-cover" data-alt="A sleek, minimalist profile avatar of a user in a futuristic setting, featuring cool neon blue and deep purple lighting, embodying a sophisticated 'Futuristic Intimacy' aesthetic." src="https://lh3.googleusercontent.com/aida-public/AB6AXuAisUVQ425gs7DcFMxSlm0YfX9AwUa4AGE0pKqDfIdRBsd8lhAhiu-UdIEh8JVO9bAYSYm5g0xnJ6Xtwmu0jDWLl5sY_w8DUD8Q38jAURwTCiOM-GR2YFQ9UxfdsK3-FzJupO8rIWJTPGyu05ms47Ci7_kH7tZQ_IpNKx50Y7nbJHzDGHNEYhtMb-olerqJySXy5JqUBZ_KVjAuBaIIXd2RfJXIseuVSqEqBRVDi6cp4ddOqMqI4vd8Sg01uf9liVk78gRvicLWCcE"/>
+<div>
+<h1 class="font-display-lg text-[20px] leading-tight font-bold text-primary dark:text-primary">Kita &amp; AI</h1>
+<p class="font-body-sm text-[12px] text-on-surface-variant">Premium AI Nexus</p>
+</div>
+</div>
+<div class="px-4 mb-6">
+<button class="w-full btn-primary rounded-lg py-2.5 px-4 font-title-md text-title-md flex items-center justify-center gap-2 shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+                        New Chat
+                    </button>
+</div>
+<div class="space-y-1">
+<a class="flex items-center gap-3 px-4 py-3 bg-primary-container text-on-primary-container rounded-lg font-bold mx-2" href="#">
+<span class="material-symbols-outlined" data-icon="chat" style="font-variation-settings: 'FILL' 1;">chat</span>
+<span class="font-title-md text-[14px]">Conversations</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="smart_toy">smart_toy</span>
+<span class="font-title-md text-[14px]">AI Agents</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="database">database</span>
+<span class="font-title-md text-[14px]">Knowledge Base</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="insights">insights</span>
+<span class="font-title-md text-[14px]">Analytics</span>
+</a>
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 mx-2 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+<span class="font-title-md text-[14px]">Settings</span>
+</a>
+</div>
+</div>
+<div class="px-2">
+<a class="flex items-center gap-3 px-4 py-3 text-on-surface-variant opacity-60 hover:opacity-100 hover:bg-surface-container-high transition-colors duration-200 rounded-lg" href="#">
+<span class="material-symbols-outlined" data-icon="help">help</span>
+<span class="font-title-md text-[14px]">Help Center</span>
+</a>
+</div>
+</div>
+</nav>
+<!-- Main Content Canvas -->
+<main class="flex-1 flex flex-col md:ml-[220px] h-full relative">
+<!-- TopNavBar -->
+<header class="fixed top-0 right-0 w-full md:w-[calc(100%-220px)] z-40 bg-surface/80 dark:bg-surface/80 backdrop-blur-md border-b border-outline-variant/10 flex justify-between items-center px-6 h-16">
+<div class="flex items-center md:hidden">
+<button class="text-on-surface-variant p-2 -ml-2">
+<span class="material-symbols-outlined">menu</span>
+</button>
+<span class="font-title-md text-title-md font-bold text-primary dark:text-primary ml-2">Kita &amp; AI</span>
+</div>
+<div class="hidden md:flex flex-col">
+<h2 class="font-title-md text-[16px] font-bold text-on-surface">Project Alpha Sync</h2>
+<div class="flex items-center gap-2 text-on-surface-variant text-[12px]">
+<span class="w-2 h-2 rounded-full bg-secondary border border-background"></span>
+<span>3 Participants</span>
+</div>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-on-surface-variant hover:text-primary transition-colors hover:brightness-110 w-10 h-10 flex items-center justify-center rounded-full hover:bg-surface-container-high">
+<span class="material-symbols-outlined" data-icon="dark_mode">dark_mode</span>
+</button>
+<div class="w-8 h-8 rounded-full overflow-hidden border border-outline-variant/20 hidden md:block">
+<img alt="User Profile Avatar" class="w-full h-full object-cover" data-alt="A macro shot of a sleek, minimalist glowing orb reflecting dark violet and subtle neon blue tones, emphasizing a highly sophisticated digital texture." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBw247QdJ8flxGV3wKw-_6LhUhpEYZeS8aJpJbxgtYAeCKROJuGQzZvMM1ZdGAtHrCu2xVGwsd2-iuYRyTRR7MMWuAKp6M9PrKewWvWxURtyfBSFqPbkqelXob1oOtm258qP60TaliGuYoM1r-KdXzE4mx2nAOshwhij4tvfFUndib8bhOK3V3uoJY8ecITGw2LEL3e9x1Rz-KvBLzm_8VnWTUORwi8Ir1UaTdRHQT0y581iHt1YlXFc_M17NoIfmeJHSw7ZYns4CI"/>
+</div>
+</div>
+</header>
+<!-- Chat Area -->
+<div class="flex-1 overflow-y-auto chat-scroll pt-20 pb-28 px-4 md:px-8 flex justify-center w-full" id="chat-container">
+<div class="w-full max-w-[1000px] flex flex-col gap-6">
+<!-- Date Divider -->
+<div class="flex justify-center my-4 animate-slide-up" style="animation-delay: 0.1s;">
+<span class="bg-surface-container-high text-on-surface-variant text-[11px] font-label-caps uppercase px-3 py-1 rounded-full border border-outline-variant/20">Today</span>
+</div>
+<!-- Chat Bubble Person 2 (Left, Dark Purple) -->
+<div class="flex flex-col items-start gap-1 max-w-[85%] md:max-w-[70%] animate-slide-up" style="animation-delay: 0.2s;">
+<div class="flex items-end gap-2">
+<div class="w-8 h-8 rounded-full overflow-hidden border border-[#a855f7] shrink-0 mb-1">
+<img alt="Contact avatar" class="w-full h-full object-cover" data-alt="A portrait of a futuristic persona bathed in subtle rim lighting with deep purple undertones, set against a dark void, highly polished and corporate." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBIKy9hM-iof9qAYAiLXf394rUt8YdwhfT1JkRWGhrJoAM_qKBbwtGqqDVL5A1BelFtx8U1HjOksg072EZyQEYM0Yg4G8A2T9DJFqbfbmOyzdn_RGHAGNFO93AwSgRWG8BuBMdndsGWPsx1v8V706V0U3KQc5SCF2RrAJz5WHWSwishJcAzpAxwqWxqYk_OMgpKEUrbnO4jDY_wDN0Y5IaqNgt9Gpmanj05rDHxhqfk5dWMdscv1ZpMTHiyMc2dbtIZtUMq9lRkMKc"/>
+</div>
+<div class="bg-surface text-on-surface p-4 rounded-2xl rounded-bl-sm border border-[#a855f7]/30 shadow-sm font-body-lg text-body-lg">
+<p>I've reviewed the latest datasets for the Alpha Sync. The anomaly detection seems to be flagging false positives around 03:00 AM UTC.</p>
+</div>
+</div>
+<span class="text-[11px] text-on-surface-variant ml-10">10:42 AM</span>
+</div>
+<!-- Chat Bubble Person 1 (Right, Blue/Primary) -->
+<div class="flex flex-col items-end gap-1 max-w-[85%] md:max-w-[70%] self-end animate-slide-up" style="animation-delay: 0.3s;">
+<div class="bg-[#6366f1] text-white p-4 rounded-2xl rounded-br-sm shadow-md font-body-lg text-body-lg">
+<p>Understood. I'll adjust the threshold parameters for that specific time window. Can we run a quick diagnostic through Kita?</p>
+</div>
+<span class="text-[11px] text-on-surface-variant mr-2">10:45 AM</span>
+</div>
+<!-- Chat Bubble AI (Left, Deep Neutral, Glow) -->
+<div class="flex flex-col items-start gap-1 max-w-[85%] md:max-w-[75%] animate-slide-up" style="animation-delay: 0.4s;">
+<div class="flex items-start gap-2">
+<div class="w-8 h-8 rounded-lg overflow-hidden bg-surface-container-lowest flex items-center justify-center border border-outline-variant/20 shrink-0 mt-1 shadow-[0_0_10px_rgba(168,85,247,0.2)]">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="bg-surface-container-lowest text-on-surface p-4 rounded-2xl rounded-tl-sm border border-outline-variant/10 ai-bubble-shimmer ai-glow shadow-sm font-body-lg text-body-lg">
+<p class="mb-3">I have initiated the diagnostic run on the 03:00 AM UTC anomaly set. Applying adjusted threshold parameters (-1.5 sigma variance).</p>
+<!-- AI Card Component inside bubble -->
+<div class="bg-surface-container/50 border border-outline-variant/20 rounded-lg p-3 mt-2 font-body-sm flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-secondary-container/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">query_stats</span>
+</div>
+<div>
+<div class="font-title-md text-[13px] text-on-surface">Diagnostic_Run_v2.log</div>
+<div class="text-[11px] text-on-surface-variant">Processing... 45%</div>
+</div>
+</div>
+<div class="w-5 h-5 border-2 border-secondary/30 border-t-secondary rounded-full animate-spin"></div>
+</div>
+</div>
+</div>
+<span class="text-[11px] text-on-surface-variant ml-10">10:46 AM</span>
+</div>
+<!-- AI Typing Indicator -->
+<div class="flex flex-col items-start gap-1 max-w-[85%] md:max-w-[70%] animate-slide-up" style="animation-delay: 0.5s;">
+<div class="flex items-end gap-2">
+<div class="w-8 h-8 rounded-lg overflow-hidden bg-surface-container-lowest flex items-center justify-center border border-outline-variant/20 shrink-0 mb-1 opacity-70">
+<span class="material-symbols-outlined text-primary text-[18px]" style="font-variation-settings: 'FILL' 1;">smart_toy</span>
+</div>
+<div class="bg-surface-container-lowest p-4 rounded-2xl rounded-bl-sm border border-outline-variant/10 ai-glow h-[42px] flex items-center justify-center gap-1.5 w-16">
+<div class="w-1.5 h-1.5 bg-primary/60 rounded-full typing-dot"></div>
+<div class="w-1.5 h-1.5 bg-primary/60 rounded-full typing-dot"></div>
+<div class="w-1.5 h-1.5 bg-primary/60 rounded-full typing-dot"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Input Area -->
+<div class="absolute bottom-0 left-0 w-full glass-surface border-t border-outline-variant/10 p-4 md:px-8">
+<div class="max-w-[1000px] mx-auto flex items-end gap-2 bg-surface-container-high rounded-xl border border-outline-variant/20 p-2 focus-within:border-[#6366f1] focus-within:shadow-[0_0_0_4px_rgba(99,102,241,0.2)] transition-all duration-200">
+<button class="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center text-on-surface-variant hover:text-primary hover:bg-surface-container-highest transition-colors">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">attach_file</span>
+</button>
+<textarea class="w-full bg-transparent border-none text-on-surface placeholder-on-surface-variant font-body-lg text-body-lg resize-none max-h-[120px] focus:ring-0 p-2" placeholder="Message Kita &amp; AI..." rows="1"></textarea>
+<button class="w-10 h-10 shrink-0 rounded-lg flex items-center justify-center btn-primary">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+<div class="max-w-[1000px] mx-auto text-center mt-2">
+<p class="text-[10px] text-on-surface-variant opacity-60">Kita AI can make mistakes. Consider verifying critical information.</p>
+</div>
+</div>
+</main>
+<script>
+        // Auto scroll to bottom
+        const chatContainer = document.getElementById('chat-container');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Simple textarea auto-resize
+        const textarea = document.querySelector('textarea');
+        if(textarea) {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+                if(this.scrollHeight > 120) {
+                     this.style.overflowY = 'auto';
+                } else {
+                     this.style.overflowY = 'hidden';
+                }
+            });
+        }
+    </script>
+</body></html>

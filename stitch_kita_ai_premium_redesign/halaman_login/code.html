@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="id"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Login - Kita &amp; AI</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-primary-container": "#0d0096",
+                    "surface-container-highest": "#343342",
+                    "error": "#ffb4ab",
+                    "secondary": "#ddb7ff",
+                    "secondary-fixed": "#f0dbff",
+                    "on-error-container": "#ffdad6",
+                    "on-secondary": "#490080",
+                    "on-secondary-fixed": "#2c0051",
+                    "secondary-container": "#6f00be",
+                    "on-primary-fixed": "#07006c",
+                    "on-secondary-fixed-variant": "#6900b3",
+                    "on-tertiary-fixed": "#301400",
+                    "surface-tint": "#c0c1ff",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "inverse-on-surface": "#2f2f3d",
+                    "on-tertiary": "#4f2500",
+                    "primary-container": "#8083ff",
+                    "surface-container-lowest": "#0d0d1a",
+                    "outline-variant": "#464554",
+                    "on-error": "#690005",
+                    "outline": "#908fa0",
+                    "on-tertiary-container": "#452000",
+                    "surface-container": "#1e1e2c",
+                    "tertiary-fixed": "#ffdcc5",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "surface-bright": "#383846",
+                    "surface-variant": "#343342",
+                    "surface-container-high": "#292937",
+                    "secondary-fixed-dim": "#ddb7ff",
+                    "on-background": "#e3e0f3",
+                    "on-secondary-container": "#d6a9ff",
+                    "on-surface": "#e3e0f3",
+                    "inverse-surface": "#e3e0f3",
+                    "inverse-primary": "#494bd6",
+                    "on-primary": "#1000a9",
+                    "primary": "#c0c1ff",
+                    "on-surface-variant": "#c7c4d7",
+                    "tertiary-container": "#d97721",
+                    "primary-fixed": "#e1e0ff",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "surface-dim": "#12121f",
+                    "surface": "#12121f",
+                    "surface-container-low": "#1a1a28",
+                    "error-container": "#93000a",
+                    "tertiary": "#ffb783",
+                    "background": "#12121f"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stack-md": "1rem",
+                    "stack-sm": "0.5rem",
+                    "sidebar-width": "220px",
+                    "stack-lg": "2rem",
+                    "container-max": "1440px",
+                    "gutter": "1.5rem"
+            },
+            "fontFamily": {
+                    "body-sm": [
+                            "Inter"
+                    ],
+                    "display-lg": [
+                            "Inter"
+                    ],
+                    "headline-lg-mobile": [
+                            "Inter"
+                    ],
+                    "title-md": [
+                            "Inter"
+                    ],
+                    "headline-lg": [
+                            "Inter"
+                    ],
+                    "body-lg": [
+                            "Inter"
+                    ],
+                    "label-caps": [
+                            "Inter"
+                    ]
+            },
+            "fontSize": {
+                    "body-sm": [
+                            "14px",
+                            {
+                                    "lineHeight": "20px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "display-lg": [
+                            "48px",
+                            {
+                                    "lineHeight": "56px",
+                                    "letterSpacing": "-0.02em",
+                                    "fontWeight": "700"
+                            }
+                    ],
+                    "headline-lg-mobile": [
+                            "24px",
+                            {
+                                    "lineHeight": "32px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "title-md": [
+                            "18px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "headline-lg": [
+                            "32px",
+                            {
+                                    "lineHeight": "40px",
+                                    "letterSpacing": "-0.01em",
+                                    "fontWeight": "600"
+                            }
+                    ],
+                    "body-lg": [
+                            "16px",
+                            {
+                                    "lineHeight": "24px",
+                                    "fontWeight": "400"
+                            }
+                    ],
+                    "label-caps": [
+                            "12px",
+                            {
+                                    "lineHeight": "16px",
+                                    "letterSpacing": "0.05em",
+                                    "fontWeight": "600"
+                            }
+                    ]
+            }
+    },
+        },
+      }
+    </script>
+<style>
+        .fade-in {
+            animation: fadeIn 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .glow-input:focus {
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+        }
+        
+        .glass-panel {
+            background: rgba(18, 18, 31, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-[#0a0a12] text-on-surface min-h-screen flex items-center justify-center relative overflow-hidden font-body-lg">
+<!-- Decorative Background Elements -->
+<div class="absolute inset-0 z-0 pointer-events-none overflow-hidden">
+<div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary/10 blur-[120px]"></div>
+<div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-secondary/10 blur-[120px]"></div>
+</div>
+<!-- Theme Toggle (Top Right) -->
+<div class="absolute top-6 right-6 z-50">
+<button class="p-2 rounded-full glass-panel text-on-surface-variant hover:text-primary transition-colors hover:brightness-110" id="theme-toggle">
+<span class="material-symbols-outlined" data-icon="light_mode">dark_mode</span>
+</button>
+</div>
+<!-- Login Container -->
+<main class="w-full max-w-md px-6 z-10 fade-in">
+<!-- Brand Header -->
+<div class="text-center mb-8">
+<div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-gradient-to-br from-[#6366f1] to-[#a855f7] mb-4 shadow-[0_0_30px_rgba(168,85,247,0.3)]">
+<span class="material-symbols-outlined text-white text-3xl" data-icon="smart_toy">smart_toy</span>
+</div>
+<h1 class="font-display-lg text-display-lg text-white mb-2">Kita &amp; AI</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant">Premium AI Nexus</p>
+</div>
+<!-- Login Card -->
+<div class="glass-panel rounded-xl p-8 shadow-2xl relative overflow-hidden">
+<!-- Subtle inner glow for AI presence aesthetic -->
+<div class="absolute inset-0 pointer-events-none border border-primary/5 rounded-xl" style="box-shadow: inset 0 0 15px rgba(168,85,247,0.05);"></div>
+<form class="space-y-6 relative z-10" onsubmit="event.preventDefault();">
+<div class="space-y-2">
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase" for="email">Email Address</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-sm" data-icon="mail">mail</span>
+</div>
+<input class="w-full pl-10 pr-4 py-3 bg-surface-container-low border border-outline-variant/30 rounded-lg text-white placeholder-outline focus:outline-none glow-input transition-all font-body-sm text-body-sm" id="email" placeholder="nexus@kita.ai" required="" type="email"/>
+</div>
+</div>
+<div class="space-y-2">
+<div class="flex items-center justify-between">
+<label class="block font-label-caps text-label-caps text-on-surface-variant uppercase" for="password">Password</label>
+<a class="font-body-sm text-body-sm text-primary hover:text-primary-fixed transition-colors" href="#">Forgot?</a>
+</div>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-outline text-sm" data-icon="lock">lock</span>
+</div>
+<input class="w-full pl-10 pr-10 py-3 bg-surface-container-low border border-outline-variant/30 rounded-lg text-white placeholder-outline focus:outline-none glow-input transition-all font-body-sm text-body-sm" id="password" placeholder="••••••••" required="" type="password"/>
+<button class="absolute inset-y-0 right-0 pr-3 flex items-center text-outline hover:text-white transition-colors" type="button">
+<span class="material-symbols-outlined text-sm" data-icon="visibility">visibility</span>
+</button>
+</div>
+</div>
+<div class="pt-2">
+<button class="w-full py-3 px-4 rounded-lg bg-gradient-to-r from-[#6366f1] to-[#a855f7] text-white font-title-md text-title-md hover:brightness-110 active:scale-98 transition-all duration-200 flex items-center justify-center gap-2" type="submit">
+<span>Initialize Connection</span>
+<span class="material-symbols-outlined text-sm" data-icon="arrow_forward">arrow_forward</span>
+</button>
+</div>
+<div class="mt-6 text-center">
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+                        Don't have an access code? <a class="text-primary hover:text-primary-fixed transition-colors font-medium" href="#">Request Entry</a>
+</p>
+</div>
+</form>
+</div>
+<!-- Footer Links -->
+<div class="mt-8 flex justify-center gap-6 font-body-sm text-body-sm text-on-surface-variant/60">
+<a class="hover:text-white transition-colors" href="#">Privacy</a>
+<a class="hover:text-white transition-colors" href="#">Terms</a>
+<a class="hover:text-white transition-colors" href="#">Status</a>
+</div>
+</main>
+<script>
+        // Simple theme toggle logic for demonstration
+        const themeToggle = document.getElementById('theme-toggle');
+        const html = document.documentElement;
+        const icon = themeToggle.querySelector('span');
+
+        themeToggle.addEventListener('click', () => {
+            html.classList.toggle('dark');
+            if(html.classList.contains('dark')){
+                icon.textContent = 'dark_mode';
+                document.body.style.backgroundColor = '#0a0a12';
+            } else {
+                icon.textContent = 'light_mode';
+                document.body.style.backgroundColor = '#f8f9fa'; // Lighter background for light mode
+            }
+        });
+    </script>
+</body></html>
