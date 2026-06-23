@@ -501,9 +501,23 @@
             </div>
           </div>
 
+          <!-- Font weight + reset -->
+          <div class="form-group">
+            <div class="toggle-row">
+              <div class="toggle-info">
+                <span class="toggle-label">Teks Tebal (Bold)</span>
+                <span class="toggle-desc">Huruf lebih tebal untuk semua bubble chat</span>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="font-bold">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
           <!-- Warna teks Person 1 -->
           <div class="form-group">
-            <label for="font-warna-p1" class="form-label">Warna Teks Person 1</label>
+            <label for="font-warna-p1" class="form-label">Warna Teks Kamu (Person 1)</label>
             <div class="color-picker-row">
               <input type="color"
                      id="font-warna-p1"
@@ -514,11 +528,21 @@
                     class="font-color-swatch"
                     style="background: #ffffff; color: #1a1a1a;">✨ Kamu</span>
             </div>
+            <div class="color-presets" data-target="font-warna-p1">
+              <button class="preset-dot" style="background:#ffffff" data-color="#ffffff" title="Putih"></button>
+              <button class="preset-dot" style="background:#fbbf24" data-color="#fbbf24" title="Kuning"></button>
+              <button class="preset-dot" style="background:#22d3ee" data-color="#22d3ee" title="Cyan"></button>
+              <button class="preset-dot" style="background:#a3e635" data-color="#a3e635" title="Hijau"></button>
+              <button class="preset-dot" style="background:#f472b6" data-color="#f472b6" title="Pink"></button>
+              <button class="preset-dot" style="background:#f87171" data-color="#f87171" title="Merah"></button>
+              <button class="preset-dot" style="background:#c084fc" data-color="#c084fc" title="Ungu"></button>
+              <button class="preset-dot" style="background:#fb923c" data-color="#fb923c" title="Orange"></button>
+            </div>
           </div>
 
           <!-- Warna teks Person 2 -->
           <div class="form-group">
-            <label for="font-warna-p2" class="form-label">Warna Teks Person 2</label>
+            <label for="font-warna-p2" class="form-label">Warna Teks Pacar (Person 2)</label>
             <div class="color-picker-row">
               <input type="color"
                      id="font-warna-p2"
@@ -528,6 +552,16 @@
               <span id="font-warna-p2-preview"
                     class="font-color-swatch"
                     style="background: #ffffff; color: #1a1a1a;">🌸 Sari</span>
+            </div>
+            <div class="color-presets" data-target="font-warna-p2">
+              <button class="preset-dot" style="background:#ffffff" data-color="#ffffff" title="Putih"></button>
+              <button class="preset-dot" style="background:#fbbf24" data-color="#fbbf24" title="Kuning"></button>
+              <button class="preset-dot" style="background:#22d3ee" data-color="#22d3ee" title="Cyan"></button>
+              <button class="preset-dot" style="background:#a3e635" data-color="#a3e635" title="Hijau"></button>
+              <button class="preset-dot" style="background:#f472b6" data-color="#f472b6" title="Pink"></button>
+              <button class="preset-dot" style="background:#f87171" data-color="#f87171" title="Merah"></button>
+              <button class="preset-dot" style="background:#c084fc" data-color="#c084fc" title="Ungu"></button>
+              <button class="preset-dot" style="background:#fb923c" data-color="#fb923c" title="Orange"></button>
             </div>
           </div>
 
@@ -544,6 +578,23 @@
                     class="font-color-swatch"
                     style="background: #e0e0e0; color: #1a1a1a;">🤖 AI</span>
             </div>
+            <div class="color-presets" data-target="font-warna-ai">
+              <button class="preset-dot" style="background:#e0e0e0" data-color="#e0e0e0" title="Abu"></button>
+              <button class="preset-dot" style="background:#ffffff" data-color="#ffffff" title="Putih"></button>
+              <button class="preset-dot" style="background:#a78bfa" data-color="#a78bfa" title="Ungu Soft"></button>
+              <button class="preset-dot" style="background:#22d3ee" data-color="#22d3ee" title="Cyan"></button>
+              <button class="preset-dot" style="background:#a3e635" data-color="#a3e635" title="Hijau"></button>
+              <button class="preset-dot" style="background:#fbbf24" data-color="#fbbf24" title="Kuning"></button>
+              <button class="preset-dot" style="background:#f472b6" data-color="#f472b6" title="Pink"></button>
+              <button class="preset-dot" style="background:#93c5fd" data-color="#93c5fd" title="Biru Soft"></button>
+            </div>
+          </div>
+
+          <!-- Reset defaults -->
+          <div style="text-align:right;margin-top:4px;">
+            <button id="btn-reset-font" type="button" class="btn-storage btn-storage-refresh" style="font-size:0.78rem;">
+              🔄 Reset ke Default
+            </button>
           </div>
 
         </div>

@@ -1646,6 +1646,41 @@ button:focus-visible {
   transition: background 0.2s, color 0.2s;
 }
 
+/* Preset color dots */
+.color-presets {
+  display: flex;
+  gap: 8px;
+  margin-top: 8px;
+  flex-wrap: wrap;
+}
+
+.preset-dot {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  outline: none;
+  transition: all var(--transition-quick);
+  box-shadow: var(--shadow-xs);
+}
+
+.preset-dot:hover {
+  transform: scale(1.25);
+  border-color: #fff;
+  box-shadow: 0 0 12px rgba(255,255,255,0.3);
+}
+
+.preset-dot:active {
+  transform: scale(0.9);
+}
+
+.preset-dot.active {
+  border-color: #fff;
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
 /* Range slider */
 .range-row {
   display: flex;

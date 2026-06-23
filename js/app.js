@@ -86,19 +86,27 @@
       return true;
     } catch (e) {
       console.warn('[KitaAI] Gagal load dari Supabase:', e.message || e);
+      showToast("Gagal memuat data dari cloud — pakai data lokal", "⚠️");
       return false;
     }
   }
 
-  /** Sync seluruh localStorage ke Supabase */
-  async function syncAllToSupabase() {
+  /** Sync seluruh localStorage ke Supabase.
+   *  @param {boolean} silent — true = jangan tampilkan toast (untuk auto-sync) */
+  async function syncAllToSupabase(silent) {
     var sb = getSupabase();
-    if (!sb) return;
+    if (!sb) {
+      if (!silent) showToast("Supabase tidak terhubung", "⚠️");
+      return;
+    }
 
     try {
       var result = await sb.auth.getSession();
       var session = result.data && result.data.session;
-      if (!session) return;
+      if (!session) {
+        if (!silent) showToast("Session tidak ditemukan", "⚠️");
+        return;
+      }
 
       var allData = {};
       [
@@ -111,9 +119,8 @@
       });
 
       // Safety: Supabase REST API limit ~1 MB per request.
-      // Jika data terlalu besar, trim chat history.
       var totalSize = new Blob([JSON.stringify(allData)]).size;
-      var MAX_SYNC_SIZE = 900 * 1024; // 900 KB — sisakan margin untuk overhead
+      var MAX_SYNC_SIZE = 900 * 1024;
       if (totalSize > MAX_SYNC_SIZE && allData['kita-chat-history']) {
         console.warn('[KitaAI] Data terlalu besar (' + Math.round(totalSize/1024) + ' KB), trimming chat history...');
         try {
@@ -122,29 +129,35 @@
             historyArr = historyArr.slice(-Math.floor(historyArr.length * 0.8));
             allData['kita-chat-history'] = JSON.stringify(historyArr);
           }
-          // Update localStorage dengan history yang sudah di-trim
           localStorage.setItem('kita-chat-history', allData['kita-chat-history']);
           chatHistory = historyArr;
+          if (!silent) showToast("Data di-trim agar muat di Supabase", "ℹ️");
         } catch (e) {}
       }
 
-      await sb.from('user_data').upsert({
+      var upsertResult = await sb.from('user_data').upsert({
         user_id: session.user.id,
         data: allData,
         updated_at: new Date().toISOString()
       });
 
+      if (upsertResult.error) {
+        throw new Error(upsertResult.error.message || "Upsert gagal");
+      }
+
       _lastSyncTime = Date.now();
       try { refreshStorageMonitor(); } catch (e) {}
+      if (!silent) showToast("Data tersimpan ke Supabase ☁️", "✅");
     } catch (e) {
       console.warn('[KitaAI] Gagal sync ke Supabase:', e.message || e);
+      if (!silent) showToast("Gagal sync ke Supabase: " + (e.message || "network error"), "⚠️");
     }
   }
 
-  /** Jadwalkan sync (debounce 2 detik setelah perubahan terakhir) */
+  /** Jadwalkan sync (debounce 1.5 detik — silent, tanpa toast) */
   function scheduleSyncToSupabase() {
     clearTimeout(_syncDebounceTimer);
-    _syncDebounceTimer = setTimeout(syncAllToSupabase, 1500);
+    _syncDebounceTimer = setTimeout(function () { syncAllToSupabase(true); }, 1500);
   }
 
   /** Hapus semua data user dari Supabase */
@@ -155,9 +168,11 @@
       var result = await sb.auth.getSession();
       var session = result.data && result.data.session;
       if (!session) return;
-      await sb.from('user_data').delete().eq('user_id', session.user.id);
+      var delResult = await sb.from('user_data').delete().eq('user_id', session.user.id);
+      if (delResult.error) throw new Error(delResult.error.message);
     } catch (e) {
       console.warn('[KitaAI] Gagal hapus data dari Supabase:', e.message || e);
+      showToast("Gagal hapus data dari cloud", "⚠️");
     }
   }
 
@@ -516,8 +531,8 @@
       scheduleSyncToSupabase();
       return true;
     } catch (e) {
-      // QuotaExceededError atau localStorage disable
       console.warn("[KitaAI] Gagal simpan ke localStorage:", key, e.message || e);
+      showToast("Penyimpanan lokal penuh! Hapus history chat lama.", "⚠️");
       return false;
     }
   }
@@ -692,7 +707,8 @@
           warnaP2: document.getElementById("font-warna-p2").value,
           warnaAI: document.getElementById("font-warna-ai").value,
           fontFamily: (document.getElementById("font-family") || {}).value || "Inter",
-          lineHeight: parseFloat((document.getElementById("font-lineheight") || {}).value) || 1.6
+          lineHeight: parseFloat((document.getElementById("font-lineheight") || {}).value) || 1.6,
+          fontWeight: (document.getElementById("font-bold") || {}).checked ? "700" : "400"
         };
         saveFontData(fontData);
 
@@ -726,7 +742,8 @@
       warnaP2: "#ffffff",
       warnaAI: "#e0e0e0",
       fontFamily: "Inter",
-      lineHeight: 1.6
+      lineHeight: 1.6,
+      fontWeight: "400"
     };
   }
 
@@ -759,6 +776,7 @@
     var elFontFamily = document.getElementById("font-family");
     var elLineHeight = document.getElementById("font-lineheight");
     var elLineLabel  = document.getElementById("font-lineheight-label");
+    var elBold       = document.getElementById("font-bold");
 
     if (elUkuran)  elUkuran.value = data.ukuran;
     if (elLabel)   elLabel.textContent = data.ukuran + "px";
@@ -788,10 +806,16 @@
     if (elFontFamily) elFontFamily.value = data.fontFamily || "Inter";
     if (elLineHeight) elLineHeight.value = data.lineHeight || 1.6;
     if (elLineLabel)  elLineLabel.textContent = (data.lineHeight || 1.6).toFixed(1);
+    if (elBold)       elBold.checked = (data.fontWeight === "700");
     if (elPreview) {
       if (data.fontFamily) elPreview.style.fontFamily = getFontStack(data.fontFamily);
       elPreview.style.lineHeight = (data.lineHeight || 1.6);
+      elPreview.style.fontWeight = (data.fontWeight === "700") ? "700" : "400";
     }
+    // Tandai preset dot yang sesuai
+    markActivePreset("font-warna-p1", data.warnaP1);
+    markActivePreset("font-warna-p2", data.warnaP2);
+    markActivePreset("font-warna-ai", data.warnaAI);
   }
 
   /** Update preview ukuran font */
@@ -843,17 +867,34 @@
     return map[family] || map["Inter"];
   }
 
+  /** Tandai preset color dot yang cocok dengan warna saat ini */
+  function markActivePreset(targetId, currentColor) {
+    var container = document.querySelector('.color-presets[data-target="' + targetId + '"]');
+    if (!container) return;
+    var dots = container.querySelectorAll(".preset-dot");
+    dots.forEach(function (dot) {
+      var dotColor = dot.getAttribute("data-color");
+      if (dotColor && dotColor.toLowerCase() === (currentColor || "").toLowerCase()) {
+        dot.classList.add("active");
+      } else {
+        dot.classList.remove("active");
+      }
+    });
+  }
+
   /** Terapkan font ke semua bubble yang sudah ada di chat */
   function applyFontToAllBubbles() {
     var data = loadFontData();
     var fontStack = getFontStack(data.fontFamily || "Inter");
     var lineH = data.lineHeight || 1.6;
+    var weight = (data.fontWeight === "700") ? "700" : "400";
 
     // Ukuran font — update semua .bubble-body p
     document.querySelectorAll(".bubble-body p").forEach(function (el) {
       el.style.fontSize = data.ukuran + "px";
       el.style.fontFamily = fontStack;
       el.style.lineHeight = lineH;
+      el.style.fontWeight = weight;
     });
 
     // Warna teks Person 1
@@ -930,6 +971,86 @@
         if (label) label.textContent = val.toFixed(1);
         if (preview) preview.style.lineHeight = val;
         applyFontToAllBubbles();
+      });
+    }
+
+    // -- Bold toggle --
+    var elBold = document.getElementById("font-bold");
+    if (elBold) {
+      elBold.addEventListener("change", function () {
+        var preview = document.getElementById("font-preview-text");
+        if (preview) preview.style.fontWeight = elBold.checked ? "700" : "400";
+        applyFontToAllBubbles();
+      });
+    }
+
+    // -- Preset color dots (delegated click) --
+    document.querySelectorAll(".color-presets").forEach(function (container) {
+      container.addEventListener("click", function (e) {
+        var dot = e.target.closest(".preset-dot");
+        if (!dot) return;
+        var targetId = container.getAttribute("data-target");
+        var color = dot.getAttribute("data-color");
+        if (!targetId || !color) return;
+
+        var input = document.getElementById(targetId);
+        if (!input) return;
+        input.value = color;
+
+        // Trigger input event
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+
+        // Update preview
+        if (targetId === "font-warna-p1") updateFontWarnaPreview("p1");
+        else if (targetId === "font-warna-p2") updateFontWarnaPreview("p2");
+        else updateFontWarnaPreview("ai");
+
+        markActivePreset(targetId, color);
+        applyFontToAllBubbles();
+      });
+    });
+
+    // -- Reset defaults --
+    var btnReset = document.getElementById("btn-reset-font");
+    if (btnReset) {
+      btnReset.addEventListener("click", function () {
+        var defaults = {
+          ukuran: 15, warnaP1: "#ffffff", warnaP2: "#ffffff",
+          warnaAI: "#e0e0e0", fontFamily: "Inter", lineHeight: 1.6, fontWeight: "400"
+        };
+        // Update all form elements
+        var elUkuran = document.getElementById("font-ukuran");
+        var elWarnaP1 = document.getElementById("font-warna-p1");
+        var elWarnaP2 = document.getElementById("font-warna-p2");
+        var elWarnaAI = document.getElementById("font-warna-ai");
+        var elFontFamily = document.getElementById("font-family");
+        var elLineHeight = document.getElementById("font-lineheight");
+        var elBold = document.getElementById("font-bold");
+
+        if (elUkuran) elUkuran.value = defaults.ukuran;
+        if (elWarnaP1) elWarnaP1.value = defaults.warnaP1;
+        if (elWarnaP2) elWarnaP2.value = defaults.warnaP2;
+        if (elWarnaAI) elWarnaAI.value = defaults.warnaAI;
+        if (elFontFamily) elFontFamily.value = defaults.fontFamily;
+        if (elLineHeight) elLineHeight.value = defaults.lineHeight;
+        if (elBold) elBold.checked = false;
+
+        // Update all previews
+        updateFontUkuranPreview();
+        updateFontWarnaPreview("p1");
+        updateFontWarnaPreview("p2");
+        updateFontWarnaPreview("ai");
+        var preview = document.getElementById("font-preview-text");
+        if (preview) {
+          preview.style.fontFamily = getFontStack("Inter");
+          preview.style.lineHeight = "1.6";
+          preview.style.fontWeight = "400";
+        }
+        markActivePreset("font-warna-p1", defaults.warnaP1);
+        markActivePreset("font-warna-p2", defaults.warnaP2);
+        markActivePreset("font-warna-ai", defaults.warnaAI);
+        applyFontToAllBubbles();
+        showToast("Font direset ke default", "🔄");
       });
     }
   }
@@ -1088,7 +1209,7 @@
 
         localStorage.removeItem("kita-chat-history");
         chatHistory = [];
-        syncAllToSupabase();
+        syncAllToSupabase(false);
 
         // Hapus bubble dari area chat
         var area = document.getElementById("chat-bubble-area");
@@ -1464,13 +1585,14 @@
       senderName = "\uD83E\uDD16 " + aiData.nama;
       var aiFontStack = getFontStack(font.fontFamily || "Inter");
       var aiLineH = font.lineHeight || 1.6;
+      var aiWeight = (font.fontWeight === "700") ? "700" : "400";
       html += '<div class="chat-bubble ' + personaClass + '" data-msg-id="' + (msg.id || "") + '">';
       html += '<div class="bubble-header">';
       html += '<span class="bubble-avatar">\uD83E\uDD16</span>';
       html += '<span class="bubble-name">' + escapeHTML(senderName) + '</span>';
       html += '<span class="bubble-time">' + msg.time + '</span>';
       html += '</div>';
-      html += '<div class="bubble-body" style="color:' + font.warnaAI + ';font-size:' + font.ukuran + 'px;font-family:' + aiFontStack + ';line-height:' + aiLineH + ';"><p>' + escapeHTML(msg.text) + '</p></div>';
+      html += '<div class="bubble-body" style="color:' + font.warnaAI + ';font-size:' + font.ukuran + 'px;font-family:' + aiFontStack + ';line-height:' + aiLineH + ';font-weight:' + aiWeight + ';"><p>' + escapeHTML(msg.text) + '</p></div>';
       html += '</div>';
       return html;
     }
@@ -1483,7 +1605,8 @@
     var textColor = isRight ? font.warnaP1 : font.warnaP2;
     var personFontStack = getFontStack(font.fontFamily || "Inter");
     var personLineH = font.lineHeight || 1.6;
-    bubbleStyle = 'style="background:' + senderColor + ';color:' + textColor + ';font-size:' + font.ukuran + 'px;font-family:' + personFontStack + ';line-height:' + personLineH + ';"';
+    var personWeight = (font.fontWeight === "700") ? "700" : "400";
+    bubbleStyle = 'style="background:' + senderColor + ';color:' + textColor + ';font-size:' + font.ukuran + 'px;font-family:' + personFontStack + ';line-height:' + personLineH + ';font-weight:' + personWeight + ';"';
 
     if (msg.type === "voice") personaClass += " bubble-voice";
     if (msg.type === "image") personaClass += " bubble-image";
@@ -2086,7 +2209,7 @@
   /** Logout — signOut dari Supabase & redirect ke login */
   async function doLogout() {
     // Final sync ke Supabase sebelum logout
-    try { await syncAllToSupabase(); } catch (e) {}
+    try { await syncAllToSupabase(false); } catch (e) {}
 
     if (typeof window.supabase !== "undefined" && APP_CONFIG.supabaseUrl) {
       var sb = window.supabase.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
