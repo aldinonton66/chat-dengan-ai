@@ -145,9 +145,13 @@
       }, 150);
     }
 
-    // Saat buka profil, refresh monitor storage
+    // Saat buka profil, refresh form & monitor storage
     if (sectionId === "section-profil") {
-      try { refreshStorageMonitor(); } catch (e) { /* ignore */ }
+      try {
+        populateProfilForm();
+        bindProfilEvents();
+        refreshStorageMonitor();
+      } catch (e) { console.error("[KitaAI] Gagal init profil on show:", e); }
     }
   }
 
@@ -523,7 +527,13 @@
     });
   }
 
+  var _profilBound = false;
+
   function bindProfilEvents() {
+    // Hindari double-binding
+    if (_profilBound) return;
+    _profilBound = true;
+
     var p1Nama  = document.getElementById("profil-p1-nama");
     var p1Warna = document.getElementById("profil-p1-warna");
     var p2Nama  = document.getElementById("profil-p2-nama");
