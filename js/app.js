@@ -882,9 +882,20 @@
     });
   }
 
-  /** Terapkan font ke semua bubble yang sudah ada di chat */
-  function applyFontToAllBubbles() {
+  /** Terapkan font ke semua bubble yang sudah ada di chat.
+   *  @param {Object} [overrides] — nilai dari form (live preview), menggantikan localStorage */
+  function applyFontToAllBubbles(overrides) {
     var data = loadFontData();
+    // Override dengan nilai form saat ini (untuk live preview sebelum save)
+    if (overrides) {
+      if (overrides.ukuran !== undefined)     data.ukuran = overrides.ukuran;
+      if (overrides.warnaP1 !== undefined)    data.warnaP1 = overrides.warnaP1;
+      if (overrides.warnaP2 !== undefined)    data.warnaP2 = overrides.warnaP2;
+      if (overrides.warnaAI !== undefined)    data.warnaAI = overrides.warnaAI;
+      if (overrides.fontFamily !== undefined) data.fontFamily = overrides.fontFamily;
+      if (overrides.lineHeight !== undefined) data.lineHeight = overrides.lineHeight;
+      if (overrides.fontWeight !== undefined) data.fontWeight = overrides.fontWeight;
+    }
     var fontStack = getFontStack(data.fontFamily || "Inter");
     var lineH = data.lineHeight || 1.6;
     var weight = (data.fontWeight === "700") ? "700" : "400";
@@ -915,12 +926,25 @@
 
   /** Binding event form font */
   function bindFontEvents() {
+    // Helper: baca semua nilai form saat ini
+    function getFormOverrides() {
+      return {
+        ukuran:     parseInt((document.getElementById("font-ukuran") || {}).value, 10) || 15,
+        warnaP1:    (document.getElementById("font-warna-p1") || {}).value,
+        warnaP2:    (document.getElementById("font-warna-p2") || {}).value,
+        warnaAI:    (document.getElementById("font-warna-ai") || {}).value,
+        fontFamily: (document.getElementById("font-family") || {}).value,
+        lineHeight: parseFloat((document.getElementById("font-lineheight") || {}).value) || 1.6,
+        fontWeight: (document.getElementById("font-bold") || {}).checked ? "700" : "400"
+      };
+    }
+
     // -- Slider ukuran --
     var elUkuran = document.getElementById("font-ukuran");
     if (elUkuran) {
       elUkuran.addEventListener("input", function () {
         updateFontUkuranPreview();
-        applyFontToAllBubbles();
+        applyFontToAllBubbles(getFormOverrides());
       });
     }
 
@@ -929,7 +953,7 @@
     if (elWarnaP1) {
       elWarnaP1.addEventListener("input", function () {
         updateFontWarnaPreview("p1");
-        applyFontToAllBubbles();
+        applyFontToAllBubbles(getFormOverrides());
       });
     }
 
@@ -938,7 +962,7 @@
     if (elWarnaP2) {
       elWarnaP2.addEventListener("input", function () {
         updateFontWarnaPreview("p2");
-        applyFontToAllBubbles();
+        applyFontToAllBubbles(getFormOverrides());
       });
     }
 
@@ -947,7 +971,7 @@
     if (elWarnaAI) {
       elWarnaAI.addEventListener("input", function () {
         updateFontWarnaPreview("ai");
-        applyFontToAllBubbles();
+        applyFontToAllBubbles(getFormOverrides());
       });
     }
 
@@ -957,7 +981,7 @@
       elFontFamily.addEventListener("change", function () {
         var preview = document.getElementById("font-preview-text");
         if (preview) preview.style.fontFamily = getFontStack(elFontFamily.value);
-        applyFontToAllBubbles();
+        applyFontToAllBubbles(getFormOverrides());
       });
     }
 
@@ -970,7 +994,7 @@
         var val = parseFloat(elLineHeight.value);
         if (label) label.textContent = val.toFixed(1);
         if (preview) preview.style.lineHeight = val;
-        applyFontToAllBubbles();
+        applyFontToAllBubbles(getFormOverrides());
       });
     }
 
@@ -980,7 +1004,7 @@
       elBold.addEventListener("change", function () {
         var preview = document.getElementById("font-preview-text");
         if (preview) preview.style.fontWeight = elBold.checked ? "700" : "400";
-        applyFontToAllBubbles();
+        applyFontToAllBubbles(getFormOverrides());
       });
     }
 
@@ -1006,7 +1030,7 @@
         else updateFontWarnaPreview("ai");
 
         markActivePreset(targetId, color);
-        applyFontToAllBubbles();
+        applyFontToAllBubbles(getFormOverrides());
       });
     });
 
@@ -1049,7 +1073,7 @@
         markActivePreset("font-warna-p1", defaults.warnaP1);
         markActivePreset("font-warna-p2", defaults.warnaP2);
         markActivePreset("font-warna-ai", defaults.warnaAI);
-        applyFontToAllBubbles();
+        applyFontToAllBubbles(defaults);
         showToast("Font direset ke default", "🔄");
       });
     }
