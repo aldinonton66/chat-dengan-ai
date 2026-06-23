@@ -1795,78 +1795,8 @@
     });
   }
 
-  function bindAPIFormEvents() {
-    var toggleForm = document.getElementById("toggle-form-api");
-    var bodyForm   = document.getElementById("body-form-api");
-    var arrowEl    = document.getElementById("arrow-form-api");
-    if (toggleForm && bodyForm) {
-      toggleForm.addEventListener("click", function () {
-        var isHidden = (bodyForm.style.display === "none");
-        bodyForm.style.display = isHidden ? "block" : "none";
-        if (arrowEl) arrowEl.classList.toggle("collapsed", !isHidden);
-      });
-    }
-
-    var provSelect = document.getElementById("api-provider");
-    var grpEndpoint = document.getElementById("group-api-endpoint");
-    if (provSelect && grpEndpoint) {
-      provSelect.addEventListener("change", function () {
-        grpEndpoint.style.display = (provSelect.value === "custom") ? "block" : "none";
-      });
-    }
-
-    var btnToggle = document.getElementById("btn-toggle-key");
-    var keyInput  = document.getElementById("api-key");
-    if (btnToggle && keyInput) {
-      btnToggle.addEventListener("click", function () {
-        var isPassword = (keyInput.type === "password");
-        keyInput.type = isPassword ? "text" : "password";
-        btnToggle.textContent = isPassword ? "🙈" : "👁️";
-      });
-    }
-
-    var btnTambah = document.getElementById("btn-tambah-api");
-    if (btnTambah) {
-      btnTambah.addEventListener("click", function () {
-        var provider = document.getElementById("api-provider").value;
-        var label    = (document.getElementById("api-label").value || "").trim();
-        var key      = (document.getElementById("api-key").value || "").trim();
-        var endpoint = (document.getElementById("api-endpoint").value || "").trim();
-
-        if (!label) { showToast("Nama label harus diisi!", "⚠️"); return; }
-        if (!key)   { showToast("API key harus diisi!", "⚠️"); return; }
-        if (provider === "custom" && !endpoint) { showToast("Endpoint URL harus diisi!", "⚠️"); return; }
-
-        var newItem = {
-          id: "api_" + Date.now(),
-          provider: provider, label: label, key: key,
-          endpoint: (provider === "custom") ? endpoint : "",
-          aktif: true, status: "aktif"
-        };
-
-        var data = loadAPIData();
-        data.push(newItem);
-        saveAPIData(data);
-
-        document.getElementById("api-label").value = "";
-        document.getElementById("api-key").value = "";
-        document.getElementById("api-key").type = "password";
-        document.getElementById("api-endpoint").value = "";
-        document.getElementById("api-provider").value = "claude";
-        if (grpEndpoint) grpEndpoint.style.display = "none";
-        if (btnToggle) btnToggle.textContent = "👁️";
-
-        renderAPIList();
-        showToast("API key ditambahkan!", "✅");
-      });
-    }
-  }
-
   function initAPI() {
     renderAPIList();
-    bindAPIFormEvents();
-    var bodyForm = document.getElementById("body-form-api");
-    if (bodyForm) bodyForm.style.display = "block";
   }
 
   /* ==========================================================

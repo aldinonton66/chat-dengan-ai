@@ -713,108 +713,35 @@
 
       <!-- ======================================================
            #4: PENGATURAN API
-           Form tambah API key + list item + info sistem loop
            ====================================================== -->
       <section id="section-api" class="content-section">
 
         <div class="section-header">
           <h2>🔑 Pengaturan API</h2>
-          <p class="section-desc">Kelola API key untuk AI provider. Gunakan urutan prioritas sebagai fallback.</p>
-        </div>
-
-        <!-- Card: Form Tambah API Key (default collapsed) -->
-        <div class="form-card" id="card-tambah-api">
-          <h3 class="form-card-title form-card-collapse" id="toggle-form-api">
-            <span class="card-icon">➕</span> Tambah API Key
-            <span class="collapse-arrow" id="arrow-form-api">▲</span>
-          </h3>
-
-          <div id="body-form-api">
-            <!-- Pilih provider -->
-            <div class="form-group">
-              <label for="api-provider" class="form-label">Provider</label>
-              <select id="api-provider" class="form-select">
-                <option value="claude">🧠 Claude (Anthropic)</option>
-                <option value="openai">⚡ OpenAI</option>
-                <option value="gemini">🌐 Gemini (Google)</option>
-                <option value="groq">⚡ Groq</option>
-                <option value="xai">🚀 xAI (Grok)</option>
-                <option value="openrouter">🔗 OpenRouter</option>
-                <option value="cerebras">🧠 Cerebras</option>
-                <option value="custom">🔧 Custom</option>
-              </select>
-            </div>
-
-            <!-- Nama label -->
-            <div class="form-group">
-              <label for="api-label" class="form-label">Nama Label</label>
-              <input type="text"
-                     id="api-label"
-                     class="form-input"
-                     placeholder="Contoh: Claude utama"
-                     maxlength="50">
-            </div>
-
-            <!-- API Key -->
-            <div class="form-group">
-              <label for="api-key" class="form-label">API Key</label>
-              <div class="input-password-row">
-                <input type="password"
-                       id="api-key"
-                       class="form-input"
-                       placeholder="sk-... atau AIza..."
-                       maxlength="200">
-                <button id="btn-toggle-key"
-                        class="toggle-vis-btn"
-                        type="button"
-                        title="Tampilkan / sembunyikan API key">
-                  👁️
-                </button>
-              </div>
-            </div>
-
-            <!-- Endpoint URL (hanya muncul jika Custom) -->
-            <div class="form-group" id="group-api-endpoint" style="display: none;">
-              <label for="api-endpoint" class="form-label">Endpoint URL</label>
-              <input type="text"
-                     id="api-endpoint"
-                     class="form-input"
-                     placeholder="https://api.contoh.com/v1/chat"
-                     maxlength="300">
-            </div>
-
-            <!-- Tombol tambah -->
-            <button id="btn-tambah-api"
-                    class="btn-save"
-                    type="button"
-                    style="margin-top: 4px;">
-              ➕ Tambah API Key
-            </button>
-          </div>
+          <p class="section-desc">Provider AI yang tersedia. API key dikelola server (aman).</p>
         </div>
 
         <!-- Info sistem loop -->
         <div class="api-info-box">
           <span class="api-info-icon">🔁</span>
           <span class="api-info-text">
-            API digunakan satu per satu sesuai urutan prioritas. Jika gagal / limit tercapai, otomatis pindah ke API berikutnya.
+            API digunakan satu per satu sesuai urutan prioritas. Jika gagal / limit, otomatis pindah ke API berikutnya.
           </span>
         </div>
 
-        <!-- List API Key -->
+        <!-- List API Key (Server + Manual) -->
         <div class="form-card">
           <h3 class="form-card-title">
-            <span class="card-icon">📋</span> Daftar API Key
+            <span class="card-icon">📋</span> Daftar API
           </h3>
 
           <div id="api-list-container">
             <!-- List akan digenerate oleh app.js -->
           </div>
 
-          <!-- Placeholder saat kosong -->
           <div id="api-kosong" class="api-kosong" style="display: none;">
             <span class="api-kosong-icon">📭</span>
-            <p>Belum ada API key terdaftar.<br>Klik <strong>Tambah API Key</strong> di atas.</p>
+            <p>Belum ada API key terdaftar.</p>
           </div>
         </div>
 
