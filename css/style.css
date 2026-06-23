@@ -17,7 +17,8 @@
 }
 
 html {
-  scroll-behavior: smooth;
+  height: 100%;
+  overflow: hidden;
   font-size: 16px;
 }
 
@@ -110,7 +111,8 @@ body {
   font-family: 'Inter', 'Segoe UI Variable', 'Segoe UI', system-ui, -apple-system, sans-serif;
   background: var(--bg-root);
   color: var(--text-primary);
-  min-height: 100vh;
+  height: 100%;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   transition: background var(--transition-smooth), color var(--transition-smooth);
@@ -2417,7 +2419,8 @@ button:focus-visible {
     radial-gradient(ellipse at 80% 20%, rgba(139,92,246,0.08) 0%, transparent 55%),
     radial-gradient(ellipse at 50% 80%, rgba(59,130,246,0.06) 0%, transparent 55%),
     var(--bg-root);
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   position: relative;
 }
 
