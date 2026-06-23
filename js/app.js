@@ -88,7 +88,7 @@
       return true;
     } catch (e) {
       console.warn('[KitaAI] Gagal load dari Supabase:', e.message || e);
-      showToast("Gagal memuat data dari cloud — pakai data lokal", "⚠️");
+      showToast("Gagal memuat data dari cloud — pakai data lokal", null, "error");
       return false;
     }
   }
@@ -149,10 +149,10 @@
 
       _lastSyncTime = Date.now();
       try { refreshStorageMonitor(); } catch (e) {}
-      if (!silent) showToast("Data tersimpan ke Supabase ☁️", "✅");
+      if (!silent) showToast("Data tersimpan ke cloud", null, "success");
     } catch (e) {
       console.warn('[KitaAI] Gagal sync ke Supabase:', e.message || e);
-      if (!silent) showToast("Gagal sync ke Supabase: " + (e.message || "network error"), "⚠️");
+      if (!silent) showToast("Gagal sync ke cloud: " + (e.message || "network error"), null, "error");
     }
   }
 
@@ -358,13 +358,6 @@
       sidebarEl.style.width = state.width + "px";
     }
 
-    // Sync main-content padding
-    var main = document.getElementById("main-content");
-    if (main) {
-      var w = state.collapsed ? 60 : (state.width || 220);
-      main.style.paddingLeft = (w + 32) + "px";
-    }
-
     // Update ikon toggle
     updateToggleIcon();
   }
@@ -398,13 +391,6 @@
     state.collapsed = isCollapsed;
     saveSidebarState(state);
 
-    // Sync padding
-    var main = document.getElementById("main-content");
-    if (main) {
-      var w = isCollapsed ? 60 : (sidebarEl.offsetWidth || 220);
-      main.style.paddingLeft = (w + 32) + "px";
-    }
-
     // Trigger resize event agar konten menyesuaikan
     setTimeout(function () {
       window.dispatchEvent(new Event("resize"));
@@ -432,14 +418,6 @@
     var startWidth = 0;
     var isResizing = false;
 
-    // Helper: sync main-content padding dengan lebar sidebar saat ini
-    function syncMainContentPadding() {
-      var main = document.getElementById("main-content");
-      if (!main) return;
-      var sidebarWidth = getSidebarEl() ? getSidebarEl().offsetWidth : 220;
-      main.style.paddingLeft = (sidebarWidth + 32) + "px";
-    }
-
     handle.addEventListener("mousedown", function (e) {
       e.preventDefault();
       isResizing = true;
@@ -458,12 +436,11 @@
       var diff = e.clientX - startX;
       var newWidth = startWidth + diff;
 
-      // Batasi min / max
       if (newWidth < 60) newWidth = 60;
       if (newWidth > 320) newWidth = 320;
 
       var el = getSidebarEl();
-      if (el) { el.style.width = newWidth + "px"; syncMainContentPadding(); }
+      if (el) el.style.width = newWidth + "px";
     });
 
     document.addEventListener("mouseup", function () {
@@ -473,15 +450,11 @@
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
 
-      // Simpan lebar
       var state = loadSidebarState();
       var el = getSidebarEl();
-      if (el) { state.width = el.offsetWidth; syncMainContentPadding(); }
+      if (el) state.width = el.offsetWidth;
       saveSidebarState(state);
     });
-
-    // Inisialisasi awal
-    syncMainContentPadding();
   }
       saveSidebarState(state);
     });
@@ -527,13 +500,25 @@
      TOAST NOTIFIKASI
      ========================================================== */
 
-  function showToast(teks, ikon) {
+  function showToast(teks, ikon, type) {
     var toastEl   = document.getElementById("toast");
     var toastIcon = document.getElementById("toast-icon");
     var toastText = document.getElementById("toast-text");
     if (!toastEl || !toastText) return;
 
-    toastIcon.textContent = ikon || "✅";
+    // Reset class
+    toastEl.classList.remove("success", "error");
+
+    if (type === "success") {
+      toastEl.classList.add("success");
+      toastIcon.textContent = "✓";
+    } else if (type === "error") {
+      toastEl.classList.add("error");
+      toastIcon.textContent = "✗";
+    } else {
+      toastIcon.textContent = ikon || "ℹ️";
+    }
+
     toastText.textContent = teks;
     toastEl.classList.add("show");
 
@@ -604,8 +589,9 @@
       try { return JSON.parse(saved); } catch (e) { /* fallback */ }
     }
     return {
-      person1: { nama: "Kamu",  warna: "#3b82f6" },
-      person2: { nama: "Sari",  warna: "#ec4899" }
+      person1: { nama: "Kamu",  warna: "#3b82f6", warnaTeks: "#ffffff" },
+      person2: { nama: "Sari",  warna: "#ec4899", warnaTeks: "#ffffff" },
+      ai:      { nama: "Kita AI", avatar: "🤖", warnaBubble: "#7c3aed", warnaTeks: "#e0e0e0" }
     };
   }
 
@@ -616,51 +602,109 @@
 
   function populateProfilForm() {
     var data = loadProfilData();
+
+    // Person 1
     var p1Nama  = document.getElementById("profil-p1-nama");
     var p1Warna = document.getElementById("profil-p1-warna");
     var p1Hex   = document.getElementById("profil-p1-hex");
-    var p2Nama  = document.getElementById("profil-p2-nama");
-    var p2Warna = document.getElementById("profil-p2-warna");
-    var p2Hex   = document.getElementById("profil-p2-hex");
+    var p1Teks  = document.getElementById("profil-p1-teks");
+    var p1TeksHex = document.getElementById("profil-p1-teks-hex");
 
     if (p1Nama)  p1Nama.value  = data.person1.nama;
     if (p1Warna) p1Warna.value = data.person1.warna;
     if (p1Hex)   p1Hex.textContent = data.person1.warna;
+    if (p1Teks)  p1Teks.value = data.person1.warnaTeks || "#ffffff";
+    if (p1TeksHex) p1TeksHex.textContent = data.person1.warnaTeks || "#ffffff";
+
+    // Person 2
+    var p2Nama  = document.getElementById("profil-p2-nama");
+    var p2Warna = document.getElementById("profil-p2-warna");
+    var p2Hex   = document.getElementById("profil-p2-hex");
+    var p2Teks  = document.getElementById("profil-p2-teks");
+    var p2TeksHex = document.getElementById("profil-p2-teks-hex");
+
     if (p2Nama)  p2Nama.value  = data.person2.nama;
     if (p2Warna) p2Warna.value = data.person2.warna;
     if (p2Hex)   p2Hex.textContent = data.person2.warna;
+    if (p2Teks)  p2Teks.value = data.person2.warnaTeks || "#ffffff";
+    if (p2TeksHex) p2TeksHex.textContent = data.person2.warnaTeks || "#ffffff";
+
+    // AI profile
+    var ai = data.ai || { nama: "Kita AI", avatar: "🤖", warnaBubble: "#7c3aed", warnaTeks: "#e0e0e0" };
+    var aiNama  = document.getElementById("profil-ai-nama");
+    var aiAvatar = document.getElementById("profil-ai-avatar");
+    var aiAvatarPrev = document.getElementById("profil-ai-avatar-preview");
+    var aiWarnaBubble = document.getElementById("profil-ai-warna-bubble");
+    var aiWarnaBubbleHex = document.getElementById("profil-ai-warna-bubble-hex");
+    var aiTeks  = document.getElementById("profil-ai-teks");
+    var aiTeksHex = document.getElementById("profil-ai-teks-hex");
+
+    if (aiNama)  aiNama.value  = ai.nama;
+    if (aiAvatar) aiAvatar.value = ai.avatar;
+    if (aiAvatarPrev) aiAvatarPrev.textContent = ai.avatar;
+    if (aiWarnaBubble) aiWarnaBubble.value = ai.warnaBubble;
+    if (aiWarnaBubbleHex) aiWarnaBubbleHex.textContent = ai.warnaBubble;
+    if (aiTeks)  aiTeks.value = ai.warnaTeks;
+    if (aiTeksHex) aiTeksHex.textContent = ai.warnaTeks;
 
     updateProfilPreview("p1");
     updateProfilPreview("p2");
+    updateProfilPreview("ai");
     updateSpeakerDropdown();
     updateExistingBubbles();
   }
 
   function updateProfilPreview(target) {
+    if (target === "ai") {
+      var aiNama = document.getElementById("profil-ai-nama");
+      var aiAvatar = document.getElementById("profil-ai-avatar");
+      var aiWarnaBubble = document.getElementById("profil-ai-warna-bubble");
+      var aiTeks = document.getElementById("profil-ai-teks");
+      var namaPrev = document.getElementById("preview-ai-nama");
+      var avatarPrev = document.getElementById("preview-ai-avatar-icon");
+      var bodyPrev = document.getElementById("preview-ai-body");
+
+      if (aiNama && namaPrev) namaPrev.textContent = aiNama.value.trim() || "AI";
+      if (aiAvatar && avatarPrev) avatarPrev.textContent = aiAvatar.value || "🤖";
+      if (bodyPrev) {
+        if (aiWarnaBubble) bodyPrev.style.background = aiWarnaBubble.value;
+        if (aiTeks) bodyPrev.style.color = aiTeks.value;
+      }
+      var hexEl = document.getElementById("profil-ai-warna-bubble-hex");
+      if (hexEl && aiWarnaBubble) hexEl.textContent = aiWarnaBubble.value;
+      var teksHexEl = document.getElementById("profil-ai-teks-hex");
+      if (teksHexEl && aiTeks) teksHexEl.textContent = aiTeks.value;
+      return;
+    }
+
     var prefix = (target === "p1")
-      ? { namaId: "profil-p1-nama", warnaId: "profil-p1-warna",
+      ? { namaId: "profil-p1-nama", warnaId: "profil-p1-warna", teksId: "profil-p1-teks",
           previewId: "preview-p1", namaPreviewId: "preview-p1-nama",
-          bodyPreviewId: "preview-p1-body" }
-      : { namaId: "profil-p2-nama", warnaId: "profil-p2-warna",
+          bodyPreviewId: "preview-p1-body", hexId: "profil-p1-hex", teksHexId: "profil-p1-teks-hex" }
+      : { namaId: "profil-p2-nama", warnaId: "profil-p2-warna", teksId: "profil-p2-teks",
           previewId: "preview-p2", namaPreviewId: "preview-p2-nama",
-          bodyPreviewId: "preview-p2-body" };
+          bodyPreviewId: "preview-p2-body", hexId: "profil-p2-hex", teksHexId: "profil-p2-teks-hex" };
 
     var namaInput  = document.getElementById(prefix.namaId);
     var warnaInput = document.getElementById(prefix.warnaId);
+    var teksInput  = document.getElementById(prefix.teksId);
     var namaPrev   = document.getElementById(prefix.namaPreviewId);
     var bodyPrev   = document.getElementById(prefix.bodyPreviewId);
 
     if (!namaInput || !warnaInput) return;
     var nama  = namaInput.value.trim() || "Nama";
     var warna = warnaInput.value;
+    var teks  = teksInput ? teksInput.value : "#ffffff";
 
     if (namaPrev) namaPrev.textContent = nama;
     if (bodyPrev) {
       bodyPrev.style.background = warna;
-      bodyPrev.style.color = isLightColor(warna) ? "#1a1a1a" : "#ffffff";
+      bodyPrev.style.color = teks;
     }
-    var hexEl = document.getElementById("profil-" + target + "-hex");
+    var hexEl = document.getElementById(prefix.hexId);
     if (hexEl) hexEl.textContent = warna;
+    var teksHexEl = document.getElementById(prefix.teksHexId);
+    if (teksHexEl) teksHexEl.textContent = teks;
   }
 
   /** Update nama di dropdown speaker chat */
@@ -675,45 +719,67 @@
   /** Update nama & warna bubble yang sudah ada di area chat */
   function updateExistingBubbles() {
     var data = loadProfilData();
-    var aiData = loadAIData();
+    var ai = data.ai || { nama: "Kita AI", avatar: "🤖", warnaBubble: "#7c3aed", warnaTeks: "#e0e0e0" };
 
     document.querySelectorAll(".bubble-person1 .bubble-name").forEach(function (el) {
       el.textContent = "✨ " + data.person1.nama;
     });
     document.querySelectorAll(".bubble-person1 .bubble-body").forEach(function (el) {
       el.style.background = data.person1.warna;
-      // Warna teks diatur terpisah oleh applyFontToAllBubbles()
+      el.style.color = data.person1.warnaTeks || "#ffffff";
     });
     document.querySelectorAll(".bubble-person2 .bubble-name").forEach(function (el) {
       el.textContent = "🌸 " + data.person2.nama;
     });
     document.querySelectorAll(".bubble-person2 .bubble-body").forEach(function (el) {
       el.style.background = data.person2.warna;
-      // Warna teks diatur terpisah oleh applyFontToAllBubbles()
+      el.style.color = data.person2.warnaTeks || "#ffffff";
     });
 
-    // Update nama AI di bubble yang sudah ada
+    // Update AI bubble
     document.querySelectorAll(".bubble-ai .bubble-name").forEach(function (el) {
-      el.textContent = "🤖 " + aiData.nama;
+      el.textContent = ai.avatar + " " + ai.nama;
+    });
+    document.querySelectorAll(".bubble-ai .bubble-body").forEach(function (el) {
+      el.style.background = ai.warnaBubble;
+      el.style.color = ai.warnaTeks || "#e0e0e0";
+    });
+    document.querySelectorAll(".bubble-ai .bubble-avatar").forEach(function (el) {
+      el.textContent = ai.avatar;
     });
   }
 
   var _profilBound = false;
 
   function bindProfilEvents() {
-    // Hindari double-binding
     if (_profilBound) return;
     _profilBound = true;
 
     var p1Nama  = document.getElementById("profil-p1-nama");
     var p1Warna = document.getElementById("profil-p1-warna");
+    var p1Teks  = document.getElementById("profil-p1-teks");
     var p2Nama  = document.getElementById("profil-p2-nama");
     var p2Warna = document.getElementById("profil-p2-warna");
+    var p2Teks  = document.getElementById("profil-p2-teks");
+    var aiNama  = document.getElementById("profil-ai-nama");
+    var aiAvatar = document.getElementById("profil-ai-avatar");
+    var aiWarnaBubble = document.getElementById("profil-ai-warna-bubble");
+    var aiTeks  = document.getElementById("profil-ai-teks");
 
     if (p1Nama)  p1Nama.addEventListener("input",  function () { updateProfilPreview("p1"); });
     if (p1Warna) p1Warna.addEventListener("input", function () { updateProfilPreview("p1"); });
+    if (p1Teks)  p1Teks.addEventListener("input",  function () { updateProfilPreview("p1"); markActivePreset("profil-p1-teks", p1Teks.value); });
     if (p2Nama)  p2Nama.addEventListener("input",  function () { updateProfilPreview("p2"); });
     if (p2Warna) p2Warna.addEventListener("input", function () { updateProfilPreview("p2"); });
+    if (p2Teks)  p2Teks.addEventListener("input",  function () { updateProfilPreview("p2"); markActivePreset("profil-p2-teks", p2Teks.value); });
+    if (aiNama)  aiNama.addEventListener("input",  function () { updateProfilPreview("ai"); });
+    if (aiAvatar) aiAvatar.addEventListener("input", function () {
+      var prev = document.getElementById("profil-ai-avatar-preview");
+      if (prev) prev.textContent = aiAvatar.value || "🤖";
+      updateProfilPreview("ai");
+    });
+    if (aiWarnaBubble) aiWarnaBubble.addEventListener("input", function () { updateProfilPreview("ai"); });
+    if (aiTeks)  aiTeks.addEventListener("input",  function () { updateProfilPreview("ai"); markActivePreset("profil-ai-teks", aiTeks.value); });
 
     var btnSimpan = document.getElementById("btn-simpan-profil");
     if (btnSimpan) {
@@ -721,21 +787,26 @@
         var data = {
           person1: {
             nama:  (document.getElementById("profil-p1-nama").value || "").trim() || "Kamu",
-            warna: document.getElementById("profil-p1-warna").value
+            warna: document.getElementById("profil-p1-warna").value,
+            warnaTeks: (document.getElementById("profil-p1-teks") || {}).value || "#ffffff"
           },
           person2: {
             nama:  (document.getElementById("profil-p2-nama").value || "").trim() || "Sari",
-            warna: document.getElementById("profil-p2-warna").value
+            warna: document.getElementById("profil-p2-warna").value,
+            warnaTeks: (document.getElementById("profil-p2-teks") || {}).value || "#ffffff"
+          },
+          ai: {
+            nama: (document.getElementById("profil-ai-nama") || {}).value || "Kita AI",
+            avatar: (document.getElementById("profil-ai-avatar") || {}).value || "🤖",
+            warnaBubble: (document.getElementById("profil-ai-warna-bubble") || {}).value || "#7c3aed",
+            warnaTeks: (document.getElementById("profil-ai-teks") || {}).value || "#e0e0e0"
           }
         };
         saveProfilData(data);
 
         // Simpan juga data font
         var fontData = {
-          ukuran:  parseInt(document.getElementById("font-ukuran").value, 10) || 15,
-          warnaP1: document.getElementById("font-warna-p1").value,
-          warnaP2: document.getElementById("font-warna-p2").value,
-          warnaAI: document.getElementById("font-warna-ai").value,
+          ukuran:  parseInt((document.getElementById("font-ukuran") || {}).value, 10) || 15,
           fontFamily: (document.getElementById("font-family") || {}).value || "Inter",
           lineHeight: parseFloat((document.getElementById("font-lineheight") || {}).value) || 1.6,
           fontWeight: (document.getElementById("font-bold") || {}).checked ? "700" : "400"
@@ -746,7 +817,7 @@
         updateExistingBubbles();
         applyFontToAllBubbles();
         refreshStorageMonitor();
-        showToast("Profil & font disimpan!", "✅");
+        showToast("Profil & font berhasil disimpan", null, "success");
       });
     }
   }
@@ -768,9 +839,6 @@
     }
     return {
       ukuran: 15,
-      warnaP1: "#ffffff",
-      warnaP2: "#ffffff",
-      warnaAI: "#e0e0e0",
       fontFamily: "Inter",
       lineHeight: 1.6,
       fontWeight: "400"
@@ -790,19 +858,6 @@
     var elUkuran     = document.getElementById("font-ukuran");
     var elLabel      = document.getElementById("font-ukuran-label");
     var elPreview    = document.getElementById("font-preview-text");
-
-    var elWarnaP1    = document.getElementById("font-warna-p1");
-    var elHexP1      = document.getElementById("font-warna-p1-hex");
-    var elSwatchP1   = document.getElementById("font-warna-p1-preview");
-
-    var elWarnaP2    = document.getElementById("font-warna-p2");
-    var elHexP2      = document.getElementById("font-warna-p2-hex");
-    var elSwatchP2   = document.getElementById("font-warna-p2-preview");
-
-    var elWarnaAI    = document.getElementById("font-warna-ai");
-    var elHexAI      = document.getElementById("font-warna-ai-hex");
-    var elSwatchAI   = document.getElementById("font-warna-ai-preview");
-
     var elFontFamily = document.getElementById("font-family");
     var elLineHeight = document.getElementById("font-lineheight");
     var elLineLabel  = document.getElementById("font-lineheight-label");
@@ -810,42 +865,16 @@
 
     if (elUkuran)  elUkuran.value = data.ukuran;
     if (elLabel)   elLabel.textContent = data.ukuran + "px";
-    if (elPreview) elPreview.style.fontSize = data.ukuran + "px";
-
-    if (elWarnaP1) elWarnaP1.value = data.warnaP1;
-    if (elHexP1)   elHexP1.textContent = data.warnaP1;
-    if (elSwatchP1) {
-      elSwatchP1.style.background = data.warnaP1;
-      elSwatchP1.style.color = isLightColor(data.warnaP1) ? "#1a1a1a" : "#ffffff";
+    if (elPreview) {
+      elPreview.style.fontSize = data.ukuran + "px";
+      elPreview.style.fontFamily = getFontStack(data.fontFamily || "Inter");
+      elPreview.style.lineHeight = (data.lineHeight || 1.6);
+      elPreview.style.fontWeight = (data.fontWeight === "700") ? "700" : "400";
     }
-
-    if (elWarnaP2) elWarnaP2.value = data.warnaP2;
-    if (elHexP2)   elHexP2.textContent = data.warnaP2;
-    if (elSwatchP2) {
-      elSwatchP2.style.background = data.warnaP2;
-      elSwatchP2.style.color = isLightColor(data.warnaP2) ? "#1a1a1a" : "#ffffff";
-    }
-
-    if (elWarnaAI) elWarnaAI.value = data.warnaAI;
-    if (elHexAI)   elHexAI.textContent = data.warnaAI;
-    if (elSwatchAI) {
-      elSwatchAI.style.background = data.warnaAI;
-      elSwatchAI.style.color = isLightColor(data.warnaAI) ? "#1a1a1a" : "#ffffff";
-    }
-
     if (elFontFamily) elFontFamily.value = data.fontFamily || "Inter";
     if (elLineHeight) elLineHeight.value = data.lineHeight || 1.6;
     if (elLineLabel)  elLineLabel.textContent = (data.lineHeight || 1.6).toFixed(1);
     if (elBold)       elBold.checked = (data.fontWeight === "700");
-    if (elPreview) {
-      if (data.fontFamily) elPreview.style.fontFamily = getFontStack(data.fontFamily);
-      elPreview.style.lineHeight = (data.lineHeight || 1.6);
-      elPreview.style.fontWeight = (data.fontWeight === "700") ? "700" : "400";
-    }
-    // Tandai preset dot yang sesuai
-    markActivePreset("font-warna-p1", data.warnaP1);
-    markActivePreset("font-warna-p2", data.warnaP2);
-    markActivePreset("font-warna-ai", data.warnaAI);
   }
 
   /** Update preview ukuran font */
@@ -912,16 +941,11 @@
     });
   }
 
-  /** Terapkan font ke semua bubble yang sudah ada di chat.
-   *  @param {Object} [overrides] — nilai dari form (live preview), menggantikan localStorage */
+  /** Terapkan font (ukuran, family, line-height, weight) ke semua bubble */
   function applyFontToAllBubbles(overrides) {
     var data = loadFontData();
-    // Override dengan nilai form saat ini (untuk live preview sebelum save)
     if (overrides) {
       if (overrides.ukuran !== undefined)     data.ukuran = overrides.ukuran;
-      if (overrides.warnaP1 !== undefined)    data.warnaP1 = overrides.warnaP1;
-      if (overrides.warnaP2 !== undefined)    data.warnaP2 = overrides.warnaP2;
-      if (overrides.warnaAI !== undefined)    data.warnaAI = overrides.warnaAI;
       if (overrides.fontFamily !== undefined) data.fontFamily = overrides.fontFamily;
       if (overrides.lineHeight !== undefined) data.lineHeight = overrides.lineHeight;
       if (overrides.fontWeight !== undefined) data.fontWeight = overrides.fontWeight;
@@ -930,7 +954,6 @@
     var lineH = data.lineHeight || 1.6;
     var weight = (data.fontWeight === "700") ? "700" : "400";
 
-    // Ukuran font — update semua .bubble-body p
     document.querySelectorAll(".bubble-body p").forEach(function (el) {
       el.style.fontSize = data.ukuran + "px";
       el.style.fontFamily = fontStack;
@@ -938,31 +961,14 @@
       el.style.fontWeight = weight;
     });
 
-    // Warna teks Person 1
-    document.querySelectorAll(".bubble-person1 .bubble-body").forEach(function (el) {
-      el.style.color = data.warnaP1;
-    });
-
-    // Warna teks Person 2
-    document.querySelectorAll(".bubble-person2 .bubble-body").forEach(function (el) {
-      el.style.color = data.warnaP2;
-    });
-
-    // Warna teks AI
-    document.querySelectorAll(".bubble-ai .bubble-body").forEach(function (el) {
-      el.style.color = data.warnaAI;
-    });
+    // Warna teks diambil dari profil masing-masing via updateExistingBubbles()
   }
 
   /** Binding event form font */
   function bindFontEvents() {
-    // Helper: baca semua nilai form saat ini
     function getFormOverrides() {
       return {
         ukuran:     parseInt((document.getElementById("font-ukuran") || {}).value, 10) || 15,
-        warnaP1:    (document.getElementById("font-warna-p1") || {}).value,
-        warnaP2:    (document.getElementById("font-warna-p2") || {}).value,
-        warnaAI:    (document.getElementById("font-warna-ai") || {}).value,
         fontFamily: (document.getElementById("font-family") || {}).value,
         lineHeight: parseFloat((document.getElementById("font-lineheight") || {}).value) || 1.6,
         fontWeight: (document.getElementById("font-bold") || {}).checked ? "700" : "400"
@@ -974,33 +980,6 @@
     if (elUkuran) {
       elUkuran.addEventListener("input", function () {
         updateFontUkuranPreview();
-        applyFontToAllBubbles(getFormOverrides());
-      });
-    }
-
-    // -- Color picker Person 1 --
-    var elWarnaP1 = document.getElementById("font-warna-p1");
-    if (elWarnaP1) {
-      elWarnaP1.addEventListener("input", function () {
-        updateFontWarnaPreview("p1");
-        applyFontToAllBubbles(getFormOverrides());
-      });
-    }
-
-    // -- Color picker Person 2 --
-    var elWarnaP2 = document.getElementById("font-warna-p2");
-    if (elWarnaP2) {
-      elWarnaP2.addEventListener("input", function () {
-        updateFontWarnaPreview("p2");
-        applyFontToAllBubbles(getFormOverrides());
-      });
-    }
-
-    // -- Color picker AI --
-    var elWarnaAI = document.getElementById("font-warna-ai");
-    if (elWarnaAI) {
-      elWarnaAI.addEventListener("input", function () {
-        updateFontWarnaPreview("ai");
         applyFontToAllBubbles(getFormOverrides());
       });
     }
@@ -1097,7 +1076,7 @@
         markActivePreset("font-warna-p2", defaults.warnaP2);
         markActivePreset("font-warna-ai", defaults.warnaAI);
         applyFontToAllBubbles(defaults);
-        showToast("Font direset ke default", "🔄");
+        showToast("Font direset ke default", null, "success");
       });
     }
   }
@@ -1492,7 +1471,7 @@
         saveAIData(data);
         updateExistingBubbles();
         refreshStorageMonitor();
-        showToast("Pengaturan AI disimpan!", "✅");
+        showToast("Pengaturan AI berhasil disimpan", null, "success");
       });
     }
   }
@@ -1630,7 +1609,7 @@
   function buildBubbleHTML(msg) {
     var prof = loadProfilData();
     var font = loadFontData();
-    var aiData = loadAIData();
+    var ai = prof.ai || { nama: "Kita AI", avatar: "🤖", warnaBubble: "#7c3aed", warnaTeks: "#e0e0e0" };
     var html = "";
     var personaClass = "";
     var bubbleStyle = "";
@@ -1639,17 +1618,17 @@
     // AI bubble — dibangun terpisah
     if (msg.role === "assistant") {
       personaClass = "bubble-left bubble-ai";
-      senderName = "\uD83E\uDD16 " + aiData.nama;
+      senderName = ai.avatar + " " + ai.nama;
       var aiFontStack = getFontStack(font.fontFamily || "Inter");
       var aiLineH = font.lineHeight || 1.6;
       var aiWeight = (font.fontWeight === "700") ? "700" : "400";
       html += '<div class="chat-bubble ' + personaClass + '" data-msg-id="' + (msg.id || "") + '">';
       html += '<div class="bubble-header">';
-      html += '<span class="bubble-avatar">\uD83E\uDD16</span>';
+      html += '<span class="bubble-avatar">' + escapeHTML(ai.avatar) + '</span>';
       html += '<span class="bubble-name">' + escapeHTML(senderName) + '</span>';
       html += '<span class="bubble-time">' + msg.time + '</span>';
       html += '</div>';
-      html += '<div class="bubble-body" style="color:' + font.warnaAI + ';font-size:' + font.ukuran + 'px;font-family:' + aiFontStack + ';line-height:' + aiLineH + ';font-weight:' + aiWeight + ';"><p>' + escapeHTML(msg.text) + '</p></div>';
+      html += '<div class="bubble-body" style="background:' + ai.warnaBubble + ';color:' + ai.warnaTeks + ';font-size:' + font.ukuran + 'px;font-family:' + aiFontStack + ';line-height:' + aiLineH + ';font-weight:' + aiWeight + ';"><p>' + escapeHTML(msg.text) + '</p></div>';
       html += '</div>';
       return html;
     }
@@ -1657,9 +1636,10 @@
     // Person bubble
     var isRight = (msg.sender === "person1");
     personaClass = isRight ? "bubble-right bubble-person1" : "bubble-left bubble-person2";
-    senderName = isRight ? ("\u2728 " + prof.person1.nama) : ("\uD83C\uDF38 " + prof.person2.nama);
-    var senderColor = isRight ? prof.person1.warna : prof.person2.warna;
-    var textColor = isRight ? font.warnaP1 : font.warnaP2;
+    var person = isRight ? prof.person1 : prof.person2;
+    senderName = isRight ? ("✨ " + person.nama) : ("🌸 " + person.nama);
+    var senderColor = person.warna;
+    var textColor = person.warnaTeks || (isRight ? "#ffffff" : "#ffffff");
     var personFontStack = getFontStack(font.fontFamily || "Inter");
     var personLineH = font.lineHeight || 1.6;
     var personWeight = (font.fontWeight === "700") ? "700" : "400";
