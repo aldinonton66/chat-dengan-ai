@@ -637,14 +637,14 @@
     });
     document.querySelectorAll(".bubble-person1 .bubble-body").forEach(function (el) {
       el.style.background = data.person1.warna;
-      el.style.color = isLightColor(data.person1.warna) ? "#1a1a1a" : "#ffffff";
+      // Warna teks diatur terpisah oleh applyFontToAllBubbles()
     });
     document.querySelectorAll(".bubble-person2 .bubble-name").forEach(function (el) {
       el.textContent = "🌸 " + data.person2.nama;
     });
     document.querySelectorAll(".bubble-person2 .bubble-body").forEach(function (el) {
       el.style.background = data.person2.warna;
-      el.style.color = isLightColor(data.person2.warna) ? "#1a1a1a" : "#ffffff";
+      // Warna teks diatur terpisah oleh applyFontToAllBubbles()
     });
 
     // Update nama AI di bubble yang sudah ada
@@ -827,17 +827,12 @@
 
     // Warna teks Person 1
     document.querySelectorAll(".bubble-person1 .bubble-body").forEach(function (el) {
-      // Hanya ubah color jika bukan inline style dari profil (cek apakah inline background ada)
-      if (el.style.background) {
-        el.style.color = data.warnaP1;
-      }
+      el.style.color = data.warnaP1;
     });
 
     // Warna teks Person 2
     document.querySelectorAll(".bubble-person2 .bubble-body").forEach(function (el) {
-      if (el.style.background) {
-        el.style.color = data.warnaP2;
-      }
+      el.style.color = data.warnaP2;
     });
 
     // Warna teks AI
