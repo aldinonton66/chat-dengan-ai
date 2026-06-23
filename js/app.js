@@ -1234,10 +1234,13 @@
   /** Dapatkan endpoint URL sesuai provider */
   function getEndpointForProvider(provider, customEndpoint) {
     var endpoints = {
-      claude: "https://api.anthropic.com/v1/messages",
-      openai: "https://api.openai.com/v1/chat/completions",
-      gemini: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
-      groq:   "https://api.groq.com/openai/v1/chat/completions"
+      claude:     "https://api.anthropic.com/v1/messages",
+      openai:     "https://api.openai.com/v1/chat/completions",
+      gemini:     "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+      groq:       "https://api.groq.com/openai/v1/chat/completions",
+      xai:        "https://api.x.ai/v1/chat/completions",
+      openrouter: "https://openrouter.ai/api/v1/chat/completions",
+      cerebras:   "https://api.cerebras.ai/v1/chat/completions"
     };
     return (provider === "custom" && customEndpoint) ? customEndpoint : (endpoints[provider] || "");
   }
@@ -1253,11 +1256,17 @@
         break;
       case "openai":
       case "groq":
+      case "xai":
+      case "cerebras":
         base["Authorization"] = "Bearer " + apiKey;
+        break;
+      case "openrouter":
+        base["Authorization"] = "Bearer " + apiKey;
+        base["HTTP-Referer"] = "https://aldinonton66.github.io";
+        base["X-Title"] = "Kita & AI";
         break;
       case "gemini":
         // Gemini pakai query param key, bukan header
-        // Tapi kita tetap set — endpoint sudah include ?key=...
         break;
       default:
         base["Authorization"] = "Bearer " + apiKey;
@@ -1270,7 +1279,6 @@
   function buildRequestBody(provider, messages) {
     switch (provider) {
       case "claude":
-        // Konversi system prompt ke parameter top-level Claude
         var systemMsg = "";
         var claudeMsgs = [];
         messages.forEach(function (m) {
@@ -1288,15 +1296,41 @@
         };
 
       case "openai":
+        return {
+          model: "gpt-3.5-turbo",
+          max_tokens: 500,
+          messages: messages
+        };
+
       case "groq":
         return {
-          model: (provider === "groq") ? "llama-3.3-70b-versatile" : "gpt-3.5-turbo",
+          model: "llama-3.3-70b-versatile",
+          max_tokens: 500,
+          messages: messages
+        };
+
+      case "xai":
+        return {
+          model: "grok-2-1212",
+          max_tokens: 500,
+          messages: messages
+        };
+
+      case "openrouter":
+        return {
+          model: "google/gemini-2.0-flash-001",
+          max_tokens: 500,
+          messages: messages
+        };
+
+      case "cerebras":
+        return {
+          model: "llama3.1-8b",
           max_tokens: 500,
           messages: messages
         };
 
       case "gemini":
-        // Format Gemini: array contents dengan role user/model
         var geminiContents = [];
         messages.forEach(function (m) {
           var role = (m.role === "system" || m.role === "user") ? "user" : "model";
@@ -1310,7 +1344,6 @@
         };
 
       default:
-        // Custom — asumsikan format OpenAI-compatible
         return {
           model: "gpt-3.5-turbo",
           max_tokens: 500,
@@ -1325,14 +1358,17 @@
       switch (provider) {
         case "claude":
           return data.content && data.content[0] ? data.content[0].text : null;
-      case "openai":
-      case "groq":
+        case "openai":
+        case "groq":
+        case "xai":
+        case "cerebras":
+          return data.choices && data.choices[0] ? data.choices[0].message.content : null;
+        case "openrouter":
           return data.choices && data.choices[0] ? data.choices[0].message.content : null;
         case "gemini":
           return data.candidates && data.candidates[0]
             ? data.candidates[0].content.parts[0].text : null;
         default:
-          // Custom — coba OpenAI format dulu
           if (data.choices && data.choices[0]) return data.choices[0].message.content;
           if (data.content && data.content[0]) return data.content[0].text;
           return null;
@@ -1422,11 +1458,14 @@
     if (data.length === 0) { container.innerHTML = ""; return; }
 
     var providerMap = {
-      claude: { lbl: "Claude",  cls: "api-badge-claude" },
-      openai: { lbl: "OpenAI",  cls: "api-badge-openai" },
-      gemini: { lbl: "Gemini",  cls: "api-badge-gemini" },
-      groq:   { lbl: "Groq",    cls: "api-badge-groq" },
-      custom: { lbl: "Custom",  cls: "api-badge-custom" }
+      claude:     { lbl: "Claude",     cls: "api-badge-claude" },
+      openai:     { lbl: "OpenAI",     cls: "api-badge-openai" },
+      gemini:     { lbl: "Gemini",     cls: "api-badge-gemini" },
+      groq:       { lbl: "Groq",       cls: "api-badge-groq" },
+      xai:        { lbl: "xAI",        cls: "api-badge-xai" },
+      openrouter: { lbl: "OpenRouter", cls: "api-badge-openrouter" },
+      cerebras:   { lbl: "Cerebras",   cls: "api-badge-cerebras" },
+      custom:     { lbl: "Custom",     cls: "api-badge-custom" }
     };
     var statusMap = {
       aktif:    { lbl: "Aktif",    cls: "api-status-aktif" },

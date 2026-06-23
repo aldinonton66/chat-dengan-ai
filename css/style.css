@@ -2564,11 +2564,14 @@ button:focus-visible {
   margin-right: 6px;
 }
 
-.api-badge-claude  { background: #f5e6d0; color: #8b5e3c; }
-.api-badge-openai  { background: #d6f5e0; color: #1e7e34; }
-.api-badge-gemini  { background: #d6e8f5; color: #1a5f8a; }
-.api-badge-custom  { background: var(--accent-soft); color: var(--accent); }
-.api-badge-groq    { background: #f97316; color: #fff; }
+.api-badge-claude     { background: #f5e6d0; color: #8b5e3c; }
+.api-badge-openai     { background: #d6f5e0; color: #1e7e34; }
+.api-badge-gemini     { background: #d6e8f5; color: #1a5f8a; }
+.api-badge-groq       { background: #f97316; color: #fff; }
+.api-badge-xai        { background: #1a1a1a; color: #fff; border: 1px solid #444; }
+.api-badge-openrouter { background: #e8d5f5; color: #6b21a8; }
+.api-badge-cerebras   { background: #fef3c7; color: #92400e; }
+.api-badge-custom     { background: var(--accent-soft); color: var(--accent); }
 
 /* Badge status */
 .api-status {
