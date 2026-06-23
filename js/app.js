@@ -2484,6 +2484,8 @@
     var password  = document.getElementById("login-password");
     var errorEl   = document.getElementById("login-error");
     var btnLogin  = document.getElementById("btn-login");
+    var chipsContainer = document.getElementById("login-user-chips");
+    var togglePass = document.getElementById("login-toggle-pass");
 
     if (!form || !overlay) return;
 
@@ -2495,6 +2497,38 @@
 
     // Tampilkan overlay login
     setLoginOverlay(true);
+
+    // User chips — klik auto-isi username & fokus password
+    if (chipsContainer) {
+      chipsContainer.addEventListener("click", function (e) {
+        var chip = e.target.closest(".login-user-chip");
+        if (!chip) return;
+
+        var user = chip.getAttribute("data-user");
+        if (!user) return;
+
+        // Update active state
+        chipsContainer.querySelectorAll(".login-user-chip").forEach(function (c) {
+          c.classList.remove("active");
+        });
+        chip.classList.add("active");
+
+        // Isi username & fokus password
+        username.value = user;
+        password.value = "";
+        password.focus();
+        errorEl.style.display = "none";
+      });
+    }
+
+    // Toggle show/hide password
+    if (togglePass && password) {
+      togglePass.addEventListener("click", function () {
+        var isPass = (password.type === "password");
+        password.type = isPass ? "text" : "password";
+        togglePass.textContent = isPass ? "🙈" : "👁️";
+      });
+    }
 
     form.addEventListener("submit", async function (e) {
       e.preventDefault();
@@ -2519,7 +2553,7 @@
 
       // Disable tombol saat loading
       btnLogin.disabled = true;
-      btnLogin.textContent = "Mengecek...";
+      btnLogin.innerHTML = '<span>Mengecek...</span>';
 
       try {
         var inputHash = await hashPassword(pass);
@@ -2544,7 +2578,7 @@
       }
 
       btnLogin.disabled = false;
-      btnLogin.textContent = "🔐 Masuk";
+      btnLogin.innerHTML = '<span>Masuk</span><span class="btn-login-arrow">→</span>';
     });
   }
 
