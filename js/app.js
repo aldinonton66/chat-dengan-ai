@@ -37,8 +37,12 @@
   /* ----------------------------------------------------------
       Panggil Edge Function dengan built-in fallback
       ---------------------------------------------------------- */
-  function callAI(messages, model, maxTokens) {
+  function callAI(messages, model, maxTokens, skipProviders) {
     var url = APP_CONFIG.supabaseUrl + "/functions/v1/groq-chat";
+    var body = { messages: messages, max_tokens: maxTokens || 500 };
+    if (skipProviders && skipProviders.length > 0) {
+      body.skip_providers = skipProviders;
+    }
     return fetch(url, {
       method: "POST",
       headers: {
@@ -46,11 +50,7 @@
         "Authorization": "Bearer " + APP_CONFIG.supabaseAnonKey,
         "apikey": APP_CONFIG.supabaseAnonKey,
       },
-      body: JSON.stringify({
-        messages: messages,
-        model: model || "llama-3.3-70b-versatile",
-        max_tokens: maxTokens || 500,
-      }),
+      body: JSON.stringify(body),
     });
   }
 
@@ -131,6 +131,11 @@
         bindProfilEvents();
         refreshStorageMonitor();
       } catch (e) { console.error("[KitaAI] Gagal init profil on show:", e); }
+    }
+
+    // Saat buka status, render cards
+    if (sectionId === "section-status") {
+      try { renderStatusCards(); } catch (e) { console.error("[KitaAI] Gagal render status:", e); }
     }
   }
 
@@ -1124,10 +1129,12 @@
     messages.push({ role: "user", content: "[" + senderName + "]: " + userMessage.text });
 
     // 1 request -> Edge Function handle fallback otomatis
-    callAI(messages, null, 500)
+    var skipProviders = loadLimitedProviders();
+    callAI(messages, null, 500, skipProviders)
       .then(function (response) {
         if (!response.ok) {
           return response.json().then(function (err) {
+            if (err.limited_providers) saveLimitedProviders(err.limited_providers);
             callback("\u26A0\uFE0F AI gagal merespon: " + (err.error || "HTTP " + response.status), null);
           });
         }
@@ -1135,6 +1142,7 @@
       })
       .then(function (data) {
         if (!data) return;
+        if (data.limited_providers) saveLimitedProviders(data.limited_providers);
         var replyText = (data.choices && data.choices[0]) ? data.choices[0].message.content : null;
         if (replyText) {
           callback(null, replyText);
@@ -1853,6 +1861,112 @@
     location.replace("login.html");
   }
 
+  /* ==========================================================
+     STATUS API — Limit tracking tiap provider
+     ========================================================== */
+
+  /** Muat daftar provider yang sedang limit dari localStorage */
+  function loadLimitedProviders() {
+    // Auto-clean: hapus provider yang reset_at-nya sudah lewat
+    var raw = localStorage.getItem("kita-limited");
+    if (!raw) return [];
+    try {
+      var map = JSON.parse(raw);
+      var now = Date.now();
+      var active = [];
+      var cleaned = false;
+      Object.keys(map).forEach(function (prov) {
+        if (map[prov] > now) {
+          active.push(prov);
+        } else {
+          cleaned = true;
+        }
+      });
+      if (cleaned) localStorage.setItem("kita-limited", JSON.stringify(map));
+      return active;
+    } catch (e) { return []; }
+  }
+
+  /** Simpan provider yang kena limit + reset_at timestamp */
+  function saveLimitedProviders(providers) {
+    var map = {};
+    try { map = JSON.parse(localStorage.getItem("kita-limited") || "{}"); } catch (e) {}
+    Object.keys(providers).forEach(function (prov) {
+      map[prov] = providers[prov];
+    });
+    localStorage.setItem("kita-limited", JSON.stringify(map));
+  }
+
+  /** Render status cards di section-status */
+  function renderStatusCards() {
+    var container = document.getElementById("status-list");
+    if (!container) return;
+
+    var providers = [
+      { name: "groq",       label: "Groq",       model: "llama-3.3-70b", emoji: "⚡" },
+      { name: "xai",        label: "xAI",        model: "grok-2-latest", emoji: "🚀" },
+      { name: "openrouter", label: "OpenRouter",  model: "gpt-4o-mini",  emoji: "🔗" },
+      { name: "cerebras",   label: "Cerebras",    model: "gpt-oss-120b", emoji: "🧠" },
+      { name: "gemini",     label: "Gemini",      model: "gemini-2.0-flash", emoji: "🌐" }
+    ];
+
+    var limitedMap = {};
+    try { limitedMap = JSON.parse(localStorage.getItem("kita-limited") || "{}"); } catch (e) {}
+    var now = Date.now();
+
+    var html = "";
+    providers.forEach(function (p) {
+      var resetAt = limitedMap[p.name];
+      var isLimited = resetAt && resetAt > now;
+      var statusClass = "ok";
+      var indicatorClass = "green";
+      var statusText = "Aktif";
+      var detailText = "Model: " + p.model;
+      var timerText = "";
+
+      if (isLimited) {
+        statusClass = "limited";
+        indicatorClass = "yellow";
+        var remainingMs = resetAt - now;
+        var remainingMin = Math.ceil(remainingMs / 60000);
+        statusText = "Limit — reset ~" + remainingMin + " menit";
+        detailText = "Reset: " + new Date(resetAt).toLocaleTimeString("id-ID");
+        timerText = formatCountdown(resetAt);
+      } else if (resetAt && resetAt <= now) {
+        // Sudah lewat reset → anggap aktif lagi
+        indicatorClass = "green";
+        statusText = "Aktif (baru reset)";
+      }
+
+      html +=
+        '<div class="status-card ' + statusClass + '">' +
+          '<span class="status-indicator ' + indicatorClass + '"></span>' +
+          '<div class="status-info">' +
+            '<div class="status-provider-name">' + p.emoji + ' ' + p.label + '</div>' +
+            '<div class="status-provider-status">' + statusText + '</div>' +
+            '<div class="status-provider-detail">' + detailText + '</div>' +
+          '</div>' +
+          (timerText ? '<span class="status-reset-timer">' + timerText + '</span>' : '') +
+        '</div>';
+    });
+
+    container.innerHTML = html;
+
+    // Auto-refresh timer tiap beberapa detik kalau ada yg limit
+    if (Object.keys(limitedMap).length > 0) {
+      clearTimeout(window._statusTimer);
+      window._statusTimer = setTimeout(renderStatusCards, 30000);
+    }
+  }
+
+  function formatCountdown(resetAt) {
+    var diff = resetAt - Date.now();
+    if (diff <= 0) return "Sekarang";
+    var min = Math.floor(diff / 60000);
+    var sec = Math.floor((diff % 60000) / 1000);
+    return min + "m " + sec + "s";
+  }
+
   /** Binding tombol logout */
   function bindLogoutButtons() {
     var btnSidebar = document.getElementById("btn-logout-sidebar");
@@ -1860,6 +1974,15 @@
       btnSidebar.addEventListener("click", function (e) {
         e.preventDefault();
         if (confirm("Yakin mau logout?")) doLogout();
+      });
+    }
+
+    // Refresh status button
+    var btnRefresh = document.getElementById("btn-refresh-status");
+    if (btnRefresh) {
+      btnRefresh.addEventListener("click", function () {
+        renderStatusCards();
+        showToast("Status API diperbarui!", "🔄");
       });
     }
   }
