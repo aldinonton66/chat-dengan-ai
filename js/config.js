@@ -13,8 +13,8 @@ var APP_CONFIG = {
   defaultTheme: "dark",
 
   // Supabase — Project URL & Anon Key (public, aman di frontend)
-  supabaseUrl: "YOUR_SUPABASE_URL",
-  supabaseAnonKey: "YOUR_SUPABASE_ANON_KEY",
+  supabaseUrl: "https://qqnrfadcgipsrjwofdzx.supabase.co",
+  supabaseAnonKey: "sb_publishable_GCB9lxgWhPIozqh0ioIW9w_QJ0eYVN1",
 
   // Daftar menu navigasi
   navMenu: [
