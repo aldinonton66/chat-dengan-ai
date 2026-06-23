@@ -2597,6 +2597,25 @@ button:focus-visible {
 .api-badge-cerebras   { background: #fef3c7; color: #92400e; }
 .api-badge-custom     { background: var(--accent-soft); color: var(--accent); }
 
+/* Badge "Server" untuk entry Edge Function */
+.api-badge-edge {
+  display: inline-block;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-right: 6px;
+  background: rgba(139, 92, 246, 0.15);
+  color: var(--accent);
+}
+
+/* Item Edge Function — subtle border ungu */
+.api-item-edge {
+  border-left: 3px solid var(--accent);
+}
+
 /* Badge status */
 .api-status {
   display: inline-block;

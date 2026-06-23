@@ -64,11 +64,6 @@
     });
   }
 
-  /** Daftar provider yang dirouting via Edge Function (server-side API key) */
-  function isEdgeProvider(provider) {
-    return ["groq", "xai", "openrouter", "cerebras", "gemini"].indexOf(provider) !== -1;
-  }
-
   function getDefaultModelForProvider(provider) {
     var models = {
       groq: "llama-3.3-70b-versatile",
@@ -1126,22 +1121,79 @@
     return [];
   }
 
+  /** Provider yang API key-nya dikelola server (Edge Function), bukan localStorage */
+  function isEdgeProvider(provider) {
+    return ["groq", "xai", "openrouter", "cerebras", "gemini"].indexOf(provider) !== -1;
+  }
+
   function loadAPIData() {
     var saved = localStorage.getItem("kita-api-keys");
+    var data = [];
     if (saved) {
       try {
-        var data = JSON.parse(saved);
-        if (data.length > 0) return data;
+        data = JSON.parse(saved);
+        if (!Array.isArray(data)) data = [];
       } catch (e) { /* fallback */ }
     }
-    var defaults = getDefaultAPIData();
-    saveAPIData(defaults);
-    return defaults;
+
+    // Inject provider Edge Function otomatis (gak perlu user tambah manual)
+    var edgeProviders = ["groq", "xai", "openrouter", "cerebras", "gemini"];
+    var disabledEdges = loadDisabledEdges();
+
+    // Hapus duplikat Edge Function yang sudah ada di data user
+    var edgeIds = {};
+    edgeProviders.forEach(function (prov) {
+      edgeIds["edge_" + prov] = prov;
+    });
+    data = data.filter(function (item) {
+      return !edgeIds[item.id];
+    });
+
+    // Tambah entry Edge Function di urutan pertama (prioritas)
+    edgeProviders.forEach(function (prov) {
+      data.unshift({
+        id: "edge_" + prov,
+        provider: prov,
+        label: getProviderLabel(prov) + " (Server)",
+        key: "",
+        endpoint: "",
+        aktif: !disabledEdges[prov],
+        status: disabledEdges[prov] ? "nonaktif" : "aktif",
+        isEdge: true
+      });
+    });
+
+    return data;
+  }
+
+  function loadDisabledEdges() {
+    try {
+      return JSON.parse(localStorage.getItem("kita-disabled-edges") || "{}");
+    } catch (e) { return {}; }
+  }
+
+  function saveDisabledEdges(data) {
+    var disabled = {};
+    data.forEach(function (item) {
+      if (item.isEdge && !item.aktif) disabled[item.provider] = true;
+    });
+    localStorage.setItem("kita-disabled-edges", JSON.stringify(disabled));
+  }
+
+  function getProviderLabel(provider) {
+    var labels = {
+      groq: "Groq", xai: "xAI", openrouter: "OpenRouter",
+      cerebras: "Cerebras", gemini: "Gemini",
+      openai: "OpenAI", claude: "Claude"
+    };
+    return labels[provider] || provider;
   }
 
   function saveAPIData(data) {
-    safeSetItem("kita-api-keys", JSON.stringify(data));
-    // Update monitor storage tanpa merender ulang (ringan)
+    // Pisah: simpan disabled edge & user API keys
+    saveDisabledEdges(data);
+    var userData = data.filter(function (item) { return !item.isEdge; });
+    safeSetItem("kita-api-keys", JSON.stringify(userData));
     try { refreshStorageMonitor(); } catch (e) { /* ignore */ }
   }
 
@@ -1590,12 +1642,12 @@
     data.forEach(function (item, index) {
       var prov = providerMap[item.provider] || providerMap.custom;
       var stat = statusMap[item.status] || statusMap.nonaktif;
-      var maskedKey = item.key ? (item.key.substring(0, 8) + "••••••••") : "(kosong)";
+      var maskedKey = item.isEdge ? "🔐 Dikelola server" : (item.key ? (item.key.substring(0, 8) + "••••••••") : "(kosong)");
       var isFirst = (index === 0);
       var isLast  = (index === data.length - 1);
 
       html +=
-        '<div class="api-item" data-api-id="' + item.id + '">' +
+        '<div class="api-item' + (item.isEdge ? ' api-item-edge' : '') + '" data-api-id="' + item.id + '">' +
           '<span class="api-priority-num">' + (index + 1) + '</span>' +
           '<div class="api-priority-btns">' +
             '<button class="api-arrow-btn api-arrow-up" title="Naikkan prioritas" ' + (isFirst ? 'disabled' : '') + '>▲</button>' +
@@ -1604,6 +1656,7 @@
           '<div class="api-item-info">' +
             '<div class="api-item-label">' + escapeHTML(item.label) + '</div>' +
             '<span class="api-badge ' + prov.cls + '">' + prov.lbl + '</span>' +
+            (item.isEdge ? '<span class="api-badge-edge">Server</span>' : '') +
             '<span class="api-status ' + stat.cls + '">' + stat.lbl + '</span>' +
             '<span style="font-size:0.7rem;color:var(--text-muted);margin-left:8px;">' + maskedKey + '</span>' +
           '</div>' +
@@ -1613,7 +1666,7 @@
               '<span class="toggle-slider"></span>' +
             '</label>' +
             '<button class="api-btn-mini api-btn-test" title="Tes koneksi">Tes</button>' +
-            '<button class="api-btn-mini api-btn-hapus" title="Hapus API key">Hapus</button>' +
+            (item.isEdge ? '' : '<button class="api-btn-mini api-btn-hapus" title="Hapus API key">Hapus</button>') +
           '</div>' +
         '</div>';
     });
