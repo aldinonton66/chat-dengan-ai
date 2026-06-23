@@ -690,7 +690,9 @@
           ukuran:  parseInt(document.getElementById("font-ukuran").value, 10) || 15,
           warnaP1: document.getElementById("font-warna-p1").value,
           warnaP2: document.getElementById("font-warna-p2").value,
-          warnaAI: document.getElementById("font-warna-ai").value
+          warnaAI: document.getElementById("font-warna-ai").value,
+          fontFamily: (document.getElementById("font-family") || {}).value || "Inter",
+          lineHeight: parseFloat((document.getElementById("font-lineheight") || {}).value) || 1.6
         };
         saveFontData(fontData);
 
@@ -722,7 +724,9 @@
       ukuran: 15,
       warnaP1: "#ffffff",
       warnaP2: "#ffffff",
-      warnaAI: "#e0e0e0"
+      warnaAI: "#e0e0e0",
+      fontFamily: "Inter",
+      lineHeight: 1.6
     };
   }
 
@@ -752,6 +756,10 @@
     var elHexAI      = document.getElementById("font-warna-ai-hex");
     var elSwatchAI   = document.getElementById("font-warna-ai-preview");
 
+    var elFontFamily = document.getElementById("font-family");
+    var elLineHeight = document.getElementById("font-lineheight");
+    var elLineLabel  = document.getElementById("font-lineheight-label");
+
     if (elUkuran)  elUkuran.value = data.ukuran;
     if (elLabel)   elLabel.textContent = data.ukuran + "px";
     if (elPreview) elPreview.style.fontSize = data.ukuran + "px";
@@ -775,6 +783,14 @@
     if (elSwatchAI) {
       elSwatchAI.style.background = data.warnaAI;
       elSwatchAI.style.color = isLightColor(data.warnaAI) ? "#1a1a1a" : "#ffffff";
+    }
+
+    if (elFontFamily) elFontFamily.value = data.fontFamily || "Inter";
+    if (elLineHeight) elLineHeight.value = data.lineHeight || 1.6;
+    if (elLineLabel)  elLineLabel.textContent = (data.lineHeight || 1.6).toFixed(1);
+    if (elPreview) {
+      if (data.fontFamily) elPreview.style.fontFamily = getFontStack(data.fontFamily);
+      elPreview.style.lineHeight = (data.lineHeight || 1.6);
     }
   }
 
@@ -816,13 +832,28 @@
     }
   }
 
+  /** Konversi nama font ke CSS font-family stack */
+  function getFontStack(family) {
+    var map = {
+      "Inter":       "'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif",
+      "system-ui":   "system-ui, 'Segoe UI', -apple-system, sans-serif",
+      "serif":       "Georgia, 'Times New Roman', serif",
+      "monospace":   "'SF Mono', 'Cascadia Code', 'Consolas', 'Courier New', monospace"
+    };
+    return map[family] || map["Inter"];
+  }
+
   /** Terapkan font ke semua bubble yang sudah ada di chat */
   function applyFontToAllBubbles() {
     var data = loadFontData();
+    var fontStack = getFontStack(data.fontFamily || "Inter");
+    var lineH = data.lineHeight || 1.6;
 
     // Ukuran font — update semua .bubble-body p
     document.querySelectorAll(".bubble-body p").forEach(function (el) {
       el.style.fontSize = data.ukuran + "px";
+      el.style.fontFamily = fontStack;
+      el.style.lineHeight = lineH;
     });
 
     // Warna teks Person 1
@@ -875,6 +906,29 @@
     if (elWarnaAI) {
       elWarnaAI.addEventListener("input", function () {
         updateFontWarnaPreview("ai");
+        applyFontToAllBubbles();
+      });
+    }
+
+    // -- Font family dropdown --
+    var elFontFamily = document.getElementById("font-family");
+    if (elFontFamily) {
+      elFontFamily.addEventListener("change", function () {
+        var preview = document.getElementById("font-preview-text");
+        if (preview) preview.style.fontFamily = getFontStack(elFontFamily.value);
+        applyFontToAllBubbles();
+      });
+    }
+
+    // -- Line height slider --
+    var elLineHeight = document.getElementById("font-lineheight");
+    if (elLineHeight) {
+      elLineHeight.addEventListener("input", function () {
+        var label = document.getElementById("font-lineheight-label");
+        var preview = document.getElementById("font-preview-text");
+        var val = parseFloat(elLineHeight.value);
+        if (label) label.textContent = val.toFixed(1);
+        if (preview) preview.style.lineHeight = val;
         applyFontToAllBubbles();
       });
     }
@@ -1408,13 +1462,15 @@
     if (msg.role === "assistant") {
       personaClass = "bubble-left bubble-ai";
       senderName = "\uD83E\uDD16 " + aiData.nama;
+      var aiFontStack = getFontStack(font.fontFamily || "Inter");
+      var aiLineH = font.lineHeight || 1.6;
       html += '<div class="chat-bubble ' + personaClass + '" data-msg-id="' + (msg.id || "") + '">';
       html += '<div class="bubble-header">';
       html += '<span class="bubble-avatar">\uD83E\uDD16</span>';
       html += '<span class="bubble-name">' + escapeHTML(senderName) + '</span>';
       html += '<span class="bubble-time">' + msg.time + '</span>';
       html += '</div>';
-      html += '<div class="bubble-body" style="color:' + font.warnaAI + ';font-size:' + font.ukuran + 'px;"><p>' + escapeHTML(msg.text) + '</p></div>';
+      html += '<div class="bubble-body" style="color:' + font.warnaAI + ';font-size:' + font.ukuran + 'px;font-family:' + aiFontStack + ';line-height:' + aiLineH + ';"><p>' + escapeHTML(msg.text) + '</p></div>';
       html += '</div>';
       return html;
     }
@@ -1425,7 +1481,9 @@
     senderName = isRight ? ("\u2728 " + prof.person1.nama) : ("\uD83C\uDF38 " + prof.person2.nama);
     var senderColor = isRight ? prof.person1.warna : prof.person2.warna;
     var textColor = isRight ? font.warnaP1 : font.warnaP2;
-    bubbleStyle = 'style="background:' + senderColor + ';color:' + textColor + ';font-size:' + font.ukuran + 'px;"';
+    var personFontStack = getFontStack(font.fontFamily || "Inter");
+    var personLineH = font.lineHeight || 1.6;
+    bubbleStyle = 'style="background:' + senderColor + ';color:' + textColor + ';font-size:' + font.ukuran + 'px;font-family:' + personFontStack + ';line-height:' + personLineH + ';"';
 
     if (msg.type === "voice") personaClass += " bubble-voice";
     if (msg.type === "image") personaClass += " bubble-image";

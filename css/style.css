@@ -1714,7 +1714,8 @@ button:focus-visible {
   padding: 16px 18px;
   color: var(--text-primary);
   line-height: 1.6;
-  transition: font-size 0.15s, color 0.15s;
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  transition: font-size 0.15s, color 0.15s, font-family 0.15s, line-height 0.15s;
   user-select: none;
   font-weight: 500;
 }
