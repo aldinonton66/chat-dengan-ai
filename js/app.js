@@ -2391,6 +2391,24 @@
      INISIALISASI APLIKASI
      ========================================================== */
 
+  /** Logout — hapus session & reload */
+  function doLogout() {
+    sessionStorage.removeItem("kita-login");
+    sessionStorage.removeItem("kita-login-time");
+    location.reload();
+  }
+
+  /** Binding tombol logout */
+  function bindLogoutButtons() {
+    var btnSidebar = document.getElementById("btn-logout-sidebar");
+    if (btnSidebar) {
+      btnSidebar.addEventListener("click", function (e) {
+        e.preventDefault();
+        if (confirm("Yakin mau logout?")) doLogout();
+      });
+    }
+  }
+
   function initApp() {
     var steps = [
       { name: "generateNavigation", fn: generateNavigation },
@@ -2414,6 +2432,9 @@
       }
     });
 
+    // Binding logout
+    try { bindLogoutButtons(); } catch (e) { console.error("[KitaAI] Gagal bind logout:", e); }
+
     // Muat index API loop dari localStorage
     var savedIdx = localStorage.getItem("kita-api-index");
     if (savedIdx !== null) {
@@ -2426,11 +2447,117 @@
     safeSetItem("kita-api-index", String(currentAPIIndex));
   });
 
+  /* ==========================================================
+     LOGIN — Autentikasi sebelum akses aplikasi
+     ========================================================== */
+
+  /** Hash password dengan SHA-256 via Web Crypto API */
+  async function hashPassword(password) {
+    var encoder = new TextEncoder();
+    var data = encoder.encode(password);
+    var hashBuffer = await crypto.subtle.digest("SHA-256", data);
+    var hashArray = Array.from(new Uint8Array(hashBuffer));
+    return hashArray.map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+  }
+
+  /** Cek apakah user sudah login */
+  function isLoggedIn() {
+    return !!sessionStorage.getItem("kita-login");
+  }
+
+  /** Tampilkan / sembunyikan overlay login */
+  function setLoginOverlay(visible) {
+    var overlay = document.getElementById("login-overlay");
+    if (!overlay) return;
+    if (visible) {
+      overlay.classList.remove("hidden");
+    } else {
+      overlay.classList.add("hidden");
+    }
+  }
+
+  /** Binding event form login */
+  function initLogin() {
+    var overlay   = document.getElementById("login-overlay");
+    var form      = document.getElementById("login-form");
+    var username  = document.getElementById("login-username");
+    var password  = document.getElementById("login-password");
+    var errorEl   = document.getElementById("login-error");
+    var btnLogin  = document.getElementById("btn-login");
+
+    if (!form || !overlay) return;
+
+    // Kalau sudah login, langsung tampilkan app
+    if (isLoggedIn()) {
+      setLoginOverlay(false);
+      return;
+    }
+
+    // Tampilkan overlay login
+    setLoginOverlay(true);
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+
+      var user = (username.value || "").trim().toLowerCase();
+      var pass = password.value || "";
+
+      if (!user || !pass) {
+        errorEl.textContent = "Username dan password harus diisi.";
+        errorEl.style.display = "block";
+        return;
+      }
+
+      // Cek username terdaftar
+      var expectedHash = LOGIN_USERS[user];
+      if (!expectedHash) {
+        errorEl.textContent = "Username tidak ditemukan.";
+        errorEl.style.display = "block";
+        password.value = "";
+        return;
+      }
+
+      // Disable tombol saat loading
+      btnLogin.disabled = true;
+      btnLogin.textContent = "Mengecek...";
+
+      try {
+        var inputHash = await hashPassword(pass);
+
+        if (inputHash === expectedHash) {
+          // Login sukses
+          sessionStorage.setItem("kita-login", user);
+          sessionStorage.setItem("kita-login-time", String(Date.now()));
+          setLoginOverlay(false);
+          errorEl.style.display = "none";
+          // Init app setelah login
+          initApp();
+        } else {
+          errorEl.textContent = "Password salah.";
+          errorEl.style.display = "block";
+          password.value = "";
+        }
+      } catch (err) {
+        errorEl.textContent = "Gagal memproses login. Coba lagi.";
+        errorEl.style.display = "block";
+        console.error("[KitaAI] Login error:", err);
+      }
+
+      btnLogin.disabled = false;
+      btnLogin.textContent = "🔐 Masuk";
+    });
+  }
+
   // Jalankan saat DOM siap
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", initApp);
+    document.addEventListener("DOMContentLoaded", function () {
+      initLogin();
+      // initApp dipanggil di dalam initLogin jika sudah login
+      if (isLoggedIn()) initApp();
+    });
   } else {
-    initApp();
+    initLogin();
+    if (isLoggedIn()) initApp();
   }
 
 })();

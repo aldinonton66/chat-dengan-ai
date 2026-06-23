@@ -11,7 +11,32 @@
 <body>
 
   <!-- =========================================================
-       HEADER BAR ATAS
+       LOGIN OVERLAY — Muncul sebelum masuk aplikasi
+       ========================================================= -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-header">
+        <span class="login-icon">💬</span>
+        <h2>Kita &amp; AI</h2>
+        <p>Masuk untuk melanjutkan</p>
+      </div>
+      <form id="login-form" class="login-form" autocomplete="off">
+        <div class="login-field">
+          <label for="login-username">Username</label>
+          <input type="text" id="login-username" class="login-input" placeholder="Username" required autofocus>
+        </div>
+        <div class="login-field">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" class="login-input" placeholder="Password" required>
+        </div>
+        <div id="login-error" class="login-error" style="display:none;"></div>
+        <button type="submit" id="btn-login" class="btn-login">🔐 Masuk</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================
+        HEADER BAR ATAS
        Menampilkan nama aplikasi + tombol toggle dark/light
        ========================================================= -->
   <header id="app-header">
@@ -42,6 +67,14 @@
       <ul id="nav-list">
         <!-- Menu akan digenerate oleh app.js -->
       </ul>
+
+      <!-- Tombol logout di sidebar -->
+      <div id="sidebar-footer" style="padding: 8px 10px; margin-top: auto; border-top: 1px solid var(--border-subtle);">
+        <button id="btn-logout-sidebar" class="nav-link" style="color: #ef4444;" title="Logout">
+          <span class="nav-icon">🚪</span>
+          <span class="nav-label">Logout</span>
+        </button>
+      </div>
 
       <!-- Handle resize (drag untuk ubah lebar sidebar) -->
       <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>

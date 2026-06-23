@@ -28,3 +28,12 @@ var APP_CONFIG = {
   defaultActive: "section-chat"
 
 };
+
+// ============================================================
+//  DATA LOGIN — username → SHA-256 hash password
+//  Disimpan di sessionStorage saat login berhasil
+// ============================================================
+var LOGIN_USERS = {
+  "aldi": "db7b0dbb5029b025cf48a6a50ef3156197fe0e706a846166bc2976a5c91bc776",
+  "adel": "44845775d767f86435b81f0c297a15d821e7bafe387942dedd9572324932a651"
+};
