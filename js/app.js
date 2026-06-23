@@ -2391,11 +2391,11 @@
      INISIALISASI APLIKASI
      ========================================================== */
 
-  /** Logout — hapus session & reload */
+  /** Logout — hapus session & redirect ke login */
   function doLogout() {
     sessionStorage.removeItem("kita-login");
     sessionStorage.removeItem("kita-login-time");
-    location.reload();
+    location.replace("login.html");
   }
 
   /** Binding tombol logout */
@@ -2448,150 +2448,17 @@
   });
 
   /* ==========================================================
-     LOGIN — Autentikasi sebelum akses aplikasi
+     AUTH CHECK — Redirect ke login jika belum login
      ========================================================== */
-
-  /** Hash password dengan SHA-256 via Web Crypto API */
-  async function hashPassword(password) {
-    var encoder = new TextEncoder();
-    var data = encoder.encode(password);
-    var hashBuffer = await crypto.subtle.digest("SHA-256", data);
-    var hashArray = Array.from(new Uint8Array(hashBuffer));
-    return hashArray.map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
-  }
-
-  /** Cek apakah user sudah login */
-  function isLoggedIn() {
-    return !!sessionStorage.getItem("kita-login");
-  }
-
-  /** Tampilkan / sembunyikan overlay login */
-  function setLoginOverlay(visible) {
-    var overlay = document.getElementById("login-overlay");
-    if (!overlay) return;
-    if (visible) {
-      overlay.classList.remove("hidden");
-    } else {
-      overlay.classList.add("hidden");
-    }
-  }
-
-  /** Binding event form login */
-  function initLogin() {
-    var overlay   = document.getElementById("login-overlay");
-    var form      = document.getElementById("login-form");
-    var username  = document.getElementById("login-username");
-    var password  = document.getElementById("login-password");
-    var errorEl   = document.getElementById("login-error");
-    var btnLogin  = document.getElementById("btn-login");
-    var chipsContainer = document.getElementById("login-user-chips");
-    var togglePass = document.getElementById("login-toggle-pass");
-
-    if (!form || !overlay) return;
-
-    // Kalau sudah login, langsung tampilkan app
-    if (isLoggedIn()) {
-      setLoginOverlay(false);
-      return;
-    }
-
-    // Tampilkan overlay login
-    setLoginOverlay(true);
-
-    // User chips — klik auto-isi username & fokus password
-    if (chipsContainer) {
-      chipsContainer.addEventListener("click", function (e) {
-        var chip = e.target.closest(".login-user-chip");
-        if (!chip) return;
-
-        var user = chip.getAttribute("data-user");
-        if (!user) return;
-
-        // Update active state
-        chipsContainer.querySelectorAll(".login-user-chip").forEach(function (c) {
-          c.classList.remove("active");
-        });
-        chip.classList.add("active");
-
-        // Isi username & fokus password
-        username.value = user;
-        password.value = "";
-        password.focus();
-        errorEl.style.display = "none";
-      });
-    }
-
-    // Toggle show/hide password
-    if (togglePass && password) {
-      togglePass.addEventListener("click", function () {
-        var isPass = (password.type === "password");
-        password.type = isPass ? "text" : "password";
-        togglePass.textContent = isPass ? "🙈" : "👁️";
-      });
-    }
-
-    form.addEventListener("submit", async function (e) {
-      e.preventDefault();
-
-      var user = (username.value || "").trim().toLowerCase();
-      var pass = password.value || "";
-
-      if (!user || !pass) {
-        errorEl.textContent = "Username dan password harus diisi.";
-        errorEl.style.display = "block";
-        return;
-      }
-
-      // Cek username terdaftar
-      var expectedHash = LOGIN_USERS[user];
-      if (!expectedHash) {
-        errorEl.textContent = "Username tidak ditemukan.";
-        errorEl.style.display = "block";
-        password.value = "";
-        return;
-      }
-
-      // Disable tombol saat loading
-      btnLogin.disabled = true;
-      btnLogin.innerHTML = '<span>Mengecek...</span>';
-
-      try {
-        var inputHash = await hashPassword(pass);
-
-        if (inputHash === expectedHash) {
-          // Login sukses
-          sessionStorage.setItem("kita-login", user);
-          sessionStorage.setItem("kita-login-time", String(Date.now()));
-          setLoginOverlay(false);
-          errorEl.style.display = "none";
-          // Init app setelah login
-          initApp();
-        } else {
-          errorEl.textContent = "Password salah.";
-          errorEl.style.display = "block";
-          password.value = "";
-        }
-      } catch (err) {
-        errorEl.textContent = "Gagal memproses login. Coba lagi.";
-        errorEl.style.display = "block";
-        console.error("[KitaAI] Login error:", err);
-      }
-
-      btnLogin.disabled = false;
-      btnLogin.innerHTML = '<span>Masuk</span><span class="btn-login-arrow">→</span>';
-    });
+  if (!sessionStorage.getItem("kita-login")) {
+    location.replace("login.html");
   }
 
   // Jalankan saat DOM siap
   if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", function () {
-      initLogin();
-      // initApp dipanggil di dalam initLogin jika sudah login
-      if (isLoggedIn()) initApp();
-    });
+    document.addEventListener("DOMContentLoaded", initApp);
   } else {
-    initLogin();
-    if (isLoggedIn()) initApp();
+    initApp();
   }
 
 })();

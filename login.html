@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Masuk — Kita & AI</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="dark">
+
+  <!-- =========================================================
+       LOGIN PAGE — Halaman terpisah sebelum masuk aplikasi
+       ========================================================= -->
+  <div class="login-page">
+    <!-- Background particles -->
+    <div class="login-bg-particles">
+      <span class="login-particle" style="--x:10%;--y:20%;--s:1;--d:6s;"></span>
+      <span class="login-particle" style="--x:85%;--y:15%;--s:0.7;--d:8s;"></span>
+      <span class="login-particle" style="--x:20%;--y:80%;--s:1.3;--d:7s;"></span>
+      <span class="login-particle" style="--x:70%;--y:75%;--s:0.5;--d:9s;"></span>
+      <span class="login-particle" style="--x:50%;--y:10%;--s:0.8;--d:5s;"></span>
+      <span class="login-particle" style="--x:90%;--y:50%;--s:1.1;--d:10s;"></span>
+    </div>
+
+    <div class="login-card">
+      <!-- Logo app -->
+      <div class="login-logo-ring">
+        <span class="login-logo-emoji">💬</span>
+      </div>
+
+      <div class="login-header">
+        <h2>Kita &amp; AI</h2>
+        <p>Chat bersama AI &amp; pasangan</p>
+      </div>
+
+      <!-- Cepat pilih user -->
+      <div class="login-user-chips" id="login-user-chips">
+        <button type="button" class="login-user-chip" data-user="aldi">
+          <span class="chip-avatar">🧑</span>
+          <span class="chip-name">aldi</span>
+        </button>
+        <button type="button" class="login-user-chip" data-user="adel">
+          <span class="chip-avatar">👧</span>
+          <span class="chip-name">adel</span>
+        </button>
+      </div>
+
+      <div class="login-divider">
+        <span>atau masuk manual</span>
+      </div>
+
+      <form id="login-form" class="login-form" autocomplete="off">
+        <div class="login-field">
+          <div class="login-input-wrap">
+            <span class="login-input-icon">👤</span>
+            <input type="text" id="login-username" class="login-input" placeholder="Username" required autofocus>
+          </div>
+        </div>
+        <div class="login-field">
+          <div class="login-input-wrap">
+            <span class="login-input-icon">🔒</span>
+            <input type="password" id="login-password" class="login-input" placeholder="Password" required>
+            <button type="button" id="login-toggle-pass" class="login-toggle-pass" tabindex="-1">👁️</button>
+          </div>
+        </div>
+        <div id="login-error" class="login-error" style="display:none;"></div>
+        <button type="submit" id="btn-login" class="btn-login">
+          <span>Masuk</span>
+          <span class="btn-login-arrow">→</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+  (function () {
+    "use strict";
+
+    // Data user (sama dengan config.js)
+    var LOGIN_USERS = {
+      "aldi": "db7b0dbb5029b025cf48a6a50ef3156197fe0e706a846166bc2976a5c91bc776",
+      "adel": "44845775d767f86435b81f0c297a15d821e7bafe387942dedd9572324932a651"
+    };
+
+    var form      = document.getElementById("login-form");
+    var username  = document.getElementById("login-username");
+    var password  = document.getElementById("login-password");
+    var errorEl   = document.getElementById("login-error");
+    var btnLogin  = document.getElementById("btn-login");
+    var chips     = document.getElementById("login-user-chips");
+    var togglePass = document.getElementById("login-toggle-pass");
+
+    // Kalau sudah login, redirect ke index
+    if (sessionStorage.getItem("kita-login")) {
+      location.replace("index.html");
+    }
+
+    // User chips
+    if (chips) {
+      chips.addEventListener("click", function (e) {
+        var chip = e.target.closest(".login-user-chip");
+        if (!chip) return;
+        var user = chip.getAttribute("data-user");
+        if (!user) return;
+
+        chips.querySelectorAll(".login-user-chip").forEach(function (c) {
+          c.classList.remove("active");
+        });
+        chip.classList.add("active");
+
+        username.value = user;
+        password.value = "";
+        password.focus();
+        if (errorEl) errorEl.style.display = "none";
+      });
+    }
+
+    // Toggle password
+    if (togglePass && password) {
+      togglePass.addEventListener("click", function () {
+        var isPass = (password.type === "password");
+        password.type = isPass ? "text" : "password";
+        togglePass.textContent = isPass ? "🙈" : "👁️";
+      });
+    }
+
+    // Hash SHA-256
+    async function hashPassword(pw) {
+      var encoder = new TextEncoder();
+      var data = encoder.encode(pw);
+      var hashBuffer = await crypto.subtle.digest("SHA-256", data);
+      var hashArray = Array.from(new Uint8Array(hashBuffer));
+      return hashArray.map(function (b) { return b.toString(16).padStart(2, "0"); }).join("");
+    }
+
+    // Submit login
+    if (form) {
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+
+        var user = (username.value || "").trim().toLowerCase();
+        var pass = password.value || "";
+
+        if (!user || !pass) {
+          errorEl.textContent = "Username dan password harus diisi.";
+          errorEl.style.display = "block";
+          return;
+        }
+
+        var expectedHash = LOGIN_USERS[user];
+        if (!expectedHash) {
+          errorEl.textContent = "Username tidak ditemukan.";
+          errorEl.style.display = "block";
+          password.value = "";
+          return;
+        }
+
+        btnLogin.disabled = true;
+        btnLogin.innerHTML = "<span>Mengecek...</span>";
+
+        try {
+          var inputHash = await hashPassword(pass);
+          if (inputHash === expectedHash) {
+            sessionStorage.setItem("kita-login", user);
+            sessionStorage.setItem("kita-login-time", String(Date.now()));
+            location.replace("index.html");
+          } else {
+            errorEl.textContent = "Password salah.";
+            errorEl.style.display = "block";
+            password.value = "";
+          }
+        } catch (err) {
+          errorEl.textContent = "Gagal memproses login. Coba lagi.";
+          errorEl.style.display = "block";
+        }
+
+        btnLogin.disabled = false;
+        btnLogin.innerHTML = '<span>Masuk</span><span class="btn-login-arrow">→</span>';
+      });
+    }
+  })();
+  </script>
+</body>
+</html>

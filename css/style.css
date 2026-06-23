@@ -2787,28 +2787,20 @@ button:focus-visible {
 }
 
 /* ============================================================
-   LOGIN PAGE
+   LOGIN PAGE — Halaman login terpisah (login.html)
    ============================================================ */
-.login-overlay {
-  position: fixed;
-  inset: 0;
+.login-page {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   background:
     radial-gradient(ellipse at 20% 50%, rgba(139,92,246,0.08) 0%, transparent 50%),
     radial-gradient(ellipse at 80% 20%, rgba(236,72,153,0.06) 0%, transparent 50%),
     radial-gradient(ellipse at 50% 80%, rgba(59,130,246,0.05) 0%, transparent 50%),
     var(--bg-body);
-  z-index: 10000;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: opacity 0.5s ease, visibility 0.5s ease;
   overflow: hidden;
-}
-
-.login-overlay.hidden {
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
+  position: relative;
 }
 
 /* Background particles */
