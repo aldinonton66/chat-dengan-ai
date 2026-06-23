@@ -358,6 +358,13 @@
       sidebarEl.style.width = state.width + "px";
     }
 
+    // Sync main-content padding
+    var main = document.getElementById("main-content");
+    if (main) {
+      var w = state.collapsed ? 60 : (state.width || 220);
+      main.style.paddingLeft = (w + 32) + "px";
+    }
+
     // Update ikon toggle
     updateToggleIcon();
   }
@@ -391,6 +398,13 @@
     state.collapsed = isCollapsed;
     saveSidebarState(state);
 
+    // Sync padding
+    var main = document.getElementById("main-content");
+    if (main) {
+      var w = isCollapsed ? 60 : (sidebarEl.offsetWidth || 220);
+      main.style.paddingLeft = (w + 32) + "px";
+    }
+
     // Trigger resize event agar konten menyesuaikan
     setTimeout(function () {
       window.dispatchEvent(new Event("resize"));
@@ -418,6 +432,14 @@
     var startWidth = 0;
     var isResizing = false;
 
+    // Helper: sync main-content padding dengan lebar sidebar saat ini
+    function syncMainContentPadding() {
+      var main = document.getElementById("main-content");
+      if (!main) return;
+      var sidebarWidth = getSidebarEl() ? getSidebarEl().offsetWidth : 220;
+      main.style.paddingLeft = (sidebarWidth + 32) + "px";
+    }
+
     handle.addEventListener("mousedown", function (e) {
       e.preventDefault();
       isResizing = true;
@@ -438,10 +460,10 @@
 
       // Batasi min / max
       if (newWidth < 60) newWidth = 60;
-      if (newWidth > 280) newWidth = 280;
+      if (newWidth > 320) newWidth = 320;
 
       var el = getSidebarEl();
-      if (el) el.style.width = newWidth + "px";
+      if (el) { el.style.width = newWidth + "px"; syncMainContentPadding(); }
     });
 
     document.addEventListener("mouseup", function () {
@@ -454,7 +476,13 @@
       // Simpan lebar
       var state = loadSidebarState();
       var el = getSidebarEl();
-      if (el) state.width = el.offsetWidth;
+      if (el) { state.width = el.offsetWidth; syncMainContentPadding(); }
+      saveSidebarState(state);
+    });
+
+    // Inisialisasi awal
+    syncMainContentPadding();
+  }
       saveSidebarState(state);
     });
   }
