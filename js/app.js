@@ -13,13 +13,13 @@
       el.classList.toggle("active", el.dataset?.section === sectionId);
     });
 
+    // Show target section via .active class; hide others by removing .active
     document.querySelectorAll(".content-section").forEach((el) => {
       const chatSections = ["teman-ai", "curhat", "catatan", "ide"];
-      if (chatSections.includes(sectionId)) {
-        el.classList.toggle("hidden", el.id !== "section-chat");
-      } else {
-        el.classList.toggle("hidden", el.id !== "section-" + sectionId);
-      }
+      const isTarget = chatSections.includes(sectionId)
+        ? el.id === "section-chat"
+        : el.id === "section-" + sectionId;
+      el.classList.toggle("active", isTarget);
     });
 
     const headerTitle = document.getElementById("sidebar-header-title");
