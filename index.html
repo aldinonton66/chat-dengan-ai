@@ -3,22 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#0a0a12">
-  <title>Kita & AI</title>
+  <meta name="theme-color" content="#0a0f0f" media="(prefers-color-scheme:dark)">
+  <meta name="theme-color" content="#faf8f5" media="(prefers-color-scheme:light)">
+  <title>Kita & AI — Chat Bareng Pasangan & AI</title>
+  <meta name="description" content="Aplikasi chat bertiga dengan pasangan dan AI. Voice note, foto, video, dan pengaturan personal.">
 
-  <!-- Google Fonts (async, non-blocking) -->
+  <!-- PWA -->
+  <link rel="manifest" href="manifest.json">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Kita & AI">
+  <link rel="apple-touch-icon" href="icon-192.png">
+
+  <!-- Google Fonts (preconnect + preload) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="preload" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Sora:wght@600;700;800;900&display=swap" as="style">
 
-  <!-- Stylesheet utama -->
+  <!-- Stylesheet utama (kritis di-head, non-kritis di-defer) -->
   <link rel="stylesheet" href="css/style.css">
 
-  <!-- Config (load early agar auth gate bisa pakai APP_CONFIG) -->
+  <!-- Config -->
   <script src="js/config.js"></script>
 
-  <!-- Supabase JS Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase JS Client (defer agar tidak blocking) -->
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <!--
     AUTH GATE: cek session SEBELUM konten dirender.
@@ -27,8 +35,8 @@
   -->
   <script>
   (function () {
-    var RETRY_MAX = 40; // ~2 detik (40 × 50ms)
-    var retryCount = 0;
+    const RETRY_MAX = 40;
+    let retryCount = 0;
 
     function initAuth() {
       retryCount++;
@@ -40,22 +48,19 @@
         return setTimeout(initAuth, 50);
       }
 
-      var sb = window.supabase.createClient(
+      const sb = window.supabase.createClient(
         APP_CONFIG.supabaseUrl,
         APP_CONFIG.supabaseAnonKey
       );
 
-      sb.auth.getSession().then(function (result) {
-        var session = result.data && result.data.session;
+      sb.auth.getSession().then((result) => {
+        const session = result.data?.session;
         if (!session) {
           window.location.replace("login.html");
         }
-      }).catch(function () {
-        // Network error — biarkan user tetap di halaman
-      });
+      }).catch(() => {});
 
-      // Pantau perubahan session (logout di tab lain, expired, dll)
-      sb.auth.onAuthStateChange(function (event, session) {
+      sb.auth.onAuthStateChange((event, session) => {
         if (event === "SIGNED_OUT" || !session) {
           window.location.replace("login.html");
         }
@@ -67,6 +72,9 @@
   </script>
 </head>
 <body>
+
+  <!-- Skip to content (a11y) -->
+  <a href="#main-content" class="skip-link">Langsung ke konten utama</a>
 
   <!-- Skeleton Loading Screen -->
   <div id="app-skeleton" class="app-skeleton">
@@ -131,7 +139,13 @@
            #1: CHAT UTAMA
            Area chat lengkap dengan bubble, input, dan toolbar
            ====================================================== -->
-      <section id="section-chat" class="content-section">
+      <section id="section-chat" class="content-section" aria-label="Chat utama">
+
+        <!-- Search bar -->
+        <div id="chat-search-bar" style="display:none">
+          <input type="search" id="chat-search-input" placeholder="Cari pesan..." aria-label="Cari pesan">
+          <button id="chat-search-close" aria-label="Tutup pencarian">✕</button>
+        </div>
 
         <!-- Area bubble chat (scrollable) -->
         <div id="chat-bubble-area">
@@ -923,9 +937,33 @@
   </div>
 
   <!-- =========================================================
-        SCRIPTS (bukan module, urutan penting)
+       KEYBOARD SHORTCUTS MODAL
+       ========================================================= -->
+  <div id="shortcuts-modal" class="shortcuts-modal" role="dialog" aria-label="Pintasan keyboard" style="display:none">
+    <div class="shortcuts-modal-content">
+      <h3>⌨️ Pintasan Keyboard</h3>
+      <div class="shortcut-row"><span>Kirim pesan</span><kbd>Enter</kbd></div>
+      <div class="shortcut-row"><span>Baris baru</span><kbd>Shift+Enter</kbd></div>
+      <div class="shortcut-row"><span>Cari pesan</span><kbd>Ctrl+F</kbd></div>
+      <div class="shortcut-row"><span>Tutup pencarian</span><kbd>Esc</kbd></div>
+      <div class="shortcut-row"><span>Tutup lightbox</span><kbd>Esc</kbd></div>
+      <div class="shortcut-row"><span>Tema gelap/terang</span><kbd>T</kbd></div>
+      <div class="shortcut-row"><span>Bantuan ini</span><kbd>?</kbd></div>
+      <button id="shortcuts-close" class="btn-save" style="margin:16px 0 0" type="button">Tutup</button>
+    </div>
+  </div>
+
+  <!-- =========================================================
+        SCRIPTS
         ========================================================= -->
   <script src="js/app.js"></script>
+
+  <!-- Register Service Worker -->
+  <script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  }
+  </script>
 
 </body>
 </html>
