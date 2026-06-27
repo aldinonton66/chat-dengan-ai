@@ -116,7 +116,7 @@
     </ul>
 
     <div id="sidebar-footer" style="padding: 8px 10px; margin-top: auto; border-top: 1px solid var(--border-subtle);">
-      <button id="btn-logout-sidebar" class="nav-link" style="color: #ef4444;" title="Logout">
+      <button id="btn-logout-sidebar" class="btn-logout" style="color: #ef4444; width:100%; text-align:left; background:none; border:none; padding:8px 10px; cursor:pointer; border-radius:6px;" title="Logout">
         <span class="nav-icon">🚪</span>
         <span class="nav-label">Logout</span>
       </button>
@@ -317,6 +317,22 @@
           </div>
 
         </div><!-- /#chat-bubble-area -->
+
+        <!-- Typing indicator (DI LUAR chat-bubble-area) -->
+        <div id="typing-indicator" class="chat-bubble bubble-left bubble-ai" style="display: none;" data-msg-id="typing">
+          <div class="bubble-header">
+            <span class="bubble-avatar">🤖</span>
+            <span class="bubble-name">Teman AI</span>
+          </div>
+          <div class="bubble-body">
+            <div class="typing-dots">
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+              <span class="typing-dot"></span>
+            </div>
+            <span class="typing-label">Teman AI sedang mengetik…</span>
+          </div>
+        </div>
 
         <!-- Tombol scroll ke bawah (muncul saat scroll ke atas) -->
         <button id="btn-scroll-bottom"

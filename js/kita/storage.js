@@ -185,6 +185,10 @@
           // Skip own messages (already in local cache)
           if (msg.sender_id === window._kitaUser?.id) return;
 
+          // Hide typing indicator on any incoming message
+          const typingEl = document.getElementById("typing-indicator");
+          if (typingEl) typingEl.classList.add("hidden");
+
           const newMsg = {
             role: msg.sender_role === _currentRole ? "user" : (msg.sender_role === "assistant" ? "assistant" : "partner"),
             sender_role: msg.sender_role,

@@ -16,15 +16,7 @@ var APP_CONFIG = {
   supabaseUrl: "https://qqnrfadcgipsrjwofdzx.supabase.co",
   supabaseAnonKey: "sb_publishable_GCB9lxgWhPIozqh0ioIW9w_QJ0eYVN1",
 
-  // Daftar menu navigasi
-  navMenu: [
-    { id: "section-chat",   label: "Chat Utama",       icon: "💬" },
-    { id: "section-profil", label: "Pengaturan Profil", icon: "👤" },
-    { id: "section-ai",     label: "Pengaturan AI",     icon: "🤖" },
-    { id: "section-status", label: "Status API",        icon: "📊" }
-  ],
-
   // Menu default yang aktif saat halaman pertama dimuat
-  defaultActive: "section-chat"
+  defaultActive: "teman-ai"
 
 };

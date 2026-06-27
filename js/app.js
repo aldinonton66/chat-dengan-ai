@@ -145,7 +145,10 @@
 
   /* ---------- Welcome Section ---------- */
   function showWelcome() {
-    const sectionId = K.safeGetItem("kita-active-section", APP_CONFIG.defaultActive);
+    let sectionId = K.safeGetItem("kita-active-section", APP_CONFIG.defaultActive);
+    // Migrate old section ID format
+    const validSections = ["teman-ai", "curhat", "catatan", "ide", "profil", "ai", "status"];
+    if (!validSections.includes(sectionId)) sectionId = APP_CONFIG.defaultActive;
     K.loadChatHistory(sectionId);
     K.renderChatFromHistory(sectionId);
     K.showSection(sectionId);
@@ -286,7 +289,7 @@
     showWelcome();
 
     // Show export button for local-only
-    document.getElementById("btn-export")?.addEventListener("click", K.exportChatJSON);
+    document.getElementById("btn-export-chat")?.style.removeProperty("display");
     document.getElementById("btn-hapus-semua")?.addEventListener("click", K.resetAllData);
   }
 
@@ -319,7 +322,7 @@
 
   // Export + reset bindings (also needed for real-time mode)
   function bindExtraButtons() {
-    document.getElementById("btn-export")?.addEventListener("click", K.exportChatJSON);
+    document.getElementById("btn-export-chat")?.addEventListener("click", K.exportChatJSON);
     document.getElementById("btn-hapus-semua")?.addEventListener("click", K.resetAllData);
     document.getElementById("btn-refresh-status")?.addEventListener("click", refreshStatus);
     document.getElementById("btn-hapus-history")?.addEventListener("click", K.clearCurrentChat);

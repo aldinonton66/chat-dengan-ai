@@ -72,8 +72,12 @@
   K.buildBubbleHTML = (msg, idx) => {
     const div = document.createElement("div");
     const isUser = msg.role === "user";
+    const isPartner = msg.role === "partner";
+    const isAI = msg.role === "assistant";
+    const position = isUser ? "right" : "left";
+    const persona = isAI ? "ai" : (isUser ? "person1" : "person2");
     const time = K.formatTime(new Date(msg.timestamp || Date.now()));
-    div.className = "bubble " + (isUser ? "user" : "ai") + " bubble-enter";
+    div.className = "bubble bubble-" + position + " bubble-" + persona + " bubble-enter";
     div.style.animationDelay = (Math.min(idx || 0, 20) * 15) + "ms";
     div.dataset.idx = idx;
 
@@ -233,7 +237,6 @@
     K.renderChatFromHistory();
     K.playSound("receive");
     K.scrollToBottom();
-    K.scheduleSyncToSupabase();
   };
 
   /* ---------- Voice Playback ---------- */

@@ -12,11 +12,6 @@
     const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const isDark = saved !== null ? saved === "dark" : prefersDark;
     document.body.classList.toggle("dark", isDark);
-    if (!document.body.classList.contains("dark")) document.body.classList.remove("dark");
-    // Ensure dark class is set correctly
-    if (isDark) document.body.classList.add("dark");
-    else document.body.classList.remove("dark");
-
     btn.textContent = isDark ? "☀️" : "🌙";
 
     btn.addEventListener("click", () => {
