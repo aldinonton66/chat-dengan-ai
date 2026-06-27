@@ -445,11 +445,7 @@
      Sync wrapper margin-left with sidebar width
      ---------------------------------------------------------- */
   function syncWrapperMargin() {
-    const el = getSidebarEl();
-    const wrapper = document.getElementById("app-wrapper");
-    if (el && wrapper) {
-      wrapper.style.marginLeft = el.offsetWidth + "px";
-    }
+    // CSS Grid handles layout — no inline margin needed
   }
 
   /* ----------------------------------------------------------

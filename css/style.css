@@ -83,10 +83,14 @@ body {
   font-family: 'Inter','Segoe UI Variable','Segoe UI',system-ui,-apple-system,sans-serif;
   background: var(--bg-body);
   color: var(--text-primary);
-  height: 100vh; max-height: 100vh; overflow: hidden;
-  overscroll-behavior: none;
-  display: flex; flex-direction: column;
-  transition: background var(--transition-smooth), color var(--transition-smooth);
+  height: 100vh; overflow: hidden;
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: var(--header-h) 1fr;
+  grid-template-areas:
+    "header header"
+    "sidebar main";
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   font-size: clamp(13px, 0.875rem + 0.15vw, 16px); line-height: 1.5;
@@ -96,9 +100,9 @@ body {
    HEADER — Fixed top, glassmorphism
    ============================================================ */
 #app-header {
-  position: fixed; top:0; left:0; right:0; z-index: 40;
+  grid-area: header;
   display: flex; align-items: center; justify-content: space-between;
-  padding: 0 24px; height: var(--header-h);
+  padding: 0 24px;
   background: rgba(18,18,31,0.82);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
@@ -132,18 +136,15 @@ body:not(.dark) #app-header { background: rgba(255,255,255,0.82); }
    APP WRAPPER
    ============================================================ */
 #app-wrapper {
-  display: flex; flex: 1; min-height: 0; overflow: hidden;
-  margin-top: var(--header-h);
-  margin-left: var(--sidebar-w);
-  transition: margin-left 0.3s var(--cb-premium);
+  grid-area: main;
+  display: flex; flex-direction: column; min-height: 0; overflow: hidden;
 }
 
 /* ============================================================
    SIDEBAR — Fixed left, z-50
    ============================================================ */
 #sidebar {
-  position: fixed; left: 0; top: var(--header-h); bottom: 0; z-index: 50;
-  width: var(--sidebar-w); min-width: var(--sidebar-collapsed-w); max-width: 320px;
+  grid-area: sidebar;
   overflow-y: auto; overflow-x: hidden; overscroll-behavior: contain;
   background: var(--bg-surface); border-right: 1px solid var(--border-subtle);
   padding: 16px 0 0; display: flex; flex-direction: column;
@@ -223,7 +224,7 @@ body:not(.dark) #app-header { background: rgba(255,255,255,0.82); }
    MAIN CONTENT
    ============================================================ */
 #main-content {
-  flex: 1; min-width: 0; height: 100%; overflow-y: auto; overflow-x: hidden;
+  flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden;
   overscroll-behavior: contain; padding: 32px; background: var(--bg-body);
   display: flex; flex-direction: column;
   transition: background var(--transition-smooth), padding var(--transition-base);
@@ -1206,9 +1207,14 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 
 /* Mobile: < 768px */
 @media (max-width: 767px) {
+  body {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "header"
+      "main";
+  }
   #sidebar { display: none; }
-  #bottom-nav { display: block; }
-  #app-wrapper { margin-left: 0 !important; }
+  #bottom-nav { display: flex; position: fixed; bottom: 0; left: 0; right: 0; z-index: 100; }
   #main-content { padding: 10px; padding-bottom: calc(var(--bottom-nav-h) + 10px); }
   #app-header { padding: 0 16px; height: 52px; }
   .app-title { font-size: 1.1rem; }
@@ -1242,8 +1248,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
   #sidebar { display: flex; padding: 14px 0 8px; }
   #bottom-nav { display: none; }
   #main-content { padding: 20px; }
-  #app-header { padding: 0 20px; height: 56px; }
-  #chat-bubble-area { padding: 18px 20px 14px; gap: 14px; }
+  #app-header { padding: 0 20px; }
   .chat-bubble { max-width: 76%; }
   .content-section { padding: 28px; border-radius: var(--radius-lg); min-height: 280px; }
 }
@@ -1254,8 +1259,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
   #main-content { padding: 36px; }
   #nav-list { padding: 0 12px; gap: 4px; }
   .nav-link { padding: 13px 16px; font-size: 0.92rem; }
-  #app-header { padding: 0 32px; height: 64px; }
-  .app-title { font-size: 1.3rem; }
+  #app-header { padding: 0 32px; }
   #section-chat.content-section { max-width: none; width: 100%; }
   #chat-bubble-area { padding: 28px 36px 20px; gap: 18px; }
   .chat-bubble { max-width: 62%; }
