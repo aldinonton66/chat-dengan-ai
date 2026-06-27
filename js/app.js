@@ -9,11 +9,9 @@
     if (!sectionId) sectionId = APP_CONFIG.defaultActive;
     K.currentSectionId = sectionId;
 
-    document.querySelectorAll(".nav-item, .sidebar-item").forEach((el) => {
+    document.querySelectorAll(".nav-link, .bottom-nav-link").forEach((el) => {
       el.classList.toggle("active", el.dataset?.section === sectionId);
     });
-
-    document.querySelectorAll(".content-section").forEach((el) => {
       const chatSections = ["teman-ai", "curhat", "catatan", "ide"];
       if (chatSections.includes(sectionId)) {
         el.classList.toggle("hidden", el.id !== "section-chat");
@@ -46,7 +44,7 @@
 
   /* ---------- Bind Navigation ---------- */
   function bindNavigationEvents() {
-    document.querySelectorAll(".nav-item, .sidebar-item").forEach((el) => {
+    document.querySelectorAll(".nav-link, .bottom-nav-link").forEach((el) => {
       el.addEventListener("click", () => {
         const section = el.dataset?.section;
         if (section) K.showSection(section);
@@ -69,7 +67,7 @@
     const navList = document.getElementById("nav-list");
     if (navList) {
       navList.innerHTML = items.map((item) =>
-        '<li><a href="#' + item.section + '" class="sidebar-item" data-section="' + item.section + '">' +
+        '<li><a href="#' + item.section + '" class="nav-link" data-section="' + item.section + '">' +
           '<span class="nav-icon">' + item.icon + '</span>' +
           '<span class="nav-label">' + item.label + '</span>' +
         '</a></li>'
@@ -79,14 +77,15 @@
     // Bottom nav (mobile)
     const bottomNav = document.getElementById("bottom-nav");
     if (bottomNav) {
-      // Only show chat sections in bottom nav (not profil/ai)
       const bottomItems = items.filter((i) => ["teman-ai", "curhat", "catatan", "ide"].includes(i.section));
-      bottomNav.innerHTML = bottomItems.map((item) =>
-        '<button class="nav-item" data-section="' + item.section + '">' +
-          '<span class="nav-icon">' + item.icon + '</span>' +
-          '<span class="nav-label">' + item.label + '</span>' +
-        '</button>'
-      ).join("");
+      bottomNav.innerHTML = '<div id="bottom-nav-list" style="display:flex;height:100%;list-style:none;padding:0;margin:0">' +
+        bottomItems.map((item) =>
+          '<button class="bottom-nav-link" data-section="' + item.section + '">' +
+            '<span class="nav-icon">' + item.icon + '</span>' +
+            '<span class="nav-label">' + item.label + '</span>' +
+          '</button>'
+        ).join("") +
+      '</div>';
     }
   }
 
@@ -135,7 +134,7 @@
       btn.addEventListener("click", () => {
         const section = btn.closest(".content-section");
         if (section) {
-          const navItem = document.querySelector('.nav-item[data-section="teman-ai"], .sidebar-item[data-section="teman-ai"]');
+          const navItem = document.querySelector('.nav-link[data-section="teman-ai"], .bottom-nav-link[data-section="teman-ai"]');
           if (navItem) navItem.click();
         }
       });
