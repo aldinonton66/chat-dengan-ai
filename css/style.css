@@ -1203,7 +1203,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
    RESPONSIVE BREAKPOINTS — Mobile-first min-width
    ============================================================ */
 
-/* Mobile-first base (< 768px) */
+/* Mobile: < 768px */
+@media (max-width: 767px) {
   #sidebar { display: none; }
   #bottom-nav { display: block; }
   #main-content { margin-left: 0 !important; padding: 10px; padding-bottom: calc(var(--bottom-nav-h) + 10px); }
@@ -1232,10 +1233,11 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
   .login-card { padding: 36px 24px 32px; margin: 16px; }
   .login-header h2 { font-size: 1.5rem; }
   .toast { padding: 16px 24px; font-size: 14px; max-width: 90vw; }
+}
 
 /* Tablet: >= 768px */
 @media (min-width: 768px) {
-  #sidebar { display: block; padding: 14px 0 8px; }
+  #sidebar { display: flex; padding: 14px 0 8px; }
   #bottom-nav { display: none; }
   #main-content { margin-left: var(--sidebar-w); padding: 20px; }
   #app-header { padding: 0 20px; height: 56px; }
@@ -1246,9 +1248,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 
 /* Desktop: >= 1024px */
 @media (min-width: 1024px) {
-  #sidebar { display: block; padding: 20px 0 12px; }
-  #bottom-nav { display: none; }
-  #main-content { margin-left: var(--sidebar-w); padding: 36px; }
+  #sidebar { padding: 20px 0 12px; }
+  #main-content { padding: 36px; }
   #nav-list { padding: 0 12px; gap: 4px; }
   .nav-link { padding: 13px 16px; font-size: 0.92rem; }
   #app-header { padding: 0 32px; height: 64px; }
