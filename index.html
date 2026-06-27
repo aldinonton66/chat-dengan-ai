@@ -290,12 +290,15 @@
           <div id="typing-indicator" class="chat-bubble bubble-left bubble-ai" style="display: none;" data-msg-id="typing">
             <div class="bubble-header">
               <span class="bubble-avatar">🤖</span>
-              <span class="bubble-name">Kita AI</span>
+              <span class="bubble-name">Teman AI</span>
             </div>
-            <div class="bubble-body typing-dots">
-              <span class="typing-dot"></span>
-              <span class="typing-dot"></span>
-              <span class="typing-dot"></span>
+            <div class="bubble-body">
+              <div class="typing-dots">
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+                <span class="typing-dot"></span>
+              </div>
+              <span class="typing-label">Teman AI sedang mengetik…</span>
             </div>
           </div>
 
@@ -632,7 +635,28 @@
         </div>
 
         <div id="status-list" class="status-list">
-          <!-- Digenerate oleh app.js -->
+          <div class="status-info">
+            <div class="status-item">
+              <span class="status-label">Status Koneksi</span>
+              <span class="status-badge status-badge--online">Online</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Mode Chat</span>
+              <span class="status-value" id="status-mode">Lokal (disimpan di perangkat ini)</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Nama Kamu</span>
+              <span class="status-value" id="status-nama-user">—</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Nama AI</span>
+              <span class="status-value" id="status-nama-ai">—</span>
+            </div>
+            <div class="status-item">
+              <span class="status-label">Total Pesan</span>
+              <span class="status-value" id="status-total-pesan">0</span>
+            </div>
+          </div>
         </div>
 
         <button id="btn-refresh-status" class="btn-save" style="margin-top:12px;">

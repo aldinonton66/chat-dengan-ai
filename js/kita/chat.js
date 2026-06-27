@@ -5,6 +5,29 @@
   const K = window.KitaAI;
 
   /* ---------- Render ---------- */
+  const EMPTY_STATES = {
+    "teman-ai": {
+      icon: "💬",
+      title: "Mulai ngobrol dengan Teman AI",
+      desc: "Tanyakan apa saja, curhat, atau minta saran. AI akan merespons dengan hangat."
+    },
+    curhat: {
+      icon: "💝",
+      title: "Curhat di sini yuk",
+      desc: "Apa yang lagi kamu rasakan? AI akan mendengarkan dan merespons dengan empati."
+    },
+    catatan: {
+      icon: "📝",
+      title: "Catatan kamu",
+      desc: "Tulis catatan lewat chat, AI akan menyimpannya. Bisa minta dirangkum kapan saja."
+    },
+    ide: {
+      icon: "💡",
+      title: "Ide Kreatif",
+      desc: "Lemparkan ide kamu! AI akan bantu mengembangkannya."
+    }
+  };
+
   K.renderChatFromHistory = (sectionId) => {
     if (!sectionId) sectionId = K.currentSectionId;
     const els = K.getChatElements();
@@ -12,8 +35,18 @@
     els.bubbleArea.innerHTML = "";
     const history = K.loadChatHistory(sectionId);
     if (!history || history.length === 0) {
+      const def = EMPTY_STATES[sectionId] || EMPTY_STATES["teman-ai"];
       els.bubbleArea.innerHTML =
-        '<div class="chat-empty"><span>💬</span><p>Belum ada pesan. Mulai percakapan!</p></div>';
+        '<div class="chat-empty">' +
+          '<div class="chat-empty-icon">' + def.icon + '</div>' +
+          '<h3 class="chat-empty-title">' + def.title + '</h3>' +
+          '<p class="chat-empty-desc">' + def.desc + '</p>' +
+          '<div class="chat-empty-hint">' +
+            '<span>⌨️ Ketik pesan di bawah</span>' +
+            '<span>🎤 Rekam voice note</span>' +
+            '<span>📎 Lampirkan foto/video</span>' +
+          '</div>' +
+        '</div>';
       return;
     }
 
@@ -88,8 +121,14 @@
     const els = K.getChatElements();
     if (!content || !content.trim()) return;
 
+    const aiName = K.safeGetItem("kita-nama-ai", "Teman AI") || "Teman AI";
+
     // Reset typing indicator
-    if (els.typingInd) els.typingInd.classList.add("hidden");
+    if (els.typingInd) {
+      els.typingInd.classList.add("hidden");
+      const typingLabel = els.typingInd.querySelector(".typing-label");
+      if (typingLabel) typingLabel.textContent = aiName + " sedang mengetik…";
+    }
 
     // Try Supabase real-time send
     const sent = await K._sendToSupabase?.(content, type, duration);
@@ -99,6 +138,9 @@
       K.playSound("send");
       K.scrollToBottom();
       if (els.typingInd) {
+        const aiName = K.safeGetItem("kita-nama-ai", "Teman AI") || "Teman AI";
+        const typingLabel = els.typingInd.querySelector(".typing-label");
+        if (typingLabel) typingLabel.textContent = aiName + " sedang mengetik…";
         els.typingInd.classList.remove("hidden");
         K.scrollToBottom();
       }
@@ -129,6 +171,37 @@
   /* ---------- AI ---------- */
   K.callAI = async () => {
     const els = K.getChatElements();
+    const sectionId = K.currentSectionId;
+    const aiName = K.safeGetItem("kita-nama-ai", "Teman AI") || "Teman AI";
+
+    // Build system prompt based on section
+    const systemPrompts = {
+      "teman-ai": K.safeGetItem("kita-ai-instruksi", ""),
+      curhat: "Kamu adalah pendengar yang hangat, empatik, dan suportif. " +
+              "Bantu user mengekspresikan perasaannya dan berikan perspektif yang menenangkan. " +
+              "Gunakan bahasa Indonesia yang lembut dan penuh pengertian. " +
+              "Jangan menghakimi, jangan terburu-buru memberi solusi — dengarkan dulu.",
+      catatan: "Kamu adalah asisten catatan yang rapi dan terorganisir. " +
+               "Bantu user menulis, merapikan, dan merangkum catatan. " +
+               "Jika user menulis catatan baru, konfirmasi dengan menyebutkan judul catatannya. " +
+               "Gunakan bahasa Indonesia yang jelas dan terstruktur.",
+      ide: "Kamu adalah teman brainstorming yang kreatif dan penuh semangat. " +
+           "Bantu user mengembangkan ide-ide mereka dengan pertanyaan dan saran yang membangun. " +
+           "Berikan perspektif baru, tantang asumsi, dan dorong user untuk berpikir lebih jauh. " +
+           "Gunakan bahasa Indonesia yang energik dan inspiratif."
+    };
+
+    const systemInstruction = systemPrompts[sectionId] || systemPrompts["teman-ai"];
+    const customInstr = K.safeGetItem("kita-ai-instruksi", "");
+    const fullSystem = customInstr
+      ? customInstr + "\n\n" + systemInstruction
+      : systemInstruction;
+
+    const messagesForAI = [
+      { role: "system", content: fullSystem },
+      ...K.chatHistory.map((m) => ({ role: m.role === "assistant" ? "assistant" : "user", content: m.content }))
+    ];
+
     try {
       const res = await fetch(APP_CONFIG.supabaseUrl + "/functions/v1/groq-chat", {
         method: "POST",
@@ -136,7 +209,7 @@
           "Content-Type": "application/json",
           "Authorization": "Bearer " + APP_CONFIG.supabaseAnonKey
         },
-        body: JSON.stringify({ messages: K.chatHistory })
+        body: JSON.stringify({ messages: messagesForAI })
       });
 
       if (!res.ok) throw new Error("HTTP " + res.status);

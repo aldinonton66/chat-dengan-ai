@@ -495,7 +495,9 @@ body:not(.dark) #bottom-nav{background:rgba(255,255,255,0.92)}
 
 /* ---- Typing Indicator ---- */
 #typing-indicator{display:none}
-.typing-dots{display:flex;align-items:center;gap:5px;padding:16px 18px}
+#typing-indicator .bubble-body{display:flex;align-items:center;gap:10px;padding:12px 16px;flex-wrap:wrap}
+.typing-label{font-size:0.78rem;color:var(--text-muted);white-space:nowrap}
+.typing-dots{display:flex;align-items:center;gap:5px}
 .typing-dot{
   width:7px;height:7px;border-radius:50%;background:var(--accent);
   animation:typingBounce 1.3s var(--cb-premium) infinite;
@@ -614,7 +616,7 @@ body:not(.dark) #bottom-nav{background:rgba(255,255,255,0.92)}
 .lightbox-close:hover{background:rgba(255,255,255,0.2);transform:scale(1.12)}
 
 /* ---- Empty Chat Placeholder ---- */
-.chat-empty-placeholder{
+.chat-empty,.chat-empty-placeholder{
   flex:1;display:flex;flex-direction:column;align-items:center;
   justify-content:center;text-align:center;padding:60px 20px;
   animation:fadeSlideIn 0.5s var(--cb-premium)
@@ -632,7 +634,7 @@ body:not(.dark) #bottom-nav{background:rgba(255,255,255,0.92)}
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text
 }
 .chat-empty-desc{font-size:0.92rem;color:var(--text-muted);line-height:1.7;max-width:340px;margin-bottom:24px}
-.chat-empty-hints{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.chat-empty-hints,.chat-empty-hint{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
 .chat-empty-hints span{
   background:var(--accent-soft);color:var(--accent);padding:8px 18px;
   border-radius:var(--radius-full);font-size:0.82rem;font-weight:600;
@@ -640,6 +642,17 @@ body:not(.dark) #bottom-nav{background:rgba(255,255,255,0.92)}
   cursor:default
 }
 .chat-empty-hints span:hover{transform:translateY(-3px);box-shadow:0 6px 20px var(--accent-glow)}
+
+/* ---- Status Section ---- */
+.status-list{display:flex;flex-direction:column;gap:12px}
+.status-info{display:flex;flex-direction:column;gap:8px}
+.status-item{display:flex;justify-content:space-between;align-items:center;padding:10px 14px;background:var(--bg-elevated);border:1px solid var(--border-subtle);border-radius:var(--radius-md);transition:all var(--transition-fast)}
+.status-item:hover{border-color:var(--border-default)}
+.status-label{font-size:0.85rem;color:var(--text-secondary);font-weight:500}
+.status-value{font-size:0.88rem;color:var(--text-primary);font-weight:600}
+.status-badge{font-size:0.75rem;padding:3px 12px;border-radius:var(--radius-full);font-weight:700}
+.status-badge--online{background:rgba(16,185,129,0.15);color:rgb(16,185,129)}
+.status-badge--offline{background:rgba(239,68,68,0.15);color:rgb(239,68,68)}
 
 /* ---- Keyboard Shortcuts Hint ---- */
 .chat-shortcuts-hint{

@@ -153,6 +153,35 @@
     if (target) target.classList.add("active");
   }
 
+  /* ---------- Status ---------- */
+  function refreshStatus() {
+    const elMode = document.getElementById("status-mode");
+    const elUser = document.getElementById("status-nama-user");
+    const elAi = document.getElementById("status-nama-ai");
+    const elTotal = document.getElementById("status-total-pesan");
+    const badge = document.querySelector(".status-badge");
+
+    if (badge) {
+      badge.textContent = navigator.onLine ? "Online" : "Offline";
+      badge.className = "status-badge " + (navigator.onLine ? "status-badge--online" : "status-badge--offline");
+    }
+
+    if (elMode) elMode.textContent = window._kitaUser ? "Real-time (Supabase)" : "Lokal (disimpan di perangkat ini)";
+    if (elUser) elUser.textContent = K.safeGetItem("kita-nama", "Kamu");
+    if (elAi) elAi.textContent = K.safeGetItem("kita-nama-ai", "Teman AI");
+
+    if (elTotal) {
+      let total = 0;
+      ["teman-ai", "curhat", "catatan", "ide"].forEach((s) => {
+        const arr = K.safeGetItem("kita-chat-" + s, "[]");
+        try { total += JSON.parse(arr).length; } catch(e) {}
+      });
+      elTotal.textContent = total;
+    }
+
+    K.showToast("Status diperbarui", "🔄", "success");
+  }
+
   /* ---------- Full Reset ---------- */
   K.resetAllData = () => {
     if (!confirm("Hapus semua data? (tidak bisa dibatalkan)")) return;
@@ -169,6 +198,16 @@
     K.chatHistory = [];
     K.showToast("Semua data dihapus", "🗑️", "success");
     location.reload();
+  };
+
+  K.clearCurrentChat = () => {
+    if (!K.currentSectionId) return;
+    if (!confirm("Hapus history chat di section ini? (tidak bisa dibatalkan)")) return;
+    const key = "kita-chat-" + K.currentSectionId;
+    K.safeSetItem(key, "[]");
+    K.chatHistory = [];
+    K.renderChatFromHistory(K.currentSectionId);
+    K.showToast("History chat dihapus", "🗑️", "success");
   };
 
   /* ---------- Init ---------- */
@@ -201,6 +240,7 @@
       initOfflineBanner();
 
       K.setSoundEnabled(K.safeGetItem("kita-sound", "on") === "on");
+      bindExtraButtons();
 
       // Setup room (for real-time messaging)
       if (window._kitaUser) {
@@ -211,6 +251,7 @@
       }
 
       hideSkeleton();
+      refreshStatus();
 
     } catch (e) {
       if (e?.message?.includes("Auth") || e?.message?.includes("auth")) {
@@ -280,6 +321,8 @@
   function bindExtraButtons() {
     document.getElementById("btn-export")?.addEventListener("click", K.exportChatJSON);
     document.getElementById("btn-hapus-semua")?.addEventListener("click", K.resetAllData);
+    document.getElementById("btn-refresh-status")?.addEventListener("click", refreshStatus);
+    document.getElementById("btn-hapus-history")?.addEventListener("click", K.clearCurrentChat);
   }
 
   // Boot
