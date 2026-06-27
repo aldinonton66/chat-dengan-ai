@@ -134,6 +134,8 @@ body:not(.dark) #app-header { background: rgba(255,255,255,0.82); }
 #app-wrapper {
   display: flex; flex: 1; min-height: 0; overflow: hidden;
   margin-top: var(--header-h);
+  margin-left: var(--sidebar-w);
+  transition: margin-left 0.3s var(--cb-premium);
 }
 
 /* ============================================================
@@ -224,8 +226,7 @@ body:not(.dark) #app-header { background: rgba(255,255,255,0.82); }
   flex: 1; min-width: 0; height: 100%; overflow-y: auto; overflow-x: hidden;
   overscroll-behavior: contain; padding: 32px; background: var(--bg-body);
   display: flex; flex-direction: column;
-  margin-left: var(--sidebar-w);
-  transition: background var(--transition-smooth), margin-left 0.3s var(--cb-premium);
+  transition: background var(--transition-smooth), padding var(--transition-base);
 }
 #main-content::-webkit-scrollbar { width: 6px; }
 #main-content::-webkit-scrollbar-track { background: transparent; }
@@ -1207,7 +1208,8 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 @media (max-width: 767px) {
   #sidebar { display: none; }
   #bottom-nav { display: block; }
-  #main-content { margin-left: 0 !important; padding: 10px; padding-bottom: calc(var(--bottom-nav-h) + 10px); }
+  #app-wrapper { margin-left: 0 !important; }
+  #main-content { padding: 10px; padding-bottom: calc(var(--bottom-nav-h) + 10px); }
   #app-header { padding: 0 16px; height: 52px; }
   .app-title { font-size: 1.1rem; }
   .content-section { padding: 20px; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
@@ -1239,7 +1241,7 @@ input:focus-visible, select:focus-visible, textarea:focus-visible, button:focus-
 @media (min-width: 768px) {
   #sidebar { display: flex; padding: 14px 0 8px; }
   #bottom-nav { display: none; }
-  #main-content { margin-left: var(--sidebar-w); padding: 20px; }
+  #main-content { padding: 20px; }
   #app-header { padding: 0 20px; height: 56px; }
   #chat-bubble-area { padding: 18px 20px 14px; gap: 14px; }
   .chat-bubble { max-width: 76%; }
