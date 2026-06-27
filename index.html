@@ -742,6 +742,14 @@
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   }
+  // Safety: force-hide skeleton after 8s in case initApp fails
+  setTimeout(function(){
+    var skel = document.getElementById("app-skeleton");
+    if (skel && skel.style.display !== "none") {
+      skel.classList.add("hidden");
+      setTimeout(function(){ skel.style.display = "none"; }, 500);
+    }
+  }, 8000);
   </script>
 
 </body>

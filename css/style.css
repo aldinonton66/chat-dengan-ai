@@ -321,7 +321,7 @@ body:not(.dark) #bottom-nav{background:rgba(255,255,255,0.92)}
   box-shadow:var(--shadow-lg);border:1px solid var(--border-subtle);
   min-height:0;position:relative
 }
-#section-chat.content-section.active{display:flex}
+#section-chat.content-section.active{display:flex;flex:1}
 
 /* ---- Chat Search Bar ---- */
 #chat-search-bar{

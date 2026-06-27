@@ -249,17 +249,16 @@
       if (window._kitaUser) {
         await setupRoom();
       } else {
-        // Offline mode — use local-only chat
         setupLocalChat();
       }
 
-      hideSkeleton();
       refreshStatus();
-
     } catch (e) {
       if (e?.message?.includes("Auth") || e?.message?.includes("auth")) {
         window.location.replace("login.html");
       }
+    } finally {
+      hideSkeleton();
     }
   };
 
