@@ -14,9 +14,12 @@
     });
 
     document.querySelectorAll(".content-section").forEach((el) => {
-      const matchId = el.id?.replace("-section", "");
-      const isMatch = matchId === sectionId;
-      el.classList.toggle("hidden", !isMatch);
+      const chatSections = ["teman-ai", "curhat", "catatan", "ide"];
+      if (chatSections.includes(sectionId)) {
+        el.classList.toggle("hidden", el.id !== "section-chat");
+      } else {
+        el.classList.toggle("hidden", el.id !== "section-" + sectionId);
+      }
     });
 
     const headerTitle = document.getElementById("sidebar-header-title");
