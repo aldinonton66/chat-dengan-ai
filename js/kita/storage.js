@@ -39,21 +39,60 @@
   /* ---------- Supabase sync ---------- */
   let _syncTimer = null;
 
+  function buildSnapshot() {
+    const snapshot = { chats: {}, profile: {}, ai: {} };
+    ["teman-ai", "curhat", "catatan", "ide"].forEach((s) => {
+      snapshot.chats[s] = K.safeGetItem(storageKey(s), "[]");
+    });
+    [
+      "kita-nama","kita-tentang","kita-avatar","kita-avatar-emoji",
+      "kita-nama-ai","kita-ai-tentang","kita-avatar-ai","kita-avatar-emoji-ai",
+      "kita-sapaan","kita-font"
+    ].forEach((k) => {
+      snapshot.profile[k] = K.safeGetItem(k, "");
+    });
+    [
+      "kita-ai-gaya","kita-ai-kepribadian","kita-ai-pengetahuan",
+      "kita-ai-batasan","kita-ai-instruksi","kita-ai-model"
+    ].forEach((k) => {
+      snapshot.ai[k] = K.safeGetItem(k, "");
+    });
+    return snapshot;
+  }
+
+  function applySnapshot(snapshot) {
+    if (!snapshot) return;
+    if (snapshot.chats) {
+      Object.keys(snapshot.chats).forEach((s) => {
+        const v = snapshot.chats[s];
+        if (v) K.safeSetItem(storageKey(s), v);
+      });
+    }
+    if (snapshot.profile) {
+      Object.keys(snapshot.profile).forEach((k) => {
+        const v = snapshot.profile[k];
+        if (v) K.safeSetItem(k, v);
+      });
+    }
+    if (snapshot.ai) {
+      Object.keys(snapshot.ai).forEach((k) => {
+        const v = snapshot.ai[k];
+        if (v) K.safeSetItem(k, v);
+      });
+    }
+  }
+
   K.syncAllToSupabase = async () => {
     const user = window._kitaUser;
     if (!user) return;
     const sb = getSupabase();
     if (!sb) return;
     try {
-      const sections = ["teman-ai", "curhat", "catatan", "ide"];
-      for (const s of sections) {
-        const key = storageKey(s);
-        const data = K.safeGetItem(key, "[]");
-        await sb.from("chat_sync").upsert(
-          { user_id: user.id, section: s, data: data, updated_at: new Date().toISOString() },
-          { onConflict: "user_id,section" }
-        ).maybeSingle();
-      }
+      const snapshot = buildSnapshot();
+      await sb.from("user_data").upsert(
+        { user_id: user.id, data: snapshot, updated_at: new Date().toISOString() },
+        { onConflict: "user_id" }
+      );
     } catch (e) {
       // silent fail — sync is best-effort
     }
@@ -68,13 +107,9 @@
     const sb = getSupabase(userId);
     if (!sb) return;
     try {
-      const { data } = await sb.from("chat_sync").select("*").eq("user_id", userId);
-      if (data && data.length > 0) {
-        data.forEach((row) => {
-          if (row.data) {
-            K.safeSetItem(storageKey(row.section), row.data);
-          }
-        });
+      const { data } = await sb.from("user_data").select("data").eq("user_id", userId).maybeSingle();
+      if (data?.data) {
+        applySnapshot(data.data);
       }
     } catch (e) { /* silent */ }
   };
@@ -83,7 +118,7 @@
     const sb = getSupabase(userId);
     if (!sb) return;
     try {
-      await sb.from("chat_sync").delete().eq("user_id", userId);
+      await sb.from("user_data").delete().eq("user_id", userId);
     } catch (e) { /* silent */ }
   };
 
@@ -97,6 +132,17 @@
           const renderFn = K.renderChatFromHistory;
           if (typeof renderFn === "function") renderFn();
         }
+      }
+    });
+
+    // Re-sync from Supabase when tab regains focus
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible" && window._kitaUser) {
+        K.loadFromSupabase(window._kitaUser.id).then(() => {
+          K.loadChatHistory(K.currentSectionId);
+          const renderFn = K.renderChatFromHistory;
+          if (typeof renderFn === "function") renderFn();
+        });
       }
     });
   };

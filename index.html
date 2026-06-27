@@ -387,325 +387,124 @@
 
         <div class="section-header">
           <h2>👤 Pengaturan Profil</h2>
-          <p class="section-desc">Atur nama dan warna bubble untuk masing-masing persona.</p>
+          <p class="section-desc">Atur nama dan tampilan bubble untuk kamu &amp; AI.</p>
         </div>
 
-        <!-- Card Person 1 -->
-        <div class="form-card">
-          <h3 class="form-card-title">
-            <span class="card-icon">✨</span> Person 1 — Kamu
-          </h3>
+        <form id="form-profil" novalidate>
 
-          <div class="form-group">
-            <label for="profil-p1-nama" class="form-label">Nama</label>
-            <input type="text"
-                   id="profil-p1-nama"
-                   class="form-input"
-                   placeholder="Nama kamu"
-                   value="Kamu"
-                   maxlength="30">
-          </div>
+          <!-- Card: Kamu -->
+          <div class="form-card">
+            <h3 class="form-card-title">
+              <span class="card-icon">✨</span> Kamu
+            </h3>
 
-          <div class="form-group">
-            <label for="profil-p1-warna" class="form-label">Warna Bubble</label>
-            <div class="color-picker-row">
-              <input type="color"
-                     id="profil-p1-warna"
-                     class="form-color"
-                     value="#3b82f6">
-              <span class="color-hex" id="profil-p1-hex">#3b82f6</span>
+            <div class="form-group">
+              <label for="kita-nama" class="form-label">Nama Kamu</label>
+              <input type="text" id="kita-nama" name="kita-nama" class="form-input"
+                     placeholder="Nama kamu" value="Kamu" maxlength="30">
+            </div>
+
+            <div class="form-group">
+              <label for="kita-tentang" class="form-label">Tentang Kamu</label>
+              <textarea id="kita-tentang" name="kita-tentang" class="form-textarea"
+                        placeholder="Cerita sedikit tentang kamu…" rows="2" maxlength="200"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="kita-sapaan" class="form-label">Sapaan Favorit</label>
+              <input type="text" id="kita-sapaan" name="kita-sapaan" class="form-input"
+                     placeholder="Halo, Hai, Hey…" maxlength="20">
+            </div>
+
+            <div class="form-group">
+              <label for="kita-avatar" class="form-label">Avatar (URL gambar)</label>
+              <input type="url" id="kita-avatar" name="kita-avatar" class="form-input"
+                     placeholder="https://example.com/avatar.jpg">
+            </div>
+
+            <div class="form-group">
+              <label for="kita-avatar-emoji" class="form-label">Avatar Emoji</label>
+              <input type="text" id="kita-avatar-emoji" name="kita-avatar-emoji" class="form-input"
+                     placeholder="🧑" value="🧑" maxlength="4">
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="profil-p1-teks" class="form-label">Warna Teks</label>
-            <div class="color-picker-row">
-              <input type="color"
-                     id="profil-p1-teks"
-                     class="form-color"
-                     value="#ffffff">
-              <span class="color-hex" id="profil-p1-teks-hex">#ffffff</span>
-              <span id="profil-p1-teks-preview"
-                    class="font-color-swatch"
-                    style="background: #ffffff; color: #1a1a1a;">Aa</span>
+          <!-- Card: AI -->
+          <div class="form-card">
+            <h3 class="form-card-title">
+              <span class="card-icon">🤖</span> Teman AI
+            </h3>
+
+            <div class="form-group">
+              <label for="kita-nama-ai" class="form-label">Nama AI</label>
+              <input type="text" id="kita-nama-ai" name="kita-nama-ai" class="form-input"
+                     placeholder="Nama AI" value="Teman AI" maxlength="30">
             </div>
-            <div class="color-presets" data-target="profil-p1-teks">
-              <button class="preset-dot" style="background:#ffffff" data-color="#ffffff"></button>
-              <button class="preset-dot" style="background:#fbbf24" data-color="#fbbf24"></button>
-              <button class="preset-dot" style="background:#22d3ee" data-color="#22d3ee"></button>
-              <button class="preset-dot" style="background:#a3e635" data-color="#a3e635"></button>
-              <button class="preset-dot" style="background:#f472b6" data-color="#f472b6"></button>
-              <button class="preset-dot" style="background:#f87171" data-color="#f87171"></button>
-              <button class="preset-dot" style="background:#c084fc" data-color="#c084fc"></button>
-              <button class="preset-dot" style="background:#fb923c" data-color="#fb923c"></button>
+
+            <div class="form-group">
+              <label for="kita-ai-tentang" class="form-label">Tentang AI</label>
+              <textarea id="kita-ai-tentang" name="kita-ai-tentang" class="form-textarea"
+                        placeholder="Cerita sedikit tentang AI…" rows="2" maxlength="200"></textarea>
             </div>
-          </div>
 
-          <!-- Preview bubble Person 1 -->
-          <div class="bubble-preview-wrapper">
-            <span class="preview-label">Preview:</span>
-            <div class="chat-bubble bubble-right bubble-preview"
-                 id="preview-p1">
-              <div class="bubble-header">
-                <span class="bubble-time">12.00</span>
-                <span class="bubble-name" id="preview-p1-nama">Kamu</span>
-              </div>
-              <div class="bubble-body" id="preview-p1-body">
-                <p>Halo! Ini preview bubble kamu ✨</p>
-              </div>
+            <div class="form-group">
+              <label for="kita-avatar-ai" class="form-label">Avatar AI (URL gambar)</label>
+              <input type="url" id="kita-avatar-ai" name="kita-avatar-ai" class="form-input"
+                     placeholder="https://example.com/ai-avatar.jpg">
             </div>
-          </div>
-        </div>
 
-        <!-- Card Person 2 -->
-        <div class="form-card">
-          <h3 class="form-card-title">
-            <span class="card-icon">🌸</span> Person 2 — Pacar
-          </h3>
-
-          <div class="form-group">
-            <label for="profil-p2-nama" class="form-label">Nama</label>
-            <input type="text"
-                   id="profil-p2-nama"
-                   class="form-input"
-                   placeholder="Nama pacar"
-                   value="Sari"
-                   maxlength="30">
-          </div>
-
-          <div class="form-group">
-            <label for="profil-p2-warna" class="form-label">Warna Bubble</label>
-            <div class="color-picker-row">
-              <input type="color"
-                     id="profil-p2-warna"
-                     class="form-color"
-                     value="#ec4899">
-              <span class="color-hex" id="profil-p2-hex">#ec4899</span>
+            <div class="form-group">
+              <label for="kita-avatar-emoji-ai" class="form-label">AI Emoji</label>
+              <input type="text" id="kita-avatar-emoji-ai" name="kita-avatar-emoji-ai" class="form-input"
+                     placeholder="🤖" value="🤖" maxlength="4">
             </div>
           </div>
 
-          <div class="form-group">
-            <label for="profil-p2-teks" class="form-label">Warna Teks</label>
-            <div class="color-picker-row">
-              <input type="color"
-                     id="profil-p2-teks"
-                     class="form-color"
-                     value="#ffffff">
-              <span class="color-hex" id="profil-p2-teks-hex">#ffffff</span>
-              <span id="profil-p2-teks-preview"
-                    class="font-color-swatch"
-                    style="background: #ffffff; color: #1a1a1a;">Aa</span>
+          <!-- Card: Font & Sound -->
+          <div class="form-card">
+            <h3 class="form-card-title">
+              <span class="card-icon">🔤</span> Font &amp; Suara
+            </h3>
+
+            <div class="form-group">
+              <label for="kita-font" class="form-label">Font Chat</label>
+              <select id="kita-font" name="kita-font" class="form-select">
+                <option value="modern">Modern (Plus Jakarta Sans)</option>
+                <option value="classic">Classic (Merriweather)</option>
+                <option value="mono">Monospace (JetBrains Mono)</option>
+              </select>
             </div>
-            <div class="color-presets" data-target="profil-p2-teks">
-              <button class="preset-dot" style="background:#ffffff" data-color="#ffffff"></button>
-              <button class="preset-dot" style="background:#fbbf24" data-color="#fbbf24"></button>
-              <button class="preset-dot" style="background:#22d3ee" data-color="#22d3ee"></button>
-              <button class="preset-dot" style="background:#a3e635" data-color="#a3e635"></button>
-              <button class="preset-dot" style="background:#f472b6" data-color="#f472b6"></button>
-              <button class="preset-dot" style="background:#f87171" data-color="#f87171"></button>
-              <button class="preset-dot" style="background:#c084fc" data-color="#c084fc"></button>
-              <button class="preset-dot" style="background:#fb923c" data-color="#fb923c"></button>
-            </div>
-          </div>
 
-          <!-- Preview bubble Person 2 -->
-          <div class="bubble-preview-wrapper">
-            <span class="preview-label">Preview:</span>
-            <div class="chat-bubble bubble-left bubble-preview"
-                 id="preview-p2">
-              <div class="bubble-header">
-                <span class="bubble-name" id="preview-p2-nama">Sari</span>
-                <span class="bubble-time">12.01</span>
-              </div>
-              <div class="bubble-body" id="preview-p2-body">
-                <p>Hai! Ini preview bubble aku 🌸</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card: Profil AI -->
-        <div class="form-card">
-          <h3 class="form-card-title">
-            <span class="card-icon">🤖</span> Profil AI
-          </h3>
-
-          <div class="form-group">
-            <label for="profil-ai-nama" class="form-label">Nama AI</label>
-            <input type="text"
-                   id="profil-ai-nama"
-                   class="form-input"
-                   placeholder="Nama panggilan AI"
-                   value="Kita AI"
-                   maxlength="30">
-          </div>
-
-          <div class="form-group">
-            <label for="profil-ai-avatar" class="form-label">Avatar / Emoji</label>
-            <div style="display:flex;gap:8px;align-items:center;">
-              <input type="text"
-                     id="profil-ai-avatar"
-                     class="form-input"
-                     placeholder="🤖"
-                     value="🤖"
-                     maxlength="10"
-                     style="flex:1;">
-              <span id="profil-ai-avatar-preview" style="font-size:2rem;">🤖</span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="profil-ai-warna-bubble" class="form-label">Warna Bubble</label>
-            <div class="color-picker-row">
-              <input type="color"
-                     id="profil-ai-warna-bubble"
-                     class="form-color"
-                     value="#7c3aed">
-              <span class="color-hex" id="profil-ai-warna-bubble-hex">#7c3aed</span>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="profil-ai-teks" class="form-label">Warna Teks</label>
-            <div class="color-picker-row">
-              <input type="color"
-                     id="profil-ai-teks"
-                     class="form-color"
-                     value="#e0e0e0">
-              <span class="color-hex" id="profil-ai-teks-hex">#e0e0e0</span>
-              <span id="profil-ai-teks-preview"
-                    class="font-color-swatch"
-                    style="background: #e0e0e0; color: #1a1a1a;">Aa</span>
-            </div>
-            <div class="color-presets" data-target="profil-ai-teks">
-              <button class="preset-dot" style="background:#e0e0e0" data-color="#e0e0e0"></button>
-              <button class="preset-dot" style="background:#ffffff" data-color="#ffffff"></button>
-              <button class="preset-dot" style="background:#a78bfa" data-color="#a78bfa"></button>
-              <button class="preset-dot" style="background:#22d3ee" data-color="#22d3ee"></button>
-              <button class="preset-dot" style="background:#a3e635" data-color="#a3e635"></button>
-              <button class="preset-dot" style="background:#fbbf24" data-color="#fbbf24"></button>
-              <button class="preset-dot" style="background:#f472b6" data-color="#f472b6"></button>
-              <button class="preset-dot" style="background:#93c5fd" data-color="#93c5fd"></button>
-            </div>
-          </div>
-
-          <!-- Preview bubble AI -->
-          <div class="bubble-preview-wrapper">
-            <span class="preview-label">Preview:</span>
-            <div class="chat-bubble bubble-left bubble-preview bubble-ai"
-                 id="preview-ai">
-              <div class="bubble-header">
-                <span class="bubble-avatar" id="preview-ai-avatar-icon">🤖</span>
-                <span class="bubble-name" id="preview-ai-nama">Kita AI</span>
-                <span class="bubble-time">12.00</span>
-              </div>
-              <div class="bubble-body" id="preview-ai-body">
-                <p>Halo! Saya siap membantu ✨</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Card: Pengaturan Font -->
-        <div class="form-card">
-          <h3 class="form-card-title">
-            <span class="card-icon">🔤</span> Pengaturan Font Chat
-          </h3>
-
-          <!-- Ukuran font -->
-          <div class="form-group">
-            <label for="font-ukuran" class="form-label">
-              Ukuran Font Chat: <strong id="font-ukuran-label">15px</strong>
-            </label>
-            <div class="range-row">
-              <span class="range-min">12px</span>
-              <input type="range"
-                     id="font-ukuran"
-                     class="form-range"
-                     min="12"
-                     max="24"
-                     value="15"
-                     step="1">
-              <span class="range-max">24px</span>
-            </div>
-          </div>
-
-          <!-- Preview teks ukuran font -->
-          <div class="form-group">
-            <span class="form-label">Preview Ukuran:</span>
-            <div id="font-preview-text"
-                 class="font-preview-box"
-                 style="font-size: 15px;">
-              Aa Bb Cc — Halo! Ini preview ukuran font chat kamu.
-            </div>
-          </div>
-
-          <!-- Font family -->
-          <div class="form-group">
-            <label for="font-family" class="form-label">Font Family</label>
-            <select id="font-family" class="form-select">
-              <option value="Inter">Inter (Modern, rounded)</option>
-              <option value="system-ui">System UI (Bawaan OS)</option>
-              <option value="serif">Serif (Elegan, klasik)</option>
-              <option value="monospace">Monospace (Koding)</option>
-            </select>
-          </div>
-
-          <!-- Line height -->
-          <div class="form-group">
-            <label for="font-lineheight" class="form-label">
-              Line Height: <strong id="font-lineheight-label">1.6</strong>
-            </label>
-            <div class="range-row">
-              <span class="range-min">1.2</span>
-              <input type="range"
-                     id="font-lineheight"
-                     class="form-range"
-                     min="1.2"
-                     max="2.2"
-                     value="1.6"
-                     step="0.1">
-              <span class="range-max">2.2</span>
-            </div>
-          </div>
-
-          <!-- Font weight + reset -->
-          <div class="form-group">
             <div class="toggle-row">
               <div class="toggle-info">
-                <span class="toggle-label">Teks Tebal (Bold)</span>
-                <span class="toggle-desc">Huruf lebih tebal untuk semua bubble chat</span>
+                <span class="toggle-label">Suara Ketikan</span>
+                <span class="toggle-desc">Bunyi klik saat kirim/terima pesan</span>
               </div>
               <label class="toggle-switch">
-                <input type="checkbox" id="font-bold">
+                <input type="checkbox" id="kita-sound" name="kita-sound">
                 <span class="toggle-slider"></span>
               </label>
             </div>
           </div>
 
-          <!-- Reset defaults -->
-          <div style="text-align:right;margin-top:4px;">
-            <button id="btn-reset-font" type="button" class="btn-storage btn-storage-refresh" style="font-size:0.78rem;">
-              🔄 Reset ke Default
-            </button>
-          </div>
+          <!-- Tombol simpan -->
+          <button type="submit" class="btn-save">💾 Simpan Profil</button>
 
+        </form>
+
+        <!-- Card: Preview -->
+        <div class="form-card">
+          <h3 class="form-card-title">
+            <span class="card-icon">👁️</span> Preview Profil
+          </h3>
+          <div class="profile-preview-area"></div>
         </div>
-
-        <!-- Tombol simpan -->
-        <button id="btn-simpan-profil"
-                class="btn-save"
-                type="button">
-          💾 Simpan Profil
-        </button>
 
         <!-- Card: Penyimpanan Lokal -->
         <div class="form-card">
           <h3 class="form-card-title">
             <span class="card-icon">💿</span> Penyimpanan Lokal
           </h3>
-
-          <!-- Progress bar -->
           <div class="storage-info-row">
             <span class="storage-label">Terpakai:</span>
             <span class="storage-value" id="storage-used-text">0 KB</span>
@@ -713,59 +512,16 @@
             <span class="storage-total">10 MB</span>
             <span class="storage-percent" id="storage-percent-text">(0%)</span>
           </div>
-
           <div class="progress-bar-wrap">
             <div class="progress-bar-fill" id="storage-progress-bar"></div>
           </div>
-
-          <!-- Peringatan storage hampir penuh -->
           <div id="storage-warning" class="storage-warning" style="display: none;">
-            <span>⚠️ Storage hampir penuh! Pertimbangkan hapus history chat lama.</span>
+            <span>⚠️ Storage hampir penuh!</span>
           </div>
-
-          <!-- Rincian per data -->
-          <div class="storage-detail-list">
-            <div class="storage-detail-item">
-              <span>💬 History Chat</span>
-              <span id="storage-chat">0 KB</span>
-            </div>
-            <div class="storage-detail-item">
-              <span>👤 Profil</span>
-              <span id="storage-profil">0 KB</span>
-            </div>
-            <div class="storage-detail-item">
-              <span>🤖 Pengaturan AI</span>
-              <span id="storage-ai">0 KB</span>
-            </div>
-            <div class="storage-detail-item">
-              <span>🔑 API Keys</span>
-              <span id="storage-api">0 KB</span>
-            </div>
-            <div class="storage-detail-item">
-              <span>🎨 Font</span>
-              <span id="storage-font">0 KB</span>
-            </div>
+          <div class="storage-actions" style="margin-top:12px;">
+            <button id="btn-hapus-history" type="button" class="btn-storage btn-storage-danger">🗑️ Hapus History Chat</button>
+            <button id="btn-hapus-semua" type="button" class="btn-storage btn-storage-danger">⚠️ Hapus Semua Data</button>
           </div>
-
-          <!-- Tombol aksi -->
-          <div class="storage-actions">
-            <button id="btn-refresh-storage"
-                    class="btn-storage btn-storage-refresh"
-                    type="button">
-              🔄 Refresh
-            </button>
-            <button id="btn-hapus-history"
-                    class="btn-storage btn-storage-danger"
-                    type="button">
-              🗑️ Hapus History Chat
-            </button>
-            <button id="btn-hapus-semua"
-                    class="btn-storage btn-storage-danger"
-                    type="button">
-              ⚠️ Hapus Semua Data
-            </button>
-          </div>
-
         </div>
 
       </section><!-- /#section-profil -->
@@ -781,112 +537,87 @@
           <p class="section-desc">Atur kepribadian dan perilaku AI sesuai keinginan.</p>
         </div>
 
-        <!-- Card: Identitas AI -->
-        <div class="form-card">
-          <h3 class="form-card-title">
-            <span class="card-icon">🪪</span> Identitas AI
-          </h3>
+        <form id="form-ai" novalidate>
 
-          <div class="form-group">
-            <label for="ai-nama" class="form-label">Nama Panggilan AI</label>
-            <input type="text"
-                   id="ai-nama"
-                   class="form-input"
-                   placeholder="Nama panggilan AI"
-                   value="Kita AI"
-                   maxlength="30">
-          </div>
+          <!-- Card: Identitas AI -->
+          <div class="form-card">
+            <h3 class="form-card-title">
+              <span class="card-icon">🪪</span> Identitas AI
+            </h3>
 
-          <div class="form-group">
-            <label for="ai-kepribadian" class="form-label">Kepribadian</label>
-            <select id="ai-kepribadian" class="form-select">
-              <option value="hangat">🌸 Hangat &amp; Ramah</option>
-              <option value="bijak">🧘 Bijak &amp; Netral</option>
-              <option value="seru">🎉 Seru &amp; Santai</option>
-              <option value="custom">✏️ Custom...</option>
-            </select>
-          </div>
-
-          <!-- Input custom kepribadian (muncul jika pilih "Custom") -->
-          <div class="form-group" id="group-ai-custom" style="display: none;">
-            <label for="ai-kepribadian-custom" class="form-label">Deskripsikan Kepribadian Custom</label>
-            <input type="text"
-                   id="ai-kepribadian-custom"
-                   class="form-input"
-                   placeholder="Ceria, suka pantun, sabar, ..."
-                   maxlength="200">
-          </div>
-        </div>
-
-        <!-- Card: Peraturan AI -->
-        <div class="form-card">
-          <h3 class="form-card-title">
-            <span class="card-icon">📋</span> Peraturan Khusus AI
-          </h3>
-
-          <div class="form-group">
-            <label for="ai-peraturan" class="form-label">Instruksi / Peraturan</label>
-            <textarea id="ai-peraturan"
-                      class="form-textarea"
-                      placeholder="Contoh:&#10;- Jangan gunakan kata kasar&#10;- Selalu jawab dengan sopan&#10;- Jika tidak tahu, jujur saja&#10;- Gunakan Bahasa Indonesia santai"
-                      rows="5"
-                      maxlength="1000"></textarea>
-            <span class="form-hint" id="ai-peraturan-count">0 / 1000 karakter</span>
-          </div>
-        </div>
-
-        <!-- Card: Toggle AI -->
-        <div class="form-card">
-          <h3 class="form-card-title">
-            <span class="card-icon">⚙️</span> Perilaku AI
-          </h3>
-
-          <!-- Toggle: AI Aktif -->
-          <div class="toggle-row">
-            <div class="toggle-info">
-              <span class="toggle-label">AI Aktif</span>
-              <span class="toggle-desc">AI akan otomatis membalas pesan</span>
+            <div class="form-group">
+              <label for="kita-ai-gaya" class="form-label">Gaya Bicara</label>
+              <input type="text" id="kita-ai-gaya" name="kita-ai-gaya" class="form-input"
+                     placeholder="Santai, formal, puitis, lucu…" maxlength="100">
             </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="ai-aktif" checked>
-              <span class="toggle-slider"></span>
-            </label>
+
+            <div class="form-group">
+              <label for="kita-ai-kepribadian" class="form-label">Kepribadian</label>
+              <select id="kita-ai-kepribadian" name="kita-ai-kepribadian" class="form-select">
+                <option value="hangat & ramah">🌸 Hangat &amp; Ramah</option>
+                <option value="bijak & netral">🧘 Bijak &amp; Netral</option>
+                <option value="seru & santai">🎉 Seru &amp; Santai</option>
+                <option value="puitis & romantis">💕 Puitis &amp; Romantis</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="kita-ai-pengetahuan" class="form-label">Pengetahuan Khusus</label>
+              <textarea id="kita-ai-pengetahuan" name="kita-ai-pengetahuan" class="form-textarea"
+                        placeholder="Apa yang AI ketahui? Contoh: hubungan, karir, hobi kamu…"
+                        rows="3" maxlength="500"></textarea>
+            </div>
+
+            <div class="form-group">
+              <label for="kita-ai-batasan" class="form-label">Batasan</label>
+              <textarea id="kita-ai-batasan" name="kita-ai-batasan" class="form-textarea"
+                        placeholder="Apa yang TIDAK boleh AI lakukan?"
+                        rows="2" maxlength="500"></textarea>
+            </div>
           </div>
 
-          <!-- Toggle: AI Boleh Beri Saran -->
-          <div class="toggle-row">
-            <div class="toggle-info">
-              <span class="toggle-label">AI Boleh Beri Saran</span>
-              <span class="toggle-desc">AI dapat memberikan rekomendasi & ide</span>
+          <!-- Card: Instruksi Khusus -->
+          <div class="form-card">
+            <h3 class="form-card-title">
+              <span class="card-icon">📋</span> Instruksi Khusus
+            </h3>
+
+            <div class="form-group">
+              <label for="kita-ai-instruksi" class="form-label">Instruksi / Peraturan</label>
+              <textarea id="kita-ai-instruksi" name="kita-ai-instruksi" class="form-textarea"
+                        placeholder="Contoh:&#10;- Jangan gunakan kata kasar&#10;- Selalu jawab dengan sopan&#10;- Jika tidak tahu, jujur saja&#10;- Gunakan Bahasa Indonesia santai"
+                        rows="5" maxlength="1000"></textarea>
             </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="ai-boleh-saran" checked>
-              <span class="toggle-slider"></span>
-            </label>
+
+            <div class="form-group">
+              <label for="kita-ai-model" class="form-label">Model AI</label>
+              <select id="kita-ai-model" name="kita-ai-model" class="form-select">
+                <option value="default">Default (groq-chat)</option>
+                <option value="mixtral">Mixtral 8x7B</option>
+                <option value="llama3">Llama 3 70B</option>
+                <option value="gemma">Gemma 7B</option>
+              </select>
+            </div>
           </div>
-        </div>
+
+          <!-- Tombol simpan -->
+          <button type="submit" class="btn-save">💾 Simpan Pengaturan AI</button>
+
+        </form>
 
         <!-- Card: Preview System Prompt -->
-        <div class="form-card">
+        <div class="form-card" style="margin-top:16px;">
           <h3 class="form-card-title">
             <span class="card-icon">👁️</span> Preview System Prompt
           </h3>
-
           <div class="form-group">
             <p class="form-hint">
               Berikut system prompt yang akan dikirim ke AI berdasarkan pengaturan di atas:
             </p>
-            <pre id="ai-preview-prompt"
+            <pre id="prompt-preview"
                  class="prompt-preview">(System prompt akan muncul di sini...)</pre>
           </div>
         </div>
-
-        <!-- Tombol simpan -->
-        <button id="btn-simpan-ai"
-                class="btn-save"
-                type="button">
-          💾 Simpan Pengaturan AI
-        </button>
 
       </section><!-- /#section-ai -->
 
@@ -956,6 +687,14 @@
   <!-- =========================================================
         SCRIPTS
         ========================================================= -->
+  <!-- Core modules (order matters) -->
+  <script src="js/kita/utils.js"></script>
+  <script src="js/kita/theme.js"></script>
+  <script src="js/kita/sidebar.js"></script>
+  <script src="js/kita/storage.js"></script>
+  <script src="js/kita/chat.js"></script>
+  <script src="js/kita/profile.js"></script>
+  <script src="js/kita/ai.js"></script>
   <script src="js/app.js"></script>
 
   <!-- Register Service Worker -->
