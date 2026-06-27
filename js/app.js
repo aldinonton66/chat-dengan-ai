@@ -12,6 +12,8 @@
     document.querySelectorAll(".nav-link, .bottom-nav-link").forEach((el) => {
       el.classList.toggle("active", el.dataset?.section === sectionId);
     });
+
+    document.querySelectorAll(".content-section").forEach((el) => {
       const chatSections = ["teman-ai", "curhat", "catatan", "ide"];
       if (chatSections.includes(sectionId)) {
         el.classList.toggle("hidden", el.id !== "section-chat");
