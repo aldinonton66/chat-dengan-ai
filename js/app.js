@@ -342,57 +342,45 @@
      Terapkan state sidebar (collapsed + width)
      ---------------------------------------------------------- */
   function applySidebarState() {
-    var sidebarEl = getSidebarEl();
+    const sidebarEl = getSidebarEl();
     if (!sidebarEl) return;
-    var state = loadSidebarState();
+    const state = loadSidebarState();
 
-    // Terapkan collapsed
-    if (state.collapsed) {
-      sidebarEl.classList.add("collapsed");
-    } else {
-      sidebarEl.classList.remove("collapsed");
-    }
+    sidebarEl.classList.toggle("collapsed", !!state.collapsed);
 
-    // Terapkan lebar
     if (state.width) {
       sidebarEl.style.width = state.width + "px";
     }
 
-    // Update ikon toggle
     updateToggleIcon();
+    syncWrapperMargin();
   }
 
   /* ----------------------------------------------------------
      Update ikon tombol toggle (◀ / ▶)
      ---------------------------------------------------------- */
   function updateToggleIcon() {
-    var icon = document.querySelector(".sidebar-toggle-icon");
-    var sidebarEl = getSidebarEl();
+    const icon = document.querySelector(".sidebar-toggle-icon");
+    const sidebarEl = getSidebarEl();
     if (!icon || !sidebarEl) return;
-    if (sidebarEl.classList.contains("collapsed")) {
-      icon.textContent = "▶";
-    } else {
-      icon.textContent = "◀";
-    }
+    icon.textContent = sidebarEl.classList.contains("collapsed") ? "▶" : "◀";
   }
 
   /* ----------------------------------------------------------
      Toggle collapse / expand sidebar
      ---------------------------------------------------------- */
   function toggleSidebar() {
-    var sidebarEl = getSidebarEl();
+    const sidebarEl = getSidebarEl();
     if (!sidebarEl) return;
 
-    var isCollapsed = sidebarEl.classList.toggle("collapsed");
+    const isCollapsed = sidebarEl.classList.toggle("collapsed");
     updateToggleIcon();
 
-    // Simpan state
-    var state = loadSidebarState();
+    const state = loadSidebarState();
     state.collapsed = isCollapsed;
     saveSidebarState(state);
 
-    // Trigger resize event agar konten menyesuaikan
-    setTimeout(function () {
+    setTimeout(() => {
       window.dispatchEvent(new Event("resize"));
     }, 350);
   }
@@ -401,28 +389,26 @@
      Binding event toggle sidebar
      ---------------------------------------------------------- */
   function bindSidebarToggle() {
-    var toggleBtn = document.getElementById("sidebar-toggle");
-    if (toggleBtn) {
-      toggleBtn.addEventListener("click", toggleSidebar);
-    }
+    const toggleBtn = document.getElementById("sidebar-toggle");
+    toggleBtn?.addEventListener("click", toggleSidebar);
   }
 
   /* ----------------------------------------------------------
      Drag resize sidebar (hanya di tepi kanan)
      ---------------------------------------------------------- */
   function bindSidebarResize() {
-    var handle = document.getElementById("sidebar-resize-handle");
+    const handle = document.getElementById("sidebar-resize-handle");
     if (!handle || !getSidebarEl()) return;
 
-    var startX = 0;
-    var startWidth = 0;
-    var isResizing = false;
+    let startX = 0;
+    let startWidth = 0;
+    let isResizing = false;
 
-    handle.addEventListener("mousedown", function (e) {
+    handle.addEventListener("mousedown", (e) => {
       e.preventDefault();
       isResizing = true;
       startX = e.clientX;
-      var el = getSidebarEl();
+      const el = getSidebarEl();
       if (!el) return;
       startWidth = el.offsetWidth;
       handle.classList.add("active");
@@ -430,31 +416,40 @@
       document.body.style.userSelect = "none";
     });
 
-    document.addEventListener("mousemove", function (e) {
+    document.addEventListener("mousemove", (e) => {
       if (!isResizing) return;
-
-      var diff = e.clientX - startX;
-      var newWidth = startWidth + diff;
-
-      if (newWidth < 60) newWidth = 60;
-      if (newWidth > 320) newWidth = 320;
-
-      var el = getSidebarEl();
-      if (el) el.style.width = newWidth + "px";
+      const newWidth = Math.max(60, Math.min(320, startWidth + (e.clientX - startX)));
+      const el = getSidebarEl();
+      if (el) {
+        el.style.width = newWidth + "px";
+        syncWrapperMargin();
+      }
     });
 
-    document.addEventListener("mouseup", function () {
+    document.addEventListener("mouseup", () => {
       if (!isResizing) return;
       isResizing = false;
       handle.classList.remove("active");
       document.body.style.cursor = "";
       document.body.style.userSelect = "";
 
-      var state = loadSidebarState();
-      var el = getSidebarEl();
+      const state = loadSidebarState();
+      const el = getSidebarEl();
       if (el) state.width = el.offsetWidth;
       saveSidebarState(state);
+      syncWrapperMargin();
     });
+  }
+
+  /* ----------------------------------------------------------
+     Sync wrapper margin-left with sidebar width
+     ---------------------------------------------------------- */
+  function syncWrapperMargin() {
+    const el = getSidebarEl();
+    const wrapper = document.getElementById("app-wrapper");
+    if (el && wrapper) {
+      wrapper.style.marginLeft = el.offsetWidth + "px";
+    }
   }
 
   /* ----------------------------------------------------------
@@ -581,15 +576,24 @@
      ========================================================== */
 
   function loadProfilData() {
-    var saved = localStorage.getItem("kita-profil");
-    if (saved) {
-      try { return JSON.parse(saved); } catch (e) { /* fallback */ }
-    }
-    return {
+    const defaults = {
       person1: { nama: "Kamu",  warna: "#3b82f6", warnaTeks: "#ffffff" },
       person2: { nama: "Sari",  warna: "#ec4899", warnaTeks: "#ffffff" },
       ai:      { nama: "Kita AI", avatar: "🤖", warnaBubble: "#7c3aed", warnaTeks: "#e0e0e0" }
     };
+    const saved = localStorage.getItem("kita-profil");
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        // Merge deep — ensure all keys exist even if saved data is corrupted
+        return {
+          person1: { ...defaults.person1, ...(parsed.person1 || {}) },
+          person2: { ...defaults.person2, ...(parsed.person2 || {}) },
+          ai:      { ...defaults.ai,      ...(parsed.ai || {}) }
+        };
+      } catch (e) { /* fallback */ }
+    }
+    return defaults;
   }
 
   function saveProfilData(data) {
@@ -715,33 +719,41 @@
 
   /** Update nama & warna bubble yang sudah ada di area chat */
   function updateExistingBubbles() {
-    var data = loadProfilData();
-    var ai = data.ai || { nama: "Kita AI", avatar: "🤖", warnaBubble: "#7c3aed", warnaTeks: "#e0e0e0" };
+    const data = loadProfilData();
+    const p1 = data.person1 || {};
+    const p2 = data.person2 || {};
+    const ai = data.ai || { nama: "Kita AI", avatar: "🤖", warnaBubble: "#7c3aed", warnaTeks: "#e0e0e0" };
 
-    document.querySelectorAll(".bubble-person1 .bubble-name").forEach(function (el) {
-      el.textContent = "✨ " + data.person1.nama;
+    const p1Nama = p1.nama || "Kamu";
+    const p1Warna = p1.warna || "#3b82f6";
+    const p1Teks = p1.warnaTeks || "#ffffff";
+    const p2Nama = p2.nama || "Sari";
+    const p2Warna = p2.warna || "#ec4899";
+    const p2Teks = p2.warnaTeks || "#ffffff";
+
+    document.querySelectorAll(".bubble-person1 .bubble-name").forEach((el) => {
+      el.textContent = "✨ " + p1Nama;
     });
-    document.querySelectorAll(".bubble-person1 .bubble-body").forEach(function (el) {
-      el.style.background = data.person1.warna;
-      el.style.color = data.person1.warnaTeks || "#ffffff";
+    document.querySelectorAll(".bubble-person1 .bubble-body").forEach((el) => {
+      el.style.background = p1Warna;
+      el.style.color = p1Teks;
     });
-    document.querySelectorAll(".bubble-person2 .bubble-name").forEach(function (el) {
-      el.textContent = "🌸 " + data.person2.nama;
+    document.querySelectorAll(".bubble-person2 .bubble-name").forEach((el) => {
+      el.textContent = "🌸 " + p2Nama;
     });
-    document.querySelectorAll(".bubble-person2 .bubble-body").forEach(function (el) {
-      el.style.background = data.person2.warna;
-      el.style.color = data.person2.warnaTeks || "#ffffff";
+    document.querySelectorAll(".bubble-person2 .bubble-body").forEach((el) => {
+      el.style.background = p2Warna;
+      el.style.color = p2Teks;
     });
 
-    // Update AI bubble
-    document.querySelectorAll(".bubble-ai .bubble-name").forEach(function (el) {
+    document.querySelectorAll(".bubble-ai .bubble-name").forEach((el) => {
       el.textContent = ai.avatar + " " + ai.nama;
     });
-    document.querySelectorAll(".bubble-ai .bubble-body").forEach(function (el) {
+    document.querySelectorAll(".bubble-ai .bubble-body").forEach((el) => {
       el.style.background = ai.warnaBubble;
       el.style.color = ai.warnaTeks || "#e0e0e0";
     });
-    document.querySelectorAll(".bubble-ai .bubble-avatar").forEach(function (el) {
+    document.querySelectorAll(".bubble-ai .bubble-avatar").forEach((el) => {
       el.textContent = ai.avatar;
     });
   }
@@ -1559,12 +1571,16 @@
   /* ---------- Scroll ---------- */
 
   function scrollToBottom() {
-    var area = getChatElements().bubbleArea;
-    if (area) area.scrollTop = area.scrollHeight;
+    const area = getChatElements().bubbleArea;
+    if (area) {
+      requestAnimationFrame(() => {
+        area.scrollTop = area.scrollHeight;
+      });
+    }
   }
 
   function isNearBottom() {
-    var area = getChatElements().bubbleArea;
+    const area = getChatElements().bubbleArea;
     if (!area) return true;
     return (area.scrollHeight - area.scrollTop - area.clientHeight) < 80;
   }
@@ -1634,6 +1650,7 @@
     var isRight = (msg.sender === "person1");
     personaClass = isRight ? "bubble-right bubble-person1" : "bubble-left bubble-person2";
     var person = isRight ? prof.person1 : prof.person2;
+    if (!person) return "";
     senderName = isRight ? ("✨ " + person.nama) : ("🌸 " + person.nama);
     var senderColor = person.warna;
     var textColor = person.warnaTeks || (isRight ? "#ffffff" : "#ffffff");
@@ -1782,11 +1799,16 @@
     }
 
     chatHistory.forEach(function (msg) {
-      var html = buildBubbleHTML(msg);
-      if (typingInd) {
-        typingInd.insertAdjacentHTML("beforebegin", html);
-      } else {
-        area.insertAdjacentHTML("beforeend", html);
+      try {
+        var html = buildBubbleHTML(msg);
+        if (!html) return;
+        if (typingInd) {
+          typingInd.insertAdjacentHTML("beforebegin", html);
+        } else {
+          area.insertAdjacentHTML("beforeend", html);
+        }
+      } catch (e) {
+        console.warn("[KitaAI] Gagal render bubble:", e.message || e);
       }
     });
 
@@ -2044,10 +2066,13 @@
   }
 
   function closeLightbox() {
-    var els = getChatElements();
+    const els = getChatElements();
     if (!els.lightbox) return;
     els.lightbox.style.display = "none";
-    if (els.lightboxImg) els.lightboxImg.src = "";
+    const img = document.getElementById("lightbox-img");
+    const video = document.getElementById("lightbox-video");
+    if (img) { img.style.display = ""; img.src = ""; }
+    if (video) { video.style.display = "none"; video.pause(); video.src = ""; }
     document.body.style.overflow = "";
   }
 
@@ -2148,7 +2173,7 @@
       });
     }
 
-    // Klik area chat (delegasi: lightbox, voice play)
+    // Klik area chat (delegasi: lightbox gambar/video, voice play)
     if (els.bubbleArea) {
       els.bubbleArea.addEventListener("click", function (e) {
         // Lightbox gambar
@@ -2161,10 +2186,18 @@
           return;
         }
 
-        // Lightbox video (dari thumbnail)
-        var videoThumb = e.target.closest(".video-thumb");
+        // Lightbox video (data-video attribute)
+        var videoThumb = e.target.closest(".video-thumb[data-video]");
         if (videoThumb) {
-          var vImg = videoThumb.querySelector("img");
+          var vSrc = videoThumb.getAttribute("data-video");
+          if (vSrc) openVideoLightbox(vSrc);
+          return;
+        }
+
+        // Fallback: image-only video thumb
+        var vt = e.target.closest(".video-thumb");
+        if (vt && !vt.hasAttribute("data-video")) {
+          var vImg = vt.querySelector("img");
           if (vImg) openLightbox(vImg.src);
           return;
         }
@@ -2197,6 +2230,17 @@
         closeLightbox();
       }
     });
+
+    // Export chat button
+    const exportBtn = document.getElementById("btn-export-chat");
+    if (exportBtn) {
+      exportBtn.addEventListener("click", exportChatJSON);
+      // Show button only when there are messages
+      const observer = new MutationObserver(() => {
+        exportBtn.style.display = (chatHistory.length > 0) ? "" : "none";
+      });
+      observer.observe(document.getElementById("chat-bubble-area") || document.body, { childList: true, subtree: true });
+    }
 
     // Mic & Gallery (init terpisah)
     initMediaRecorder();
@@ -2242,11 +2286,10 @@
 
   /** Logout — signOut dari Supabase & redirect ke login */
   async function doLogout() {
-    // Final sync ke Supabase sebelum logout
     try { await syncAllToSupabase(false); } catch (e) {}
 
-    if (typeof window.supabase !== "undefined" && APP_CONFIG.supabaseUrl) {
-      var sb = window.supabase.createClient(APP_CONFIG.supabaseUrl, APP_CONFIG.supabaseAnonKey);
+    const sb = getSupabase();
+    if (sb) {
       await sb.auth.signOut();
     }
     location.replace("login.html");
@@ -2408,6 +2451,84 @@
 
     // Binding logout
     try { bindLogoutButtons(); } catch (e) { console.error("[KitaAI] Gagal bind logout:", e); }
+
+    // Skeleton loading — sembunyikan setelah semua init selesai
+    try { hideSkeleton(); } catch (e) { console.warn("[KitaAI] Gagal hide skeleton:", e); }
+
+    // Offline banner
+    try { initOfflineBanner(); } catch (e) { console.warn("[KitaAI] Gagal init offline banner:", e); }
+  }
+
+  /* ----------------------------------------------------------
+     Skeleton Loading — Sembunyikan setelah app siap
+     ---------------------------------------------------------- */
+  function hideSkeleton() {
+    const el = document.getElementById("app-skeleton");
+    if (el) {
+      el.style.opacity = "0";
+      el.style.pointerEvents = "none";
+      setTimeout(() => { el.style.display = "none"; }, 400);
+    }
+  }
+
+  /* ----------------------------------------------------------
+     Offline Banner — Deteksi koneksi
+     ---------------------------------------------------------- */
+  function initOfflineBanner() {
+    const banner = document.getElementById("offline-banner");
+    if (!banner) return;
+
+    function updateOffline() {
+      banner.style.display = navigator.onLine ? "none" : "block";
+    }
+
+    updateOffline();
+    window.addEventListener("online", updateOffline);
+    window.addEventListener("offline", updateOffline);
+  }
+
+  /* ----------------------------------------------------------
+     Video Lightbox — Buka video di lightbox
+     ---------------------------------------------------------- */
+  function openVideoLightbox(src) {
+    const overlay = document.getElementById("lightbox-overlay");
+    const img = document.getElementById("lightbox-img");
+    const video = document.getElementById("lightbox-video");
+    if (!overlay || !video || !img) return;
+
+    img.style.display = "none";
+    video.style.display = "block";
+    video.src = src;
+    overlay.style.display = "flex";
+    video.play().catch(() => {});
+  }
+
+  /* ----------------------------------------------------------
+     Export Chat — Download history sebagai JSON
+     ---------------------------------------------------------- */
+  function exportChatJSON() {
+    if (!chatHistory || chatHistory.length === 0) {
+      showToast("Tidak ada pesan untuk diexport", "ℹ️");
+      return;
+    }
+
+    const data = {
+      app: "Kita & AI",
+      exportedAt: new Date().toISOString(),
+      totalMessages: chatHistory.length,
+      messages: chatHistory
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "chat-export-" + Date.now() + ".json";
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast("Chat diexport sebagai JSON", null, "success");
   }
 
   // Jalankan saat DOM siap

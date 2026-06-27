@@ -68,10 +68,22 @@
 </head>
 <body>
 
-  <!-- =========================================================
-        HEADER BAR ATAS
-       Menampilkan nama aplikasi + tombol toggle dark/light
-       ========================================================= -->
+  <!-- Skeleton Loading Screen -->
+  <div id="app-skeleton" class="app-skeleton">
+    <div class="skeleton-header"></div>
+    <div class="skeleton-body">
+      <div class="skeleton-sidebar"></div>
+      <div class="skeleton-content">
+        <div class="skeleton-card"></div>
+        <div class="skeleton-card"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Offline Banner -->
+  <div id="offline-banner" class="offline-banner" style="display:none;">🔴 Kamu sedang offline — data mungkin tidak tersinkronisasi</div>
+
+  <!-- HEADER -->
   <header id="app-header">
     <h1 class="app-title">Kita &amp; AI</h1>
     <button id="btn-theme-toggle"
@@ -82,36 +94,31 @@
     </button>
   </header>
 
-  <!-- =========================================================
-       WRAPPER UTAMA (sidebar + konten)
-       ========================================================= -->
-  <div id="app-wrapper">
+  <!-- SIDEBAR (fixed, independent scroll) -->
+  <nav id="sidebar">
+    <button id="sidebar-toggle"
+            class="sidebar-toggle-btn"
+            title="Ciutkan / bentangkan sidebar"
+            aria-label="Toggle sidebar">
+      <span class="sidebar-toggle-icon">◀</span>
+    </button>
 
-    <!-- SIDEBAR NAVIGASI (tablet & desktop: sidebar kiri) -->
-    <nav id="sidebar">
-      <!-- Tombol toggle collapse/expand -->
-      <button id="sidebar-toggle"
-              class="sidebar-toggle-btn"
-              title="Ciutkan / bentangkan sidebar"
-              aria-label="Toggle sidebar">
-        <span class="sidebar-toggle-icon">◀</span>
+    <ul id="nav-list">
+      <!-- Menu akan digenerate oleh app.js -->
+    </ul>
+
+    <div id="sidebar-footer" style="padding: 8px 10px; margin-top: auto; border-top: 1px solid var(--border-subtle);">
+      <button id="btn-logout-sidebar" class="nav-link" style="color: #ef4444;" title="Logout">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-label">Logout</span>
       </button>
+    </div>
 
-      <ul id="nav-list">
-        <!-- Menu akan digenerate oleh app.js -->
-      </ul>
+    <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
+  </nav>
 
-      <!-- Tombol logout di sidebar -->
-      <div id="sidebar-footer" style="padding: 8px 10px; margin-top: auto; border-top: 1px solid var(--border-subtle);">
-        <button id="btn-logout-sidebar" class="nav-link" style="color: #ef4444;" title="Logout">
-          <span class="nav-icon">🚪</span>
-          <span class="nav-label">Logout</span>
-        </button>
-      </div>
-
-      <!-- Handle resize (drag untuk ubah lebar sidebar) -->
-      <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
-    </nav>
+  <!-- APP WRAPPER (hanya konten, tanpa sidebar) -->
+  <div id="app-wrapper">
 
     <!-- ======================================================
          AREA KONTEN UTAMA
@@ -327,6 +334,14 @@
                     title="Kirim foto / gambar / video"
                     aria-label="Kirim media">
               🖼️
+            </button>
+
+            <button id="btn-export-chat"
+                    class="chat-action-btn"
+                    title="Export chat sebagai JSON"
+                    aria-label="Export chat"
+                    style="display:none;">
+              📥
             </button>
 
             <!-- Input teks pesan (auto-expand) -->
@@ -899,11 +914,12 @@
   </div>
 
   <!-- =========================================================
-       LIGHTBOX — Untuk tampil foto/gambar fullscreen
+       LIGHTBOX — Untuk tampil foto/gambar fullscreen + video
        ========================================================= -->
   <div id="lightbox-overlay" class="lightbox-overlay" style="display: none;">
     <button id="lightbox-close" class="lightbox-close" title="Tutup">✕</button>
     <img id="lightbox-img" src="" alt="Gambar fullscreen">
+    <video id="lightbox-video" controls style="display:none;max-width:92vw;max-height:92vh;border-radius:var(--radius-md);"></video>
   </div>
 
   <!-- =========================================================
