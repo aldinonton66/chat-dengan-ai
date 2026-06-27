@@ -109,8 +109,7 @@
   };
 
   /* ---------- Messages ---------- */
-  K.sendMessageToSupabase = K.sendMessage;
-  K.sendMessage = async (content, msgType, duration) => {
+  K._sendToSupabase = async (content, msgType, duration) => {
     const user = window._kitaUser;
     if (!user || !_currentRoomId) return false;
     const sb = getSupabase();

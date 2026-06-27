@@ -92,7 +92,7 @@
     if (els.typingInd) els.typingInd.classList.add("hidden");
 
     // Try Supabase real-time send
-    const sent = await K.sendMessageToSupabase?.(content, type, duration);
+    const sent = await K._sendToSupabase?.(content, type, duration);
     if (sent) {
       // Supabase handles it — local cache already updated by sendMessageToSupabase
       K.renderChatFromHistory();
