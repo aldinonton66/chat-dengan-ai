@@ -180,19 +180,15 @@
           return;
         }
         window._kitaUser = session.user;
-        await K.loadFromSupabase(session.user.id);
       }
 
       // Generate nav first so bindings work
       generateNavItems();
 
-      // Init modules
+      // Init modules (except chat — needs room first)
       K.bindThemeToggle();
       K.initSidebar();
       K.initStorageMonitor();
-      K.initChat();
-      K.initMediaRecorder();
-      K.initMediaPicker();
       K.initProfil();
       K.initAI();
       bindNavigationEvents();
@@ -202,27 +198,15 @@
 
       K.setSoundEnabled(K.safeGetItem("kita-sound", "on") === "on");
 
-      showWelcome();
+      // Setup room (for real-time messaging)
+      if (window._kitaUser) {
+        await setupRoom();
+      } else {
+        // Offline mode — use local-only chat
+        setupLocalChat();
+      }
+
       hideSkeleton();
-
-      // Export button
-      document.getElementById("btn-export")?.addEventListener("click", K.exportChatJSON);
-
-      // Reset button
-      document.getElementById("btn-hapus-semua")?.addEventListener("click", K.resetAllData);
-
-      // Shortcuts modal close
-      document.getElementById("shortcuts-close")?.addEventListener("click", () => {
-        const modal = document.getElementById("shortcuts-modal");
-        modal?.classList.remove("open");
-        document.body.style.overflow = "";
-      });
-      document.getElementById("shortcuts-modal")?.addEventListener("click", (e) => {
-        if (e.target.id === "shortcuts-modal") {
-          e.target.classList.remove("open");
-          document.body.style.overflow = "";
-        }
-      });
 
     } catch (e) {
       if (e?.message?.includes("Auth") || e?.message?.includes("auth")) {
@@ -230,6 +214,69 @@
       }
     }
   };
+
+  async function setupRoom() {
+    const roomId = await K.getOrCreateRoom();
+    if (roomId) {
+      // Load history from Supabase
+      await K.loadHistoryFromSupabase();
+
+      // Init real-time chat + media after history loaded
+      K.initChat();
+      K.initMediaRecorder();
+      K.initMediaPicker();
+      K.initRealtime();
+
+      showWelcome();
+      showPairingCode();
+    } else {
+      setupLocalChat();
+    }
+  }
+
+  function setupLocalChat() {
+    K.initChat();
+    K.initMediaRecorder();
+    K.initMediaPicker();
+    showWelcome();
+
+    // Show export button for local-only
+    document.getElementById("btn-export")?.addEventListener("click", K.exportChatJSON);
+    document.getElementById("btn-hapus-semua")?.addEventListener("click", K.resetAllData);
+  }
+
+  function showPairingCode() {
+    const code = K.safeGetItem("kita-room-code", "");
+    const role = K.getPartnerRole();
+    if (!code || role === "partner2") return;
+
+    // Show pairing banner in sidebar
+    const navList = document.getElementById("nav-list");
+    if (navList && !document.getElementById("pairing-banner")) {
+      const banner = document.createElement("li");
+      banner.id = "pairing-banner";
+      banner.style.cssText = "padding:10px 12px;margin:4px 8px;background:var(--accent-subtle, rgba(13,148,136,0.12));border-radius:10px;font-size:0.82rem;text-align:center";
+      banner.innerHTML =
+        '<div style="font-size:0.7rem;opacity:0.6;margin-bottom:2px">Kode Kolaborasi</div>' +
+        '<strong style="font-size:1.1rem;letter-spacing:2px;font-family:monospace">' + code + '</strong>' +
+        '<div style="font-size:0.7rem;opacity:0.6;margin-top:2px">Bagikan ke pasangan untuk join</div>';
+      navList.insertBefore(banner, navList.firstChild);
+    }
+
+    // Show pairing modal on first visit
+    if (!K.safeGetItem("kita-pairing-shown", "")) {
+      K.safeSetItem("kita-pairing-shown", "1");
+      setTimeout(() => {
+        K.showToast("Kode room: " + code + " — bagikan ke pasangan!", "🔗", "");
+      }, 2000);
+    }
+  }
+
+  // Export + reset bindings (also needed for real-time mode)
+  function bindExtraButtons() {
+    document.getElementById("btn-export")?.addEventListener("click", K.exportChatJSON);
+    document.getElementById("btn-hapus-semua")?.addEventListener("click", K.resetAllData);
+  }
 
   // Boot
   let _retry = 0;

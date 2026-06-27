@@ -83,15 +83,29 @@
     return div;
   };
 
-  /* ---------- Send Message ---------- */
-  K.sendMessage = (content, type, duration) => {
+  /* ---------- Send Message (via Supabase if available) ---------- */
+  K.sendMessage = async (content, type, duration) => {
     const els = K.getChatElements();
     if (!content || !content.trim()) return;
 
     // Reset typing indicator
     if (els.typingInd) els.typingInd.classList.add("hidden");
 
-    // Add user message
+    // Try Supabase real-time send
+    const sent = await K.sendMessageToSupabase?.(content, type, duration);
+    if (sent) {
+      // Supabase handles it — local cache already updated by sendMessageToSupabase
+      K.renderChatFromHistory();
+      K.playSound("send");
+      K.scrollToBottom();
+      if (els.typingInd) {
+        els.typingInd.classList.remove("hidden");
+        K.scrollToBottom();
+      }
+      return;
+    }
+
+    // Fallback: local-only (offline or no room)
     const userMsg = {
       role: "user",
       content: content.trim(),
@@ -102,21 +116,13 @@
     K.chatHistory.push(userMsg);
     K.saveChatHistory();
     K.renderChatFromHistory();
-
-    // Schedule sync
-    K.scheduleSyncToSupabase();
-
-    // Sound + scroll
     K.playSound("send");
     K.scrollToBottom();
-
-    // Show typing indicator
     if (els.typingInd) {
       els.typingInd.classList.remove("hidden");
       K.scrollToBottom();
     }
 
-    // Call AI
     K.callAI();
   };
 
